@@ -1,109 +1,119 @@
-# pongy-server
-Pongy AI — это новый персональный и универсальный ИИ-помощник на базе собственной модели Pongy AI, а также хост-сервера для API Key других ИИ с умным режимом автопереключения моделей!
-# 🐣 Pongy AI
+# Pongy AI — server 1.1.1
 
-**Kind personal AI assistant — similar to Verity, yet friendlier.**
+Веб-приложение для чата с ИИ: Node.js/Express, SQLite, русский и английский
+интерфейс, история диалогов, потоковые ответы через бесплатные модели OpenRouter.
+Другие языки интерфейса пока используют английский fallback.
 
-Pongy AI is a modern multi-user web application that provides intelligent conversational assistance in 5 languages. It runs as a full-stack solution with a Node.js backend and a lightweight frontend — no build tools required.
+## Запуск
 
-🌐 **Live:** [pongy-ai.devs.surf](https://pongy-ai.devs.surf)
+Нужны Node.js 22+ (рекомендуется поддерживаемая LTS-версия) и npm.
 
----
-
-## ✨ Features
-
-### 💬 Chat experience
-- **Real-time streaming** responses — watch the AI type letter by letter
-- **Reasoning mode** — extended thinking for complex tasks
-- **Search mode** — up-to-date knowledge with source citations
-- **Multi-agent system** — Low / Standart / Extra Smart tiers
-- **Thinking levels** — Extra / High / Middle / Low
-- **Voice input** — Web Speech API in English, Russian, Spanish, German, French
-- **Markdown support** — bold, italic, code blocks, lists, links
-- **Message actions** — copy, edit, refine, report
-- **Session history** — chats saved with timestamps and pinning
-- **Chat search** — instant filtering by title
-
-### 🌐 Internationalization
-- 5 languages: 🇬🇧 English · 🇷🇺 Русский · 🇪🇸 Español · 🇩🇪 Deutsch · 🇫🇷 Français
-- Auto-detection of voice recognition language
-- Localized currency and pricing per region
-
-### 🎨 Design
-- **Two themes** — light and dark, remembered across sessions
-- **Fully responsive** — desktop, tablet, mobile
-- **Smooth animations** — thinking orb, streaming cursor, badge pulses
-- **Modern UI** — clean typography, rounded corners, subtle shadows
-- **Logo** — custom teal-to-violet gradient P
-
-### 🔒 Security
-- **CSP (Content Security Policy)** — blocks malicious scripts
-- **XSS protection** — all user input escaped
-- **JWT authentication** — 30-day tokens
-- **bcrypt password hashing** — 10 rounds
-- **Rate limiting** — protection from abuse
-- **No third-party trackers** — no analytics, no ads
-- **API keys stay server-side** — users never see them
-
-### 💾 Multi-user backend
-- **Email/password registration**
-- **Chats synced across devices**
-- **Pinned chats preserved**
-- **Per-user isolation** — you only see your own data
-- **SQLite** — lightweight, zero-config database
-
----
-
-## 🏗️ Architecture
-
-┌──────────────┐ HTTPS ┌──────────────┐ HTTPS ┌──────────────┐
-│ Frontend │ ──────────▶ │ Backend │ ──────────▶ │ OpenRouter │
-│ (Vercel) │ │ (Railway) │ │ (DeepSeek) │
-└──────────────┘ └──────┬───────┘ └──────────────┘
-│
-▼
-┌──────────────┐
-│ SQLite │
-│ users/chats │
-└──────────────┘
-
-
-**Frontend** — single `index.html` (vanilla JS, no build step)
-**Backend** — Node.js + Express
-**Database** — SQLite (WAL mode)
-**AI** — OpenRouter (DeepSeek V3 / R1 free tiers)
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Vanilla JavaScript, CSS3, SVG |
-| Backend | Node.js 20+, Express 4 |
-| Database | better-sqlite3 |
-| Auth | JWT + bcryptjs |
-| AI | OpenRouter API (streaming) |
-| Rate limit | express-rate-limit |
-| Deploy | Vercel (front) + Railway (back) |
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 20+
-- OpenRouter API key — [openrouter.ai/keys](https://openrouter.ai/keys)
-
-### 1. Clone
 ```bash
-git clone https://github.com/YOUR_USERNAME/pongy-server.git
-cd pongy-server
+npm ci
+cp .env.example .env
+npm start
+```
 
-For INSTALL:
+В Windows вместо `cp` используйте `copy .env.example .env`.
+Откройте http://localhost:3000. Интерфейс сервер раздаёт из `public/`.
+Рекомендуется размещать интерфейс и API на одном домене.
 
-bash
-npm install
-_______________
+### ИИ
 
-BETA V. 0.1 - NOT FULL...
+Владелец один раз задаёт `OPENROUTER_API_KEY` в окружении сервера/хостинга.
+Поддерживается и прежнее имя `OPENROUTER_KEY`. Посетители ключ не вводят;
+в интерфейс и архив ключи не включены. Без действительного серверного ключа
+внешний ИИ работать не сможет: приложение сообщит, что ИИ не настроен.
+
+Сервер загружает актуальный каталог OpenRouter, выбирает бесплатные текстовые
+модели, учитывает заданные `FREE_MODEL_PREFERENCES`, прошлые успехи и задержку.
+При ошибке пробует резервную модель, временно пропуская отказавшую.
+Есть общий таймаут и максимум попыток; это не бесконечный цикл.
+Если каталог недоступен, используется бесплатный маршрутизатор `openrouter/free`.
+Он сам выбирает модель, а не гарантирует «лучшую» по качеству.
+Платные модели автоматически не включаются. Ограничения цены передаются провайдеру.
+
+Бесплатные модели могут быть недоступны или исчерпать лимиты аккаунта.
+Наличие ключа не гарантирует ответ. 100% доступность внешнего сервиса обещать нельзя.
+Реальный веб-поиск пока не подключён; соответствующая кнопка отключена.
+
+### Почта и Google
+
+Для регистрации и восстановления пароля нужны `RESEND_API_KEY` и `MAIL_FROM`
+с подтверждённым доменом отправителя. Ошибка отправки не выдаётся за успех.
+
+Для Google-входа задайте `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` и
+`GOOGLE_CALLBACK_URL`, совпадающий с разрешённым redirect URI в Google Console.
+Без настройки кнопка Google отключена. Авторизация использует HttpOnly cookie,
+а не JWT в адресной строке или localStorage.
+
+### Plus и СБП
+
+**Настоящая оплата пока не подключена.** Демонстрационный QR, QR стороннего
+сервиса и форма сбора карты/CVC удалены. Сервер не включает Plus по заявлению
+клиента «оплачено». Для завершения интеграции нужно выбрать банк/провайдера,
+подключить магазин и настроить его серверные учётные данные.
+
+Реальная интеграция должна создавать заказ и QR у провайдера и проверять
+подтверждённый статус, сумму, валюту, заказ и получателя на сервере перед
+активацией подписки. Повторные уведомления должны обрабатываться идемпотентно.
+В этой версии `/api/pay/create` честно возвращает `PAYMENT_NOT_CONFIGURED`.
+
+## Развёртывание
+
+- Для production: `NODE_ENV=production`, `FRONTEND_URL=https://ваш-домен`.
+- Настройте HTTPS и постоянный диск для `DATA_DIR`: SQLite и автоматически
+  созданные секреты нельзя терять при перезапуске контейнера.
+- Если секреты окружения не указаны, приложение генерирует случайные
+  `JWT_SECRET` и `SESSION_SECRET` и сохраняет их вне публичной папки.
+- `DATA_DIR` и `DATABASE_PATH` нельзя размещать в `public/`.
+- `TRUST_PROXY` задавайте только под известную конфигурацию прокси хостинга.
+- При разделении API и интерфейса настройте `PUBLIC_API_ORIGIN`,
+  `CORS_ORIGINS`, `COOKIE_SAMESITE=none` и HTTPS. Статический фронтенд должен
+  получать корректный `window.PONGY_CONFIG.apiUrl` до загрузки `app.js`.
+  Учтите, что браузер может блокировать сторонние cookie; один домен надёжнее.
+
+### Pongy: отдельный сайт и API Render
+
+Для сайта `https://pongy-ai.devs.surf` и API `https://pongy-server.onrender.com`
+задайте в Render → Environment:
+
+```dotenv
+NODE_ENV=production
+FRONTEND_URL=https://pongy-ai.devs.surf
+PUBLIC_API_ORIGIN=https://pongy-server.onrender.com
+CORS_ORIGINS=https://pongy-ai.devs.surf
+COOKIE_SAMESITE=none
+GOOGLE_CALLBACK_URL=https://pongy-server.onrender.com/auth/google/callback
+```
+
+На хостинг сайта загрузите содержимое `public/`, включая `app-config.js` и
+`vendor/`. Статический `app-config.js` выбирает указанный API только на домене
+`pongy-ai.devs.surf`; локальный запуск остаётся same-origin. На Node-сервере
+этот файл генерируется из `PUBLIC_API_ORIGIN`. Ключ ИИ и остальные секреты
+задавайте только в окружении Render. Не публикуйте `.env` на хостинге сайта.
+Если у хостинга фронтенда есть CSP, его `connect-src` должен разрешать API Render.
+После замены файлов очистите CDN-кэш, если он используется.
+
+## Обновление существующей установки
+
+Остановите старый сервер и сделайте согласованную резервную копию SQLite
+(вместе с WAL/SHM при необходимости либо через SQLite backup).
+Если рядом с сервером есть прежний `pongy.db`, новая версия использует его;
+либо явно задайте `DATABASE_PATH`. Не заменяйте свою базу тестовой.
+Добавляется поле версии сеанса; старые коды подтверждения аннулируются.
+После обновления пользователям потребуется войти снова. Выход из аккаунта
+и смена пароля отзывают все его существующие JWT-сеансы.
+
+## Проверки
+
+```bash
+npm run check
+npm test
+npx playwright install chromium
+npm run test:ui
+```
+
+Для системного Chromium можно задать `CHROMIUM_PATH`.
+Тесты используют локальные фикстуры ИИ и почты, не отправляют реальные письма,
+не создают платежи и не доказывают доступность OpenRouter/Google/СБП.
