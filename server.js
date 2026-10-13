@@ -19,6 +19,7 @@ import 'dotenv/config';
 import { loadConfig } from './lib/config.js';
 import { Codes } from './lib/codes.js';
 import { FreeAI } from './lib/ai.js';
+import { FirebaseAuth } from './lib/firebase.js';
 const moduleRoot=path.dirname(fileURLToPath(import.meta.url));
 const asyncRoute=fn=>(req,res,next)=>Promise.resolve(fn(req,res,next)).catch(next);
 const emailValue=value=>typeof value==='string'&&value.trim().length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())?value.trim().toLowerCase():null;
@@ -31,8 +32,10 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  CREATE TABLE IF NOT EXISTS chats(id TEXT NOT NULL,user_id INTEGER NOT NULL,title TEXT DEFAULT '',messages TEXT DEFAULT '[]',updated_at INTEGER,pinned INTEGER DEFAULT 0,PRIMARY KEY(id,user_id),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
  CREATE INDEX IF NOT EXISTS idx_chats_user ON chats(user_id);`);
  if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='token_version'))db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 0');
+ if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='firebase_uid'))db.exec('ALTER TABLE users ADD COLUMN firebase_uid TEXT');
+ db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid) WHERE firebase_uid IS NOT NULL');
  db.exec('DROP TABLE IF EXISTS reset_codes; DROP TABLE IF EXISTS verify_codes;');
- const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),app=express();
+ const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),firebase=new FirebaseAuth(config,fetchImpl),app=express();
  app.disable('x-powered-by');if(config.trustProxy!==false){if(!Number.isInteger(config.trustProxy)||config.trustProxy<1)throw new Error('TRUST_PROXY must be a trusted hop count');app.set('trust proxy',config.trustProxy);}
  app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
  const ownOrigin=req=>req.protocol+'://'+req.get('host');
@@ -48,12 +51,15 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const authLimit=rateLimit({windowMs:15*60000,max:30,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много попыток. Попробуйте позже.'}});
  const mailLimit=rateLimit({windowMs:3600000,max:8,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Лимит отправки писем. Попробуйте позже.'}});
  const chatLimit=rateLimit({windowMs:60000,max:20,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Лимит запросов к ИИ. Попробуйте позже.'}});
- function issueSession(res,user){const token=jwt.sign({id:user.id,v:user.token_version||0},config.jwtSecret,{algorithm:'HS256',issuer:'pongy-server',audience:'pongy-web',expiresIn:'7d'});res.cookie('pongy_session',token,cookieOptions);}
- function auth(req,res,next){
+ function issueSession(res,user,options={}){const claims={id:user.id,v:user.token_version||0};if(options.refreshToken){claims.fuid=user.firebase_uid;claims.fr=firebase.seal(options.refreshToken,user.firebase_uid);}else if(options.google)claims.google=user.google_id;const token=jwt.sign(claims,config.jwtSecret,{algorithm:'HS256',issuer:'pongy-server',audience:'pongy-web',expiresIn:'7d'});res.cookie('pongy_session',token,cookieOptions);}
+ const auth=asyncRoute(async(req,res,next)=>{
   const header=req.get('authorization'),token=header?(header.startsWith('Bearer ')?header.slice(7):''):req.cookies.pongy_session;
   if(!token)return res.status(401).json({error:'Войдите в аккаунт'});
-  try{const claim=jwt.verify(token,config.jwtSecret,{algorithms:['HS256'],issuer:'pongy-server',audience:'pongy-web'});if(!Number.isSafeInteger(claim.id))throw new Error();const user=db.prepare('SELECT * FROM users WHERE id=?').get(claim.id);if(!user||claim.v!==user.token_version)throw new Error();req.user=user;res.set('Cache-Control','no-store');next();}catch{return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});}
- }
+  let claim,user;try{claim=jwt.verify(token,config.jwtSecret,{algorithms:['HS256'],issuer:'pongy-server',audience:'pongy-web'});if(!Number.isSafeInteger(claim.id))throw new Error();user=db.prepare('SELECT * FROM users WHERE id=?').get(claim.id);if(!user||claim.v!==user.token_version)throw new Error();if(user.firebase_uid&&!(claim.google&&claim.google===user.google_id)&&(!claim.fr||claim.fuid!==user.firebase_uid))throw new Error();}catch{return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});}
+  if(claim.fr){if(!firebase.enabled)return res.status(503).json({error:'Настройки Firebase временно недоступны.'});try{const checked=await firebase.checkSession(claim.fr,user.firebase_uid,user.email);if(checked.refreshToken!==checked.previous){const renewed=jwt.sign({...claim,fr:firebase.seal(checked.refreshToken,user.firebase_uid)},config.jwtSecret,{algorithm:'HS256'});res.cookie('pongy_session',renewed,{...cookieOptions,maxAge:Math.max(0,claim.exp*1000-Date.now())});}}catch(error){if(error.status===401)res.clearCookie('pongy_session',{...cookieOptions,maxAge:undefined});throw error;}}
+  if(db.prepare('SELECT token_version FROM users WHERE id=?').get(user.id)?.token_version!==claim.v)return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});
+  req.user=user;res.set('Cache-Control','no-store');next();
+ });
  async function mail(to,subject,code){
   if(!config.resendKey||!config.mailFrom)throw Object.assign(new Error('Отправка почты не настроена владельцем сервера.'),{status:503});
   const response=await fetchImpl('https://api.resend.com/emails',{method:'POST',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+config.resendKey},body:JSON.stringify({from:config.mailFrom,to:[to],subject,html:'<p>Pongy AI</p><p>Ваш код: <strong>'+code+'</strong></p><p>Действует 10 минут. Никому не сообщайте код.</p>'})});
@@ -61,9 +67,14 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }
  const registrationEmailLimit=new Map();
  function sendCooldown(email){const until=registrationEmailLimit.get(email)||0;if(until>now())return false;if(registrationEmailLimit.size>=10000)for(const [key,time]of registrationEmailLimit)if(time<=now())registrationEmailLimit.delete(key);if(registrationEmailLimit.size>=10000)return false;registrationEmailLimit.set(email,now()+60000);return true;}
- app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:!!config.openrouterKey,emailConfigured:!!(config.resendKey&&config.mailFrom),googleEnabled:!!(config.googleId&&config.googleSecret),paymentsEnabled:false,plusPrice:190,currency:'RUB'}));
+ app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:!!config.openrouterKey,emailConfigured:firebase.enabled||!!(config.resendKey&&config.mailFrom),authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),paymentsEnabled:false,plusPrice:190,currency:'RUB'}));
  app.get('/healthz',(_req,res)=>res.json({status:'ok'}));
+ function firebaseRequired(_req,res,next){if(!firebase.enabled)return res.status(503).json({error:'Firebase ещё не настроен.'});next();}
+ app.post('/api/firebase/register',authLimit,mailLimit,firebaseRequired,asyncRoute(async(req,res)=>{const email=emailValue(req.body?.email),password=req.body?.password;if(!email||!validPassword(password))return res.status(400).json({error:'Укажите почту и пароль: минимум 8 символов, максимум 72 байта.'});if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой.'});res.json(await firebase.signup(email,password,req.body.locale));}));
+ app.post('/api/firebase/resend-verification',authLimit,mailLimit,firebaseRequired,asyncRoute(async(req,res)=>{const email=emailValue(req.body?.email),password=req.body?.password;if(!email||typeof password!=='string'||Buffer.byteLength(password)>72)return res.status(400).json({error:'Укажите почту и пароль для повторной отправки.'});if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой.'});res.json(await firebase.resend(email,password,req.body.locale));}));
+ app.post('/api/firebase/password-reset',authLimit,mailLimit,firebaseRequired,asyncRoute(async(req,res)=>{const email=emailValue(req.body?.email);if(!email)return res.status(400).json({error:'Укажите корректную почту.'});if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой.'});res.json(await firebase.reset(email,req.body.locale));}));
  app.post('/api/register/send-code',authLimit,mailLimit,asyncRoute(async(req,res)=>{
+  if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email);if(!email)return res.status(400).json({error:'Укажите корректную почту'});
   if(!config.resendKey||!config.mailFrom)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
   if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой'});
@@ -73,6 +84,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   try{await mail(email,'Pongy AI — подтверждение почты',code);}catch(e){codes.consume('register',email);throw e;}res.json({ok:true});
  }));
  app.post('/api/register',authLimit,asyncRoute(async(req,res)=>{
+  if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email),password=req.body?.password,code=req.body?.code;
   if(!email||!validPassword(password)||typeof code!=='string'||!/^\d{6}$/.test(code))return res.status(400).json({error:'Проверьте почту, код и пароль: минимум 8 символов, максимум 72 байта'});
   if(!codes.verify('register',email,code))return res.status(400).json({error:'Код неверен, просрочен или исчерпан лимит попыток'});
@@ -81,21 +93,31 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }));
  app.post('/api/login',authLimit,asyncRoute(async(req,res)=>{
   const email=emailValue(req.body?.email),password=req.body?.password;if(!email||typeof password!=='string'||Buffer.byteLength(password)>72)return res.status(400).json({error:'Некорректные данные входа'});
-  const user=db.prepare('SELECT * FROM users WHERE email=?').get(email);
-  const match=await bcrypt.compare(password,user?.password||dummyHash);if(!user?.password||!match)return res.status(401).json({error:'Неверная почта или пароль'});issueSession(res,user);res.json({authenticated:true,user:publicUser(user)});
+  let user=db.prepare('SELECT * FROM users WHERE email=?').get(email);
+  const legacyMatch=!user?.firebase_uid&&user?.password&&await bcrypt.compare(password,user.password);
+  if(!firebase.enabled&&legacyMatch){issueSession(res,user);return res.json({authenticated:true,user:publicUser(user)});}
+  if(firebase.enabled){let session;try{session=await firebase.signIn(email,password);}catch(error){if(legacyMatch&&(error.code==='INVALID_CREDENTIALS'||error.status===503)){issueSession(res,user);return res.json({authenticated:true,user:publicUser(user)});}throw error;}if(session.user.emailVerified!==true)return res.status(403).json({error:'Подтвердите почту по ссылке из письма, затем войдите.',code:'EMAIL_NOT_VERIFIED'});
+   user=db.transaction(()=>{let existing=db.prepare('SELECT * FROM users WHERE firebase_uid=?').get(session.user.localId)||db.prepare('SELECT * FROM users WHERE email=?').get(email);if(existing?.firebase_uid&&existing.firebase_uid!==session.user.localId)throw Object.assign(new Error('Не удалось связать аккаунт.'),{status:409});
+    if(!existing){const info=db.prepare('INSERT INTO users(email,email_verified,firebase_uid) VALUES(?,1,?)').run(email,session.user.localId);existing=db.prepare('SELECT * FROM users WHERE id=?').get(info.lastInsertRowid);}else if(!existing.firebase_uid){db.prepare('UPDATE users SET firebase_uid=?,password=NULL,email_verified=1,token_version=token_version+1 WHERE id=?').run(session.user.localId,existing.id);existing=db.prepare('SELECT * FROM users WHERE id=?').get(existing.id);}else if(existing.email!==email){const conflict=db.prepare('SELECT id FROM users WHERE email=? AND id<>?').get(email,existing.id);if(conflict)throw Object.assign(new Error('Этот адрес уже связан с другим аккаунтом.'),{status:409});db.prepare('UPDATE users SET email=?,token_version=token_version+1 WHERE id=?').run(email,existing.id);existing=db.prepare('SELECT * FROM users WHERE id=?').get(existing.id);}return existing;
+   })();issueSession(res,user,{refreshToken:session.refreshToken});return res.json({authenticated:true,user:publicUser(user)});
+  }
+  await bcrypt.compare(password,dummyHash);return res.status(401).json({error:'Неверная почта или пароль'});
  }));
  app.post('/api/logout',auth,(req,res)=>{db.prepare('UPDATE users SET token_version=token_version+1 WHERE id=?').run(req.user.id);res.clearCookie('pongy_session',{...cookieOptions,maxAge:undefined});res.json({ok:true});});
  app.get('/api/me',auth,(req,res)=>res.json(publicUser(req.user)));
  app.put('/api/me',auth,(req,res)=>{const nickname=req.body?.nickname;if(typeof nickname!=='string'||nickname.length>32)return res.status(400).json({error:'Никнейм должен содержать не более 32 символов'});db.prepare('UPDATE users SET nickname=? WHERE id=?').run(nickname,req.user.id);res.json({ok:true});});
  app.post('/api/password/send-code',authLimit,mailLimit,asyncRoute(async(req,res)=>{
+  if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email);if(!email)return res.status(400).json({error:'Укажите корректную почту'});
   if(!config.resendKey||!config.mailFrom)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
   if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой'});
   if(db.prepare('SELECT id FROM users WHERE email=?').get(email)){const code=codes.issue('reset',email);if(!code)return res.status(429).json({error:'Подождите минуту'});try{await mail(email,'Pongy AI — восстановление пароля',code);}catch(e){codes.consume('reset',email);throw e;}}
   res.json({ok:true});
  }));
- app.post('/api/password/verify-code',authLimit,(req,res)=>{const email=emailValue(req.body?.email),code=req.body?.code;if(!email||typeof code!=='string'||!/^\d{6}$/.test(code)||!codes.verify('reset',email,code))return res.status(400).json({error:'Код неверен, просрочен или исчерпан лимит попыток'});res.json({ok:true});});
+ app.post('/api/password/verify-code',authLimit,(req,res)=>{
+  if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});const email=emailValue(req.body?.email),code=req.body?.code;if(!email||typeof code!=='string'||!/^\d{6}$/.test(code)||!codes.verify('reset',email,code))return res.status(400).json({error:'Код неверен, просрочен или исчерпан лимит попыток'});res.json({ok:true});});
  app.post('/api/password/reset',authLimit,asyncRoute(async(req,res)=>{
+  if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email),code=req.body?.code,password=req.body?.newPassword;
   if(!email||!validPassword(password)||typeof code!=='string'||!/^\d{6}$/.test(code))return res.status(400).json({error:'Проверьте почту, код и новый пароль'});
   if(!db.transaction(()=>{if(!codes.verify('reset',email,code))return false;codes.consume('reset',email);return true;})())return res.status(400).json({error:'Код неверен, просрочен или исчерпан лимит попыток'});
@@ -133,12 +155,12 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
    }catch(e){done(e);}
   }));
   app.get('/auth/google',passport.authenticate('google',{scope:['profile','email'],session:false}));
-  app.get('/auth/google/callback',(req,res,next)=>passport.authenticate('google',{session:false},(err,user)=>{if(err||!user)return res.redirect(config.frontendUrl+'/?google_error=login_failed');issueSession(res,user);req.session.destroy(()=>res.redirect(config.frontendUrl+'/?google_login=success'));})(req,res,next));
+  app.get('/auth/google/callback',(req,res,next)=>passport.authenticate('google',{session:false},(err,user)=>{if(err||!user)return res.redirect(config.frontendUrl+'/?google_error=login_failed');issueSession(res,user,{google:true});req.session.destroy(()=>res.redirect(config.frontendUrl+'/?google_login=success'));})(req,res,next));
  }else app.get(['/auth/google','/auth/google/callback'],(_req,res)=>res.status(503).json({error:'Вход через Google ещё не настроен.'}));
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:config.publicApiOrigin}).replace(/</g,'\\u003c')+';'));
  app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){if(p.endsWith('.html'))res.setHeader('Cache-Control','no-cache');}}));
  app.use((_req,res)=>res.status(404).json({error:'Не найдено'}));
- app.use((err,_req,res,_next)=>{if(res.headersSent){res.end();return;}const status=err.type==='entity.too.large'?413:err instanceof SyntaxError?400:err.status||500;res.status(status).json({error:status>=500?'Сервис временно недоступен. Проверьте настройки сервера.':status===413?'Слишком большой запрос':status===400?'Некорректный запрос':err.message});});
+ app.use((err,_req,res,_next)=>{if(res.headersSent){res.end();return;}const status=err.type==='entity.too.large'?413:err instanceof SyntaxError?400:err.status||500;res.status(status).json({error:status>=500?'Сервис временно недоступен. Проверьте настройки сервера.':status===413?'Слишком большой запрос':status===400?'Некорректный запрос':err.message,...(err.code&&String(err.code).startsWith('FIREBASE')?{code:err.code}:{})});});
  return {app,db,ai,codes,close(){db.close();}};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){

@@ -1,3 +1,18 @@
+# 1.2.0 — Firebase email/password authentication
+
+- Added server-side Firebase REST signup, email-link verification, resend and reset.
+- Preserved Google OAuth and legacy accounts; verified-email linking retains chats.
+- Removed old password fallback after Firebase linking; remote refresh validation
+  invalidates revoked Firebase-password sessions. Refresh credentials are encrypted.
+- Added link-based UI notices, accessible resend controls, mobile and error states.
+- Firebase mode requires FIREBASE_API_KEY and FIREBASE_PROJECT_ID in server env.
+- No production deployment or real-email delivery test was performed.
+
+Validation: 44 automated tests and 46 browser assertions passed with local
+fixtures. Verification/reset forms were inspected on desktop, mobile, short
+viewports and dark mode. Production dependency audit reported zero known
+vulnerabilities at checking time. Real Firebase mail delivery remains untested.
+
 # 1.1.1 — sidebar controls and split deployment
 
 - Removed opaque gradient and button hover backgrounds from chat actions.
