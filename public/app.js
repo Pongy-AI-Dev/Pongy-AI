@@ -56,18 +56,23 @@ var activeId=null;
 var state={streaming:false,smart:true,search:false,abort:null,agent:'low',thinking:'middle',query:'',renaming:null,sidebarHidden:load('pongy_sidebar_hidden',false),excluded:[]};
 
 function t(){return T[settings.lang]||T.en}
-function api(path,opts){var epoch=authEpoch;opts=opts||{};opts.credentials='include';opts.headers=opts.headers||{};if(opts.body&&typeof opts.body!=='string'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(API_URL+path,opts).then(async function(r){var result;try{result=await r.json()}catch(e){throw new Error('Некорректный ответ сервера')}if(!r.ok){if(r.status===401&&path!=='/api/login'&&epoch===authEpoch){authToken='';currentUser=null;chats=[];activeId=null;localStorage.removeItem('pongy_authenticated');localStorage.removeItem('pongy_cached_user');$('messages').textContent='';$('chatList').textContent='';showAuth()}throw new Error(result.error||'HTTP '+r.status)}return result})}
+function api(path,opts){var epoch=authEpoch;opts=opts||{};opts.credentials='include';opts.headers=opts.headers||{};if(opts.body&&typeof opts.body!=='string'){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(opts.body)}return fetch(API_URL+path,opts).then(async function(r){var result;try{result=await r.json()}catch(e){throw new Error('Некорректный ответ сервера')}if(!r.ok){if(r.status===401&&path!=='/api/login'&&epoch===authEpoch){authToken='';currentUser=null;chats=[];activeId=null;localStorage.removeItem('pongy_authenticated');localStorage.removeItem('pongy_cached_user');$('messages').textContent='';$('chatList').textContent='';showAuth()}var error=new Error(result.error||'HTTP '+r.status);error.code=result.code;throw error}return result})}
 
 
+var authProvider='loading';
+$('authBtn').disabled=true;$('googleBtn').disabled=true;
+function authText(ru,en){return settings.lang==='ru'?ru:en}
+function showFirebaseNotice(message){$('firebaseVerifyText').textContent=message;$('firebaseVerifyNotice').hidden=false}
+function firebaseVerificationMessage(){return authText('Письмо подтверждения отправлено. Откройте ссылку в письме, затем вернитесь сюда и войдите. Проверьте также папку «Спам».','Verification email sent. Open the link, then return here and sign in. Check your spam folder too.')}
 function showAuth(){$('sidebar').inert=true;$('main').inert=true;$('authScreen').classList.add('show');$('authLogo').innerHTML=logo()}
 function hideAuth(){$('authScreen').classList.remove('show');$('sidebar').inert=false;$('main').inert=false}
 function setAuthError(msg){var e=$('authError');if(msg){e.textContent=msg;e.style.display='block'}else{e.style.display='none'}}
 function setAuthMode(mode){
-authMode=mode;$('authPassword').placeholder=mode==='login'?'Password':'Password (min. 8)';
-$('authSubtitle').textContent=mode==='login'?'Sign in to continue':'Create your account';
-$('authBtn').textContent=mode==='login'?'Sign in':'Continue';
-$('authSwitchText').textContent=mode==='login'?'No account?':'Already have an account?';
-$('authSwitch').textContent=mode==='login'?'Sign up':'Sign in';
+authMode=mode;$('authPassword').autocomplete=mode==='register'?'new-password':'current-password';$('authPassword').placeholder=mode==='login'?authText('Пароль','Password'):authText('Пароль (минимум 8 символов)','Password (min. 8)');$('authPassword2').placeholder=authText('Повторите пароль','Confirm password');
+$('authSubtitle').textContent=mode==='login'?authText('Войдите, чтобы продолжить','Sign in to continue'):authText('Создайте аккаунт','Create your account');
+$('authBtn').textContent=mode==='login'?authText('Войти','Sign in'):authText('Создать аккаунт','Create account');
+$('authSwitchText').textContent=mode==='login'?authText('Нет аккаунта?','No account?'):authText('Уже есть аккаунт?','Already have an account?');
+$('authSwitch').textContent=mode==='login'?authText('Зарегистрироваться','Sign up'):authText('Войти','Sign in');$('forgotPasswordBtn').textContent=authText('Забыли пароль?','Forgot password?');$('googleBtn').lastChild.textContent=authText('Войти через Google','Continue with Google');var support=$('authScreen').querySelector('a[href^="mailto:"]');if(support)support.textContent=authText('Нужна помощь со входом? Поддержка','Trouble signing in? Support');
 $('authPass2Wrap').style.display=mode==='register'?'block':'none';
 $('forgotPasswordBtn').style.display=mode==='login'?'inline':'none';
 }
@@ -82,7 +87,7 @@ function toggleEye(id,iconId){var i=$(id),c=$(iconId);if(i.type==='password'){i.
 
 $('eyeAuth').onclick=function(){toggleEye('authPassword','eyeAuthIcon')};
 $('eyeAuth2').onclick=function(){toggleEye('authPassword2','eyeAuthIcon2')};
-$('authSwitch').onclick=function(){setAuthMode(authMode==='login'?'register':'login')};
+$('authSwitch').onclick=function(){$('firebaseVerifyNotice').hidden=true;setAuthError('');setAuthMode(authMode==='login'?'register':'login')};
 $('googleBtn').onclick=function(){location.href=API_URL+'/auth/google'};
 $('authCodeBack').onclick=function(){showAuthStep('fields');setAuthError('')};
 $('forgotPasswordBtn').onclick=openReset;
@@ -90,27 +95,28 @@ $('forgotPasswordBtn').onclick=openReset;
 $('authBtn').onclick=function(){++authEpoch;
 var btn=this,email=$('authEmail').value.trim(),pass=$('authPassword').value;
 setAuthError('');
-if(!email||!pass){setAuthError('Enter email and password');return}
-if(pass.length<(authMode==='register'?8:6)){setAuthError(authMode==='register'?'Password must be at least 8 characters':'Enter your password');return}
+if(authProvider==='loading'){setAuthError(authText('Настройки сервера ещё загружаются.','Server settings are still loading.'));return}
+if(!email||!pass){setAuthError(authText('Введите почту и пароль.','Enter email and password.'));return}
+if(pass.length<(authMode==='register'?8:6)){setAuthError(authMode==='register'?authText('Пароль должен содержать минимум 8 символов.','Password must be at least 8 characters.'):authText('Введите пароль.','Enter your password.'));return}
 if(authMode==='register'){
-var p2=$('authPassword2').value;
-if(pass!==p2){setAuthError('Passwords do not match');return}
-if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAuthError('Enter a valid email');return}
-btn.disabled=true;btn.textContent='Sending…';
-fetch(API_URL+'/api/register/send-code',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
-.then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error);return j})})
-.then(function(){pendingEmail=email;pendingPassword=pass;$('authCodeEmail').textContent=email;showAuthStep('code');$('authCode').value='';$('authCode').focus();startCodeTimer()})
-.catch(function(e){setAuthError(e.message)})
-.finally(function(){btn.disabled=false;btn.textContent='Continue'});
+ if(pass!==$('authPassword2').value){setAuthError(authText('Пароли не совпадают.','Passwords do not match.'));return}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAuthError(authText('Введите корректную почту.','Enter a valid email.'));return}
+ btn.disabled=true;btn.textContent=authText('Отправляем…','Sending…');
+ var request=authProvider==='firebase'?api('/api/firebase/register',{method:'POST',body:{email:email,password:pass,locale:settings.lang}}):api('/api/register/send-code',{method:'POST',body:{email:email}});
+ request.then(function(){
+  if(authProvider==='firebase'){pendingPassword='';$('authPassword').value='';$('authPassword2').value='';setAuthMode('login');showAuthStep('fields');showFirebaseNotice(firebaseVerificationMessage());}
+  else{pendingEmail=email;pendingPassword=pass;$('authCodeEmail').textContent=email;showAuthStep('code');$('authCode').value='';$('authCode').focus();startCodeTimer()}
+ }).catch(function(e){setAuthError(e.message)}).finally(function(){btn.disabled=false;btn.textContent=authMode==='login'?authText('Войти','Sign in'):authText('Создать аккаунт','Create account')});
 }else{
-btn.disabled=true;btn.textContent='Signing in…';
-api('/api/login',{method:'POST',body:{email:email,password:pass,deviceId:DEVICE_ID}})
-.then(function(d){pendingPassword='';$('authPassword').value='';$('authPassword2').value='';authToken='cookie';localStorage.setItem('pongy_authenticated','true');currentUser=d.user;save('pongy_cached_user',d.user);return loadChats()})
-.then(function(){hideAuth();afterLogin()})
-.catch(function(e){setAuthError(e.message)})
-.finally(function(){btn.disabled=false;btn.textContent='Sign in'});
+ btn.disabled=true;btn.textContent=authText('Входим…','Signing in…');
+ api('/api/login',{method:'POST',body:{email:email,password:pass,deviceId:DEVICE_ID}})
+ .then(function(d){pendingPassword='';$('authPassword').value='';$('authPassword2').value='';$('firebaseVerifyNotice').hidden=true;authToken='cookie';localStorage.setItem('pongy_authenticated','true');currentUser=d.user;save('pongy_cached_user',d.user);return loadChats()})
+ .then(function(){hideAuth();afterLogin()})
+ .catch(function(e){setAuthError(e.message);if(e.code==='EMAIL_NOT_VERIFIED')showFirebaseNotice(authText('Подтвердите почту по ссылке из письма. При необходимости запросите новое письмо кнопкой ниже.','Verify your email using the link. You can request another email below.'))})
+ .finally(function(){btn.disabled=false;btn.textContent=authText('Войти','Sign in')});
 }
 };
+$('firebaseResendBtn').onclick=function(){var button=this,email=$('authEmail').value.trim(),password=$('authPassword').value;if(!email||!password){setAuthError(authText('Введите почту и пароль, затем нажмите «Отправить письмо повторно».','Enter email and password, then resend the verification email.'));return}button.disabled=true;setAuthError('');api('/api/firebase/resend-verification',{method:'POST',body:{email:email,password:password,locale:settings.lang}}).then(function(result){$('authPassword').value='';showFirebaseNotice(result.alreadyVerified?authText('Почта уже подтверждена. Введите пароль и войдите.','Email already verified. Enter your password and sign in.'):firebaseVerificationMessage())}).catch(function(e){setAuthError(e.message)}).finally(function(){button.disabled=false})};
 $('authCodeResend').onclick=function(){fetch(API_URL+'/api/register/send-code',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:pendingEmail})}).then(function(r){return r.json()}).then(function(j){if(j.error)setAuthError(j.error);else startCodeTimer()})};
 $('authCodeBtn').onclick=function(){
 var btn=this,code=$('authCode').value.trim();
@@ -513,12 +519,17 @@ $('guideModal').onclick=function(e){if(e.target===this)this.classList.remove('op
 function showConfirm(title,text,yes,no,onYes){$('confirmTitle').textContent=title;$('confirmText').textContent=text;$('confirmYes').textContent=yes;$('confirmNo').textContent=no;$('confirmModal').classList.add('open');var y=$('confirmYes'),n=$('confirmNo');function close(){$('confirmModal').classList.remove('open');y.onclick=null;n.onclick=null}y.onclick=function(){close();onYes()};n.onclick=close;$('confirmModal').onclick=function(e){if(e.target===this)close()}}
 
 var resetEmail='',resetCode='',resetTimerInt=null;
-function openReset(){$('resetModal').classList.add('open');$('authScreen').inert=true;showResetStep(1);setAuthError('');$('resetEmail').focus()}
+function openReset(){$('resetTitle').textContent=authText('Восстановление пароля','Reset password');$('resetEmailLabel').textContent=authText('Введите вашу почту','Enter your email');$('resetFirebaseNotice').hidden=true;$('resetErr1').style.display='none';$('sendCodeBtn').textContent=authProvider==='firebase'?authText('Отправить ссылку','Send reset link'):'Send code';$('resetModal').classList.add('open');$('authScreen').inert=true;showResetStep(1);setAuthError('');$('resetEmail').focus()}
 function closeReset(){$('resetModal').classList.remove('open');$('authScreen').inert=false;if(resetTimerInt)clearInterval(resetTimerInt);['resetCode','newPass1','newPass2'].forEach(function(id){$(id).value=''})}
 function showResetStep(n){$('resetStep1').style.display=n===1?'block':'none';$('resetStep2').style.display=n===2?'block':'none';$('resetStep3').style.display=n===3?'block':'none'}
 $('closeReset').onclick=closeReset;
 $('resetModal').onclick=function(e){if(e.target===this)closeReset()};
-$('sendCodeBtn').onclick=function(){var email=$('resetEmail').value.trim(),err=$('resetErr1');err.style.display='none';if(!email){err.textContent='Enter email';err.style.display='block';return}this.disabled=true;this.textContent='Sending…';var self=this;fetch(API_URL+'/api/password/send-code',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error);return j})}).then(function(){resetEmail=email;showResetStep(2);startResetTimer();$('resetCode').focus()}).catch(function(e){err.textContent=e.message||'Error';err.style.display='block'}).finally(function(){self.disabled=false;self.textContent='Send code'})};
+$('sendCodeBtn').onclick=function(){var email=$('resetEmail').value.trim(),err=$('resetErr1');err.style.display='none';$('resetFirebaseNotice').hidden=true;if(!email){err.textContent=authText('Введите почту.','Enter email.');err.style.display='block';return}this.disabled=true;this.textContent=authText('Отправляем…','Sending…');var self=this;
+api(authProvider==='firebase'?'/api/firebase/password-reset':'/api/password/send-code',{method:'POST',body:{email:email,locale:settings.lang}}).then(function(){
+ if(authProvider==='firebase'){$('resetFirebaseNotice').textContent=authText('Если аккаунт с этой почтой существует в Firebase, придёт письмо со ссылкой для смены пароля. Откройте ссылку, задайте новый пароль и вернитесь на сайт. Для старого аккаунта без Firebase сначала используйте вход Google или перенесите аккаунт через регистрацию с той же почтой.','If this email has a Firebase account, a password reset link will arrive. Open it, set a new password, and return. Legacy accounts must first use Google sign-in or register the same email with Firebase.');$('resetFirebaseNotice').hidden=false;}
+ else{resetEmail=email;showResetStep(2);startResetTimer();$('resetCode').focus()}
+}).catch(function(e){err.textContent=e.message;err.style.display='block'}).finally(function(){self.disabled=false;self.textContent=authProvider==='firebase'?authText('Отправить ссылку','Send reset link'):'Send code'});
+};
 function startResetTimer(){var s=90,tm=$('resetTimer'),rs=$('resendCodeLink');if(resetTimerInt)clearInterval(resetTimerInt);rs.style.display='none';function tick(){if(s<=0){clearInterval(resetTimerInt);tm.textContent='';rs.style.display='block';return}var m=Math.floor(s/60),ss=s%60;tm.textContent='Resend in '+m+':'+(ss<10?'0':'')+ss;s--}tick();resetTimerInt=setInterval(tick,1000)}
 $('resendCodeLink').onclick=function(){api('/api/password/send-code',{method:'POST',body:{email:resetEmail}}).then(startResetTimer).catch(function(error){$('resetErr2').textContent=error.message;$('resetErr2').style.display='block'})};
 $('verifyCodeBtn').onclick=function(){var code=$('resetCode').value.trim(),err=$('resetErr2');err.style.display='none';if(!code){err.textContent='Enter code';err.style.display='block';return}var self=this;self.disabled=true;self.textContent='Checking…';fetch(API_URL+'/api/password/verify-code',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:resetEmail,code:code})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error);return j})}).then(function(){resetCode=code;if(resetTimerInt)clearInterval(resetTimerInt);showResetStep(3)}).catch(function(e){err.textContent=e.message;err.style.display='block'}).finally(function(){self.disabled=false;self.textContent='Confirm'})};
@@ -557,7 +568,7 @@ api('/api/me').then(function(user){authToken='cookie';localStorage.setItem('pong
 
 setInterval(function(){if(currentUser)renderChats()},60000);
 fetch(API_URL+'/api/config',{credentials:'include'}).then(function(r){return r.json()}).then(function(config){
- if(!config.googleEnabled){$('googleBtn').disabled=true;$('googleBtn').title='Вход Google ещё не настроен'}
+ authProvider=config.authProvider==='firebase'?'firebase':'legacy';$('authBtn').disabled=false;$('googleBtn').disabled=!config.googleEnabled;if(!config.googleEnabled)$('googleBtn').title='Вход Google ещё не настроен';setAuthMode(authMode);$('firebaseResendBtn').textContent=authText('Отправить письмо повторно','Resend verification email');
  if(!config.aiConfigured){$('footerText').textContent='ИИ ещё не настроен владельцем сервера. API-ключ пользователю вводить не нужно.'}
-}).catch(function(){});
+}).catch(function(){setAuthError(authText('Не удалось загрузить настройки сервера. Обновите страницу.','Unable to load server settings. Reload the page.'))});
 })();
