@@ -1,3 +1,14 @@
+# 1.4.4 — website description and sharing metadata
+
+- Added a product description for search engines and link previews.
+- Canonical URL, Open Graph and Twitter summary metadata use the public site and existing logo.
+- Description and preview labels follow the selected Russian/English interface language.
+- Includes the 1.4.3 icon corrections; no environment changes required.
+
+Validation: 85 automated tests and 118 Chromium UI assertions passed with fixtures; dependency audit reported no known production vulnerabilities.
+
+Search engines may choose a different snippet and update it after recrawling. Public availability checks do not replace authenticated or provider integration tests.
+
 # 1.4.3 — consistent branding and favicon compatibility
 
 - Authentication, sidebar and welcome screen now use the exact existing site favicon.
