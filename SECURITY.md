@@ -1,4 +1,4 @@
-# Security notes — 1.2.0
+# Security notes — 1.4.0
 
 - Only `public/` is exposed over HTTP; databases, source code, environment and
   generated secrets are outside it. CSP forbids inline JavaScript and framing.
@@ -43,3 +43,34 @@ Firebase mode:
 - Firebase uses hosted link verification/recovery, not the legacy six-digit routes.
   Quotas and delivery policies remain controlled by Firebase. No live credentials
   or real user accounts were used in the automated fixture tests.
+
+## Attachments and cloud storage
+
+- User-owned attachment IDs only; no remote URL fetching or executable file serving.
+- Images are validated by actual format, bounded and re-encoded without metadata.
+- PDF/DOCX extraction runs in isolated worker threads with time/memory bounds.
+  XML external entities are prohibited; archive expansion and entry counts are bounded.
+- Documents retain extracted text, not the original binary. PDF scans need image upload.
+- Firestore requests use Firebase ID tokens and per-UID verified-email security rules.
+  Refresh credentials stay encrypted inside HttpOnly JWTs, not in Firestore documents.
+- Cloud session records prevent local identity loss from accepting a different account
+  and persist per-session logout revocation. Stable server secrets remain mandatory.
+- Other-chat context is opt-in, own-account-only, limited to recent user messages.
+- Search is scoped to Wikipedia; source text is reference material, not instructions.
+- This does not guarantee that a model will always follow instructions or avoid errors.
+
+## Tool calls and generated files
+
+- Tool names, arguments, paths, action count and attachment count are bounded.
+- Generated code is stored for download, never executed. Downloads are account-scoped
+  and use attachment disposition; arbitrary generated HTML/SVG is not served inline.
+- ZIP parsing runs in the bounded document worker. Entry/expansion/size limits,
+  UTF-8 checks and traversal, symlink and encrypted-archive rejection apply.
+  Credentials and dependency folders are excluded from normalized archives.
+- Research links accept exact Wikipedia/Commons HTTPS hosts only. Photo embeds
+  accept upload.wikimedia.org only. Server does not fetch arbitrary model URLs.
+- Image generation is off by default and requires explicit owner configuration
+  and a user request. Paid-image quotas are in-process; set a provider key spending
+  limit separately. Quotas reset on restart and are not a billing guarantee.
+- Official image endpoint responses are bounded and image bytes revalidated.
+  Sources reflect retrieved material, not proof of model factual accuracy.

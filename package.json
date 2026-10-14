@@ -1,13 +1,13 @@
 {
   "name": "pongy-server",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "check": "node --check server.js && node --check public/app.js && node --check lib/ai.js && node --check public/app-config.js && node --check lib/firebase.js",
-    "test:ui": "node tests/ui.cjs && node tests/firebase-ui.cjs"
+    "check": "node --check server.js && node --check public/app.js && node --check public/app-config.js && node --check lib/ai.js && node --check lib/config.js && node --check lib/firebase.js && node --check lib/files.js && node --check lib/document-worker.js && node --check lib/store.js && node --check lib/search.js && node --check lib/archives.js && node --check lib/research.js && node --check lib/artifacts.js && node --check lib/tools.js",
+    "test:ui": "node tests/ui.cjs && node tests/firebase-ui.cjs && node tests/tools-ui.cjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,9 +21,15 @@
     "express-session": "^1.18.0",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.4.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "session-file-store": "^1.5.0"
+    "pdf-parse": "^2.4.5",
+    "saxes": "^6.0.0",
+    "session-file-store": "^1.5.0",
+    "sharp": "^0.35.5",
+    "yauzl": "^3.4.0",
+    "yazl": "^3.3.1"
   },
   "engines": {
     "node": ">=22"

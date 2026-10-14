@@ -1,3 +1,33 @@
+# 1.4.0 — ZIP, research and downloadable answers
+
+- ZIP upload and bounded text/code/document extraction; credential exclusions.
+- Wiki article cards and Wikimedia Commons photographs with author/license credits.
+- Collapsible, deduplicated “Источники (N)” listing tool-retrieved sources.
+- Tool-driven code/text files and ZIP projects attached to assistant messages.
+- Optional explicit-request image generation through OpenRouter, off by default.
+- Bottom notification for unsupported formats; attachment metadata persists in chats.
+- Existing Plus placeholder, authentication, cloud storage and UI retained.
+
+Validation: 65 automated tests and 78 Chromium browser assertions passed with fixtures.
+No production deployment or live provider image-generation test was performed.
+
+# 1.3.0 — chat, files and durable storage
+
+- First-party API routing and cookie session restoration on every page load.
+- Optional UID-scoped Firestore chats, preferences, attachments and revocable sessions.
+- Real image/document attachments; bounded PDF/DOCX workers and vision model selection.
+- Model-specific 403 fallback, clearer 401 key errors and malformed output retry.
+- Wikipedia source retrieval, reply preview and optional cross-chat user context.
+- Removed message avatars; fixed duplicate retry/edit messages and metadata alignment.
+- Date-based history, press/open/close animations, reduced-motion and mobile layout.
+- Restored original Plus benefits and payment choices; payment still unavailable.
+- Browser-engine CI added. Local checks use Chromium; Firefox/WebKit could not launch
+  in this sandbox because required system libraries are absent.
+
+Validation: 56 automated tests and 60 browser assertions passed with local fixtures.
+Production dependency audit: zero known vulnerabilities at checking time.
+No production deployment, live OAuth, live model quality or real-email test performed.
+
 # 1.2.0 — Firebase email/password authentication
 
 - Added server-side Firebase REST signup, email-link verification, resend and reset.
