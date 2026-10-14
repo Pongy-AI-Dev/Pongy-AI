@@ -27,10 +27,18 @@
 <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
 <link href="/app.css" rel="stylesheet"/>
 </head>
-<body>
+<body class="booting">
+<div id="sessionGate" role="status" aria-live="polite">
+<img class="gate-logo" src="/favicon.png" alt="Pongy AI" width="64" height="64"/>
+<span class="gate-spinner" aria-hidden="true"></span>
+<p id="sessionGateText">Проверяем сохранённую сессию…</p>
+<button id="sessionRetry" type="button" hidden>Повторить / Retry</button>
+</div>
+<noscript>Для Pongy AI включите JavaScript в браузере.</noscript>
+<button id="historyRetry" type="button" hidden>Повторить загрузку истории / Retry history</button>
 <div id="toast" role="status" aria-live="polite"></div>
 <div class="overlay-bd" id="overlay"></div>
-<div class="show" id="authScreen">
+<div id="authScreen">
 <div class="auth-box">
 <div style="text-align:center;margin-bottom:22px">
 <div id="authLogo" style="width:64px;height:64px;border-radius:18px;overflow:hidden;margin:0 auto 16px"><img class="app-logo" src="/favicon.png" alt="Pongy AI" width="512" height="512"/></div>
@@ -166,5 +174,6 @@ Continue with Google
 <div class="confirm-actions"><button class="confirm-btn secondary" id="confirmNo">Cancel</button><button class="confirm-btn primary" id="confirmYes">OK</button></div>
 </div>
 </div>
-<script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/app.js"></script></body>
+<script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script>
+<script src="/app.js"></script></body>
 </html>

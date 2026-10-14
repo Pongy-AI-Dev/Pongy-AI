@@ -231,3 +231,20 @@ button{transition:background-color .18s ease,color .18s ease,box-shadow .18s eas
 #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,12px);max-width:calc(100vw - 32px);width:max-content;padding:12px 18px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px rgba(0,0,0,.16);font-size:14px;line-height:1.5;z-index:600;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s}#toast.visible{opacity:1;visibility:visible;transform:translate(-50%,0)}#toast.leaving{opacity:0;transform:translate(-50%,10px)}@media(max-width:480px){.research-images{grid-template-columns:1fr}.source-list a{min-height:44px}.research-image img{height:200px}#toast{bottom:18px;width:calc(100vw - 32px);text-align:center}}
 
 #settingsModal #langGrid,#settingsModal #themeGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#settingsModal .opt{min-height:44px}#guideSections p{font-size:14px;line-height:1.6}#guideSections h4{font-size:16px;margin:20px 0 8px}#guideSections ul{padding-left:22px;margin:8px 0}#guideSections li{font-size:14px;line-height:1.6;margin:6px 0}
+/* Verified-session gate: never flash the login form while checking a saved cookie. */
+#sessionGate{display:none;position:fixed;inset:0;z-index:1200;background:var(--bg);color:var(--fg2);align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:24px;text-align:center;font-size:15px;line-height:1.5}
+body.booting #sessionGate{display:flex}body.booting #sidebar,body.booting #main,body.booting #authScreen{visibility:hidden;pointer-events:none}
+.gate-logo{width:64px;height:64px;border-radius:18px}.gate-spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:gateSpin .8s linear infinite}
+#sessionRetry{border:1px solid var(--border);border-radius:10px;padding:10px 18px;min-height:44px;background:var(--bg3);color:var(--accent)}#sessionRetry[hidden],#historyRetry[hidden]{display:none}
+#historyRetry{position:fixed;right:20px;bottom:110px;z-index:80;max-width:calc(100vw - 40px);border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--accent);padding:10px 14px;min-height:44px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+@keyframes gateSpin{to{transform:rotate(360deg)}}
+/* Transition colors, never dimensions or streamed paragraphs. */
+body,#sidebar,#main,.topbar,.input-area,.input-box,.sb-search-inner,.modal-box,.auth-box,.bubble,.opt,.attachment-chip,.sources-panel,.support-card,.auth-notice{transition:background-color .24s ease,color .24s ease,border-color .24s ease,box-shadow .2s ease}
+button,a,.chat-item,input,textarea{transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .15s ease}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(hover:hover){.opt:hover,.pay-method:hover,.agent-item:hover{background:var(--hover2)}.attachment-chip:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(99,102,241,.1)}.icon-btn:hover svg,.chat-act:hover svg{transform:scale(1.1)}button:not(:disabled):hover{filter:brightness(1.025)}}
+.icon-btn svg,.chat-act svg{transition:transform .18s ease}.language-transition{animation:languageShift .22s ease both}#authScreen.show .auth-box{animation:panelIn .22s ease both}.source-list:not([hidden]),#replyPreview:not([hidden]),.attachment-list{animation:subtleReveal .18s ease both}
+@keyframes languageShift{from{opacity:.75;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}@keyframes subtleReveal{from{opacity:.75;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+#sidebar{transition:width .25s ease,background-color .24s ease,color .24s ease,border-color .24s ease}
+@media(prefers-reduced-motion:reduce){#sidebar{transition:none!important}}
