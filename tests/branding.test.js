@@ -18,7 +18,7 @@ test('all brand surfaces reference one asset and head exposes browser/touch icon
  assert.match(js,/function logo\(\).*src="\/favicon\.png"/);assert(!js.includes('pongy-gradient-'));assert(!js.includes('var LOGO='));
 });
 test('public scripts do not evaluate strings',()=>{
- const files=['public/app.js','public/app-config.js','public/vendor/purify.min.js','public/index.html'];
+ const files=['public/app.js','public/app-config.js','public/persistence.js','public/vendor/purify.min.js','public/index.html'];
  for(const file of files){const code=fs.readFileSync(file,'utf8');assert(!/\beval\s*\(|\bnew\s+Function\s*\(|\bFunction\s*\(|set(?:Timeout|Interval)\s*\(\s*["'`]/.test(code),file+' contains dynamic evaluation');}
 });
 test('icons and robots are public; script CSP remains strict',async()=>{
