@@ -1,3 +1,15 @@
+# 1.4.2 — adaptive search, response speed and interface localization
+
+- Search is optional per question, not an automatic request before every answer.
+- Source links live in the expandable list; redundant web/Wiki cards removed.
+- Faster successful models are preferred by observed time to first response.
+- Unified Russian/English labels, settings, menus, password controls and Plus text.
+- Removed untranslated language placeholders rather than claiming ten translations.
+- Existing free-model fallback, Tavily basic mode and payment placeholder retained.
+
+Validation: 79 automated tests and 101 Chromium UI assertions passed with fixtures.
+Real provider response speed and tool-selection quality require deployment checks.
+
 # 1.4.1
 
 Bug fix, improvement of website stability, its structure, security, as well as minor improvements and refinement of the AI.

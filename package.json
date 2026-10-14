@@ -1,13 +1,13 @@
 {
   "name": "pongy-server",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node --check server.js && node --check public/app.js && node --check public/app-config.js && node --check lib/ai.js && node --check lib/config.js && node --check lib/firebase.js && node --check lib/files.js && node --check lib/document-worker.js && node --check lib/store.js && node --check lib/search.js && node --check lib/archives.js && node --check lib/research.js && node --check lib/artifacts.js && node --check lib/tools.js && node --check lib/web.js",
-    "test:ui": "node tests/ui.cjs && node tests/firebase-ui.cjs && node tests/tools-ui.cjs"
+    "test:ui": "node tests/ui.cjs && node tests/firebase-ui.cjs && node tests/tools-ui.cjs && node tests/i18n-ui.cjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

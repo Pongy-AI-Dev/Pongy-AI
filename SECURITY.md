@@ -1,4 +1,4 @@
-# Security notes — 1.4.1
+# Security notes — 1.4.2
 
 - Only `public/` is exposed over HTTP; databases, source code, environment and
   generated secrets are outside it. CSP forbids inline JavaScript and framing.
@@ -90,3 +90,7 @@ Tavily integration uses basic search with auto_parameters disabled. A configured
 Tavily key takes precedence over Brave; failed Tavily requests never automatically
 fall back to Brave. Keep the provider account on its free plan without pay-as-you-go
 if no charges are wanted; application code cannot enforce provider billing settings.
+
+Research tools are omitted for ordinary requests when Search is disabled. Enabling
+Search offers tools without forcing a network query. Model decisions remain
+probabilistic; this is not a guarantee of source use or factual accuracy.
