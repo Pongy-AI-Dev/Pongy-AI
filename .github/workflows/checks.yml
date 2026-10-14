@@ -14,3 +14,19 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+  browsers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        engine: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.engine }}
+      - run: npm run test:ui
+        env:
+          BROWSER_ENGINE: ${{ matrix.engine }}
