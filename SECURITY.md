@@ -77,7 +77,7 @@ Firebase mode:
 
 ## Public web reader
 
-- Brave Search key stays server-side and is sent only to its fixed API endpoint;
+- Tavily/Brave Search keys stay server-side and are sent only to their fixed API endpoints;
   automatic redirects on the keyed API request are prohibited.
 - Pages use HTTPS GET only, no user cookies/credentials and no JavaScript or forms.
 - All DNS results are checked against special/private IP ranges; a validated IP is
@@ -85,3 +85,8 @@ Firebase mode:
 - Each redirect is validated again; maximum three redirects, a 15-second deadline,
   one-megabyte body and text-only content types. Compressed responses are rejected.
 - No claim of full interactive-browser compatibility or prompt-injection immunity.
+
+Tavily integration uses basic search with auto_parameters disabled. A configured
+Tavily key takes precedence over Brave; failed Tavily requests never automatically
+fall back to Brave. Keep the provider account on its free plan without pay-as-you-go
+if no charges are wanted; application code cannot enforce provider billing settings.
