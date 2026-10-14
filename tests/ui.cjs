@@ -11,13 +11,14 @@ const fs=require('fs'),os=require('os'),path=require('path');
   if(url.endsWith('/models'))return new Response(JSON.stringify({data:[{id:'fixture-a:free',pricing:{prompt:'0',completion:'0'}},{id:'fixture-b:free',pricing:{prompt:'0',completion:'0'},architecture:{input_modalities:['text','image']}}]}));
   const payload=JSON.parse(opts.body);calls.push(payload);
   if(hold){return new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode(delta('First fragment')));release=()=>{controller.enqueue(new TextEncoder().encode(delta(' from the original conversation')+'data: [DONE]\n\n'));controller.close();};}}));}
+  if(payload.model==='fixture-b:free'&&payload.messages.at(-1)?.content==='Earth'&&!payload.messages.some(m=>m.role==='tool'))return new Response('data: '+JSON.stringify({choices:[{delta:{tool_calls:[{index:0,id:'earth-search',type:'function',function:{name:'web_search',arguments:JSON.stringify({query:'Earth'})}}]}}]})+'\n\ndata: [DONE]\n\n');
   if(payload.model==='fixture-a:free')return new Response(delta('Discarded fragment')+'data: {"error":{"message":"fixture failure"}}\n\n');
   return new Response(delta('Complete replacement. Literal "error" is normal text. **Bold**')+'data: [DONE]\n\n');
  };
  const runtime=createApp({config,fetchImpl});runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('fixture@example.test',bcrypt.hashSync('fixture-password',4));
  const server=await new Promise(resolve=>{const srv=runtime.app.listen(0,'127.0.0.1',()=>resolve(srv));}),base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,...(engineName==='chromium'&&process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']}),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
- page.on('pageerror',e=>errors.push(e.message));
+ page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error:',e.message)});
  // Test-only access to internal functions; production assets remain unchanged.
  await page.route('**/app.js',async route=>{let script=fs.readFileSync('public/app.js','utf8');const at=script.lastIndexOf('})();');script=script.slice(0,at)+'window.pongyTest={renderMd:renderMd,renderMsg:renderMsg};\n'+script.slice(at);await route.fulfill({contentType:'application/javascript',body:script});});
  try{
@@ -25,7 +26,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.screenshot({path:output+'/login-desktop.png'});
   await page.locator('#forgotPasswordBtn').click();
   if(!await page.locator('#resetModal').evaluate(e=>{const r=e.querySelector('.modal-box').getBoundingClientRect();return e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}))throw Error('password reset is hidden behind login');count++;
-  await page.locator('#resetEmail').fill('fixture@example.test');await page.locator('#sendCodeBtn').click();await page.waitForFunction(()=>document.querySelector('#resetErr1').textContent.includes('не настроена'));
+  await page.locator('#resetEmail').fill('fixture@example.test');await page.locator('#sendCodeBtn').click();await page.waitForFunction(()=>document.querySelector('#resetErr1').textContent.includes('not been configured'));
   if(!await page.locator('#resetStep1').isVisible()||await page.locator('#resetStep2').isVisible())throw Error('failed mail advanced reset form');count++;
   await page.screenshot({path:output+'/reset-unconfigured-desktop.png'});await page.locator('#closeReset').click();
 
@@ -65,6 +66,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.screenshot({path:output+'/new-features-desktop.png'});await page.setViewportSize({width:390,height:844});await page.waitForTimeout(250);await page.screenshot({path:output+'/new-features-mobile.png'});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('new features mobile overflow');count++;await page.setViewportSize({width:1280,height:800});
   const safe=await page.evaluate(()=>{const el=document.createElement('div');el.innerHTML=window.pongyTest.renderMd('<img src=x onerror=alert(1)> [bad](javascript:alert(1)) **safe**');return {danger:!!el.querySelector('img,script,[onerror]'),js:!!el.querySelector('[href^="javascript:"]'),bold:!!el.querySelector('strong')};});if(safe.danger||safe.js||!safe.bold)throw Error('unsafe Markdown');count++;
   const metaSafe=await page.evaluate(()=>{const el=window.pongyTest.renderMsg({role:'assistant',text:'test',meta:{retries:'<img src=x onerror=alert(1)>',startTime:1,endTime:2}},false,0);return !el.querySelector('img,[onerror]');});if(!metaSafe)throw Error('legacy metadata XSS');count++;
+  const sourcesOnly=await page.evaluate(()=>{const el=window.pongyTest.renderMsg({role:'assistant',text:'Answer [source](https://nodejs.org/en/docs) https://nodejs.org/en/docs',meta:{sources:[{title:'Node.js',url:'https://nodejs.org/en/docs'}],pages:[{title:'Node.js',url:'https://nodejs.org/en/docs',kind:'web'}]}},false,9);return !el.querySelector('.bubble a')&&!el.querySelector('.bubble').textContent.includes('https://')&&!el.querySelector('.wiki-card')&&el.querySelectorAll('.source-list a').length===1&&el.querySelector('.source-list').hidden;});if(!sourcesOnly)throw Error('sources escaped into answer text');count++;
   // Sidebar regressions: transparent controls, keyboard, title layout, theme, touch.
   const row=page.locator('.chat-item.active');
   await row.hover();
