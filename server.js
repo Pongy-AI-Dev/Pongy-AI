@@ -79,7 +79,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
    if(claim.fr){if(!firebase.enabled)return res.status(503).json({error:'Настройки Firebase временно недоступны.'});try{const checked=await firebase.checkSession(claim.fr,user.firebase_uid,user.email);req.firebaseIdToken=checked.idToken;if(checked.refreshToken!==checked.previous){const renewed=jwt.sign({...claim,fr:firebase.seal(checked.refreshToken,user.firebase_uid)},config.jwtSecret,{algorithm:'HS256'});res.cookie('pongy_session',renewed,{...cookieOptions,maxAge:Math.max(0,claim.exp*1000-Date.now())});}}catch(error){if(error.status===401)res.clearCookie('pongy_session',{...cookieOptions,maxAge:undefined});throw error;}}
    if(db.prepare('SELECT token_version FROM users WHERE id=?').get(user.id)?.token_version!==claim.v)return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});
   }
-  req.user=user;res.set('Cache-Control','no-store');next();
+  const expectedAccount=req.get('X-Pongy-Account');if(expectedAccount&&expectedAccount!==user.email.toLowerCase())return res.status(409).json({error:'Аккаунт изменился в другой вкладке. Обновите страницу.',code:'ACCOUNT_CHANGED'});req.user=user;res.set('Cache-Control','no-store');next();
  });
  async function mail(to,subject,code){
   if(!config.resendKey||!config.mailFrom)throw Object.assign(new Error('Отправка почты не настроена владельцем сервера.'),{status:503});

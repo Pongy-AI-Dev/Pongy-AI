@@ -1,3 +1,17 @@
+# 1.4.5 — session restoration, pending history and interface motion
+
+- Session gate replaces the premature login screen; valid cookies restore the main view before history finishes loading.
+- Temporary server/history errors no longer pretend that authentication has expired; explicit retry controls.
+- Account-scoped pending chat snapshots survive reloads and retry transient write failures.
+- Newer snapshots are not cleared by older acknowledgments; streamed replies are checkpointed locally.
+- Cross-tab account changes are checked before authenticated requests can read or save under the wrong account.
+- Concurrent Firebase session verification is shared only while in flight; subsequent requests still check revocation.
+- Smooth theme colors, language changes, controls, panels and new messages; reduced-motion respected.
+
+Validation: 95 automated tests and 137 Chromium UI assertions passed with fixtures, including reload recovery, failed history loads, temporary session errors, cross-account isolation and reduced motion. Production dependency audit: no known vulnerabilities. No live Google login or Firestore setup was performed.
+
+Durable history across Render deployments still requires Firestore or a persistent disk and stable secrets. Pending copies contain text and attachment metadata only, expire after seven days, and are removed after confirmation. No indefinite-login or instant-server-response guarantee.
+
 # 1.4.4 — website description and sharing metadata
 
 - Added a product description for search engines and link previews.

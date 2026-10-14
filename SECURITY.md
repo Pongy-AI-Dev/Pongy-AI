@@ -94,3 +94,11 @@ if no charges are wanted; application code cannot enforce provider billing setti
 Research tools are omitted for ordinary requests when Search is disabled. Enabling
 Search offers tools without forcing a network query. Model decisions remain
 probabilistic; this is not a guarantee of source use or factual accuracy.
+
+## 1.4.5 sessions and pending writes
+
+No JWT, passwords or Firebase refresh tokens are stored in browser localStorage. The unsent-chat queue temporarily stores plaintext message snapshots and attachment metadata, scoped to the server-verified email account. It is intended for a trusted personal browser, not encrypted storage; confirmed writes are removed and stale entries stop replaying after seven days. Quota/storage failures are visible and require keeping the page open. Clearing browser data removes pending recovery copies.
+
+Private UI is not rendered using a cached authenticated flag. The server checks its HttpOnly cookie first; a 503 does not become a 401. X-Pongy-Account detects a changed cookie identity before delayed frontend operations can affect the wrong account. It is a consistency guard, not an authentication credential.
+
+Concurrent Firebase verification uses an in-flight promise only. No successful verdict is cached after completion; later requests validate again, including revocation. CSP remains strict and reduced-motion disables interface animations.
