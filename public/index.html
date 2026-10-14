@@ -10,6 +10,7 @@
 <link href="/app.css" rel="stylesheet"/>
 </head>
 <body>
+<div id="toast" role="status" aria-live="polite"></div>
 <div class="overlay-bd" id="overlay"></div>
 <div class="show" id="authScreen">
 <div class="auth-box">
@@ -90,8 +91,9 @@ Continue with Google
 <button class="mode-btn" id="agentBtn"><svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14"><rect height="12" rx="3" width="16" x="4" y="7"></rect><circle cx="9" cy="13" fill="currentColor" r="1.5"></circle><circle cx="15" cy="13" fill="currentColor" r="1.5"></circle><path d="M12 3v4"></path></svg><span id="agentLabel" style="font-size:11px;opacity:.85">Agent: Pongy AI V1.0 Low</span></button>
 <div id="agentPopup" style="position:absolute;bottom:calc(100% + 8px);left:0;min-width:320px;background:var(--bg);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:8px;z-index:60;display:none"></div>
 </div>
+<div id="replyPreview" hidden="" role="status"></div><div id="attachmentPreview" class="attachment-list"></div>
 <div class="input-box">
-<input hidden="" id="fileInput" multiple="" type="file"/>
+<input hidden="" id="fileInput" accept=".zip,.png,.jpg,.jpeg,.webp,.txt,.md,.csv,.json,.log,.pdf,.docx,.js,.mjs,.cjs,.ts,.tsx,.jsx,.html,.htm,.css,.scss,.py,.sql,.yaml,.yml,.xml,.svg,.sh,.bat,.ps1,.c,.cpp,.h,.java,.rs,.go,.rb,.php,.swift,.kt,.ipynb,.toml,.ini" multiple="" type="file"/>
 <button id="attachBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path></svg></button>
 <textarea id="userInput" placeholder="Ask Pongy your first question" rows="1"></textarea>
 <button id="micBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><rect height="12" rx="3" width="6" x="9" y="2"></rect><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3M8 22h8"></path></svg></button>
@@ -108,6 +110,7 @@ Continue with Google
 <div class="modal-body">
 <div style="margin-bottom:18px"><div class="field-label" id="langLabel">Language</div><div class="grid2" id="langGrid"></div></div>
 <div style="margin-bottom:18px"><div class="field-label" id="themeLabel">Theme</div><div class="grid2" id="themeGrid"></div></div>
+<label class="memory-setting"><input type="checkbox" id="memoryToggle"/> <span>Контекст из других чатов / Cross-chat context</span></label>
 <div style="margin-bottom:18px"><div class="field-label" id="nickLabel">Nickname</div><input class="inp" id="nickInput" maxlength="32"/></div>
 <div><div class="field-label">Subscription</div><div id="subStatusBox"></div></div>
 <a class="support-link" href="mailto:support@pongy.ai"><div class="support-icon"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><path d="M22 6l-10 7L2 6"></path></svg></div><div><div class="support-title">Support</div><div class="support-email">support@pongy.ai</div></div></a>
