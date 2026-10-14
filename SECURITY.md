@@ -1,4 +1,4 @@
-# Security notes — 1.4.0
+# Security notes — 1.4.1
 
 - Only `public/` is exposed over HTTP; databases, source code, environment and
   generated secrets are outside it. CSP forbids inline JavaScript and framing.
@@ -56,7 +56,7 @@ Firebase mode:
 - Cloud session records prevent local identity loss from accepting a different account
   and persist per-session logout revocation. Stable server secrets remain mandatory.
 - Other-chat context is opt-in, own-account-only, limited to recent user messages.
-- Search is scoped to Wikipedia; source text is reference material, not instructions.
+- Search snippets and page text are reference material, never trusted instructions.
 - This does not guarantee that a model will always follow instructions or avoid errors.
 
 ## Tool calls and generated files
@@ -67,10 +67,21 @@ Firebase mode:
 - ZIP parsing runs in the bounded document worker. Entry/expansion/size limits,
   UTF-8 checks and traversal, symlink and encrypted-archive rejection apply.
   Credentials and dependency folders are excluded from normalized archives.
-- Research links accept exact Wikipedia/Commons HTTPS hosts only. Photo embeds
-  accept upload.wikimedia.org only. Server does not fetch arbitrary model URLs.
+- Research source links accept public HTTPS URLs; private/literal special addresses are rejected. Photo embeds
+  accept upload.wikimedia.org only. Model-supplied page URLs are fetched only by the protected read_page reader.
 - Image generation is off by default and requires explicit owner configuration
   and a user request. Paid-image quotas are in-process; set a provider key spending
   limit separately. Quotas reset on restart and are not a billing guarantee.
 - Official image endpoint responses are bounded and image bytes revalidated.
   Sources reflect retrieved material, not proof of model factual accuracy.
+
+## Public web reader
+
+- Brave Search key stays server-side and is sent only to its fixed API endpoint;
+  automatic redirects on the keyed API request are prohibited.
+- Pages use HTTPS GET only, no user cookies/credentials and no JavaScript or forms.
+- All DNS results are checked against special/private IP ranges; a validated IP is
+  pinned into the HTTPS lookup while original hostname TLS verification is retained.
+- Each redirect is validated again; maximum three redirects, a 15-second deadline,
+  one-megabyte body and text-only content types. Compressed responses are rejected.
+- No claim of full interactive-browser compatibility or prompt-injection immunity.

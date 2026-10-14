@@ -1,3 +1,7 @@
+# 1.4.1
+
+Bug fix, improvement of website stability, its structure, security, as well as minor improvements and refinement of the AI.
+
 # 1.4.0 — ZIP, research and downloadable answers
 
 - ZIP upload and bounded text/code/document extraction; credential exclusions.
