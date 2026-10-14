@@ -3,10 +3,11 @@ const fs=require('fs'),os=require('os'),path=require('path');
 (async()=>{
  const {createApp}=await import('../server.js'),{loadConfig}=await import('../lib/config.js'),bcrypt=(await import('bcryptjs')).default;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-ui-')),output=path.resolve('tests/artifacts');fs.mkdirSync(output,{recursive:true});let count=0,calls=[],hold=false,release;
- const config=loadConfig({DATA_DIR:dir,OPENROUTER_KEY:'fixture-key-not-real',JWT_SECRET:'fixture-only-secret-not-real-'.repeat(2),SESSION_SECRET:'fixture-only-session-secret-'.repeat(2)},dir);config.modelPreferences=['fixture-a:free','fixture-b:free'];
+ const config=loadConfig({DATA_DIR:dir,BRAVE_SEARCH_API_KEY:'fixture-search-key',OPENROUTER_KEY:'fixture-key-not-real',JWT_SECRET:'fixture-only-secret-not-real-'.repeat(2),SESSION_SECRET:'fixture-only-session-secret-'.repeat(2)},dir);config.modelPreferences=['fixture-a:free','fixture-b:free'];
  const delta=s=>'data: '+JSON.stringify({choices:[{delta:{content:s}}]})+'\n\n';
  const fetchImpl=async(url,opts)=>{
-  if(url.includes('wikipedia.org'))return Response.json({query:{pages:{1:{title:'Earth',extract:'Earth is a planet.',fullurl:'https://en.wikipedia.org/wiki/Earth'}}}});
+  if(url.includes('api.search.brave.com'))return Response.json({web:{results:[{title:'Earth',url:'https://www.nasa.gov/earth/',description:'Earth is a planet.'}]}});
+ if(url.includes('wikipedia.org'))return Response.json({query:{pages:{1:{title:'Earth',extract:'Earth is a planet.',fullurl:'https://en.wikipedia.org/wiki/Earth'}}}});
   if(url.endsWith('/models'))return new Response(JSON.stringify({data:[{id:'fixture-a:free',pricing:{prompt:'0',completion:'0'}},{id:'fixture-b:free',pricing:{prompt:'0',completion:'0'},architecture:{input_modalities:['text','image']}}]}));
   const payload=JSON.parse(opts.body);calls.push(payload);
   if(hold){return new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode(delta('First fragment')));release=()=>{controller.enqueue(new TextEncoder().encode(delta(' from the original conversation')+'data: [DONE]\n\n'));controller.close();};}}));}
@@ -55,7 +56,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   if(!calls.at(-1).messages.at(-1).content.includes('A real attached document'))throw Error('attachment text not sent');count++;
   if(!await page.locator('.msg.user .attachment-chip').count())throw Error('message attachment missing');count++;
   await page.locator('#searchBtn').click();await page.locator('#userInput').fill('Earth');await page.locator('#sendBtn').click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
-  if(!await page.locator('.source-list a[href="https://en.wikipedia.org/wiki/Earth"]').count())throw Error('search sources missing');count++;
+  if(!await page.locator('.source-list a[href="https://www.nasa.gov/earth/"]').count())throw Error('search sources missing');count++;
   await page.locator('#searchBtn').click();
   await page.locator('.msg.ai [data-act=retry]').last().click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
   const userCount=await page.locator('.msg.user').count();if(userCount!==5)throw Error('retry duplicated user message: '+userCount);count++;
