@@ -1,3 +1,15 @@
+# 1.4.3 — consistent branding and favicon compatibility
+
+- Authentication, sidebar and welcome screen now use the exact existing site favicon.
+- Added multi-size ICO and Apple touch icon derived from the same image.
+- Explicit favicon sizes and public crawler access rules.
+- Added branding, asset availability and CSP regression tests.
+- Strict CSP retained: no unsafe-eval or string-executing timers added.
+
+Validation: 83 automated tests and 114 Chromium UI assertions passed with fixtures; no CSP violations during normal branding workflows. A separate negative test confirms string evaluation remains blocked.
+
+The reported CSP evaluation warning was not traced to a project script; source filename and line are needed if it persists. Search-engine favicon updates depend on recrawling.
+
 # 1.4.2 — adaptive search, response speed and interface localization
 
 - Search is optional per question, not an automatic request before every answer.
