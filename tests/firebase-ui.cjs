@@ -1,4 +1,4 @@
-const {chromium}=require('playwright');const fs=require('fs'),os=require('os'),path=require('path');
+const engineName=process.env.BROWSER_ENGINE||'chromium';const chromium=require('playwright')[engineName];const fs=require('fs'),os=require('os'),path=require('path');
 (async()=>{
  const {createApp}=await import('../server.js'),{loadConfig}=await import('../lib/config.js'),jwt=(await import('jsonwebtoken')).default;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-fb-ui-')),output=path.resolve('tests/artifacts');fs.mkdirSync(output,{recursive:true});
