@@ -1,3 +1,11 @@
+# 1.4.7 — local chat history and backups
+
+- Full account-scoped IndexedDB chat history, including server-acknowledged chats.
+- Local recovery when server chat storage is empty or temporarily unavailable.
+- Export/import validated JSON backups; duplicate chats are added without overwriting existing IDs.
+- Persistent browser storage request and deferred deletion tombstones.
+- No new server credentials or mandatory cloud database. Backup files do not include binary attachments.
+
 # 1.4.6 — neutral welcome and transparent chat logo
 
 - Neutral Russian/English welcome text; removed the comparison to another assistant.

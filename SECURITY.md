@@ -102,3 +102,7 @@ No JWT, passwords or Firebase refresh tokens are stored in browser localStorage.
 Private UI is not rendered using a cached authenticated flag. The server checks its HttpOnly cookie first; a 503 does not become a 401. X-Pongy-Account detects a changed cookie identity before delayed frontend operations can affect the wrong account. It is a consistency guard, not an authentication credential.
 
 Concurrent Firebase verification uses an in-flight promise only. No successful verdict is cached after completion; later requests validate again, including revocation. CSP remains strict and reduced-motion disables interface animations.
+
+## Local history (1.4.7)
+
+IndexedDB stores chat text and metadata per verified account email. It does not store authentication credentials. Cached data is not rendered before server session verification. Local storage and exported JSON are not encrypted; browser profile access permits reading local data. Exports intentionally exclude binary attachments. Import validates account, size, IDs, roles and bounded fields before an atomic write; content remains untrusted and uses the existing sanitized renderer. Clearing browser data destroys this copy.
