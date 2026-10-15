@@ -1,151 +1,81 @@
-# 1.4.7 — local chat history and backups
+# Журнал изменений
 
-- Full account-scoped IndexedDB chat history, including server-acknowledged chats.
-- Local recovery when server chat storage is empty or temporarily unavailable.
-- Export/import validated JSON backups; duplicate chats are added without overwriting existing IDs.
-- Persistent browser storage request and deferred deletion tombstones.
-- No new server credentials or mandatory cloud database. Backup files do not include binary attachments.
+Крупные функциональные обновления повышают второе число и обнуляют третье. Небольшие исправления повышают третье число. Первое число меняется при переходе к новому этапу продукта.
 
-# 1.4.6 — neutral welcome and transparent chat logo
+## 2.0.0 — Глобальный релиз · тизер
 
-- Neutral Russian/English welcome text; removed the comparison to another assistant.
-- Empty-chat logo uses a transparent cutout of the existing mark, with no tile, border or CSS shadow.
-- History loading status clears when loading completes instead of remaining in the footer.
-- Browser and search favicon identity and URLs are unchanged.
-- Prior session, history, motion and CI repairs retained.
+Будущий крупный этап развития Pongy AI. **Не выпущен и не реализуется в этом обновлении.** Дата и состав функций пока не объявлены.
 
-Validation: 96 automated tests and 140 Chromium UI assertions passed with fixtures, including alpha transparency and welcome styling. Firefox/WebKit and real provider/OAuth flows were not validated in this release.
+## 0.6.0 — Локальная история и резервные копии
 
-Search-result icons depend on deployment and search-engine recrawling; code cannot force their display. Passing fixture tests is not a guarantee of zero defects or live provider availability.
+- Добавлено сохранение полной текстовой истории в IndexedDB, отдельно для каждого аккаунта.
+- Добавлены экспорт и импорт JSON-копий, запрос постоянного хранилища и отложенное удаление чатов.
+- Firestore и постоянный диск Render больше не обязательны для локальной истории. Сами вложенные файлы в резервную копию не входят.
 
-# 1.4.5 — session restoration, pending history and interface motion
+## 0.5.5 — Приветствие и прозрачный логотип
 
-- Session gate replaces the premature login screen; valid cookies restore the main view before history finishes loading.
-- Temporary server/history errors no longer pretend that authentication has expired; explicit retry controls.
-- Account-scoped pending chat snapshots survive reloads and retry transient write failures.
-- Newer snapshots are not cleared by older acknowledgments; streamed replies are checkpointed locally.
-- Cross-tab account changes are checked before authenticated requests can read or save under the wrong account.
-- Concurrent Firebase session verification is shared only while in flight; subsequent requests still check revocation.
-- Smooth theme colors, language changes, controls, panels and new messages; reduced-motion respected.
-- CI repair: include missing PDF/DOCX fixtures; retain every test, run browser jobs independently and upload diagnostic logs.
+- Вступительный текст заменён нейтральным приветствием.
+- Логотип в начале чата отображается без фоновой плитки и обводки.
+- Исправлено зависающее сообщение о загрузке истории.
 
-Validation: 95 automated tests and 137 Chromium UI assertions passed with fixtures in Node.js 24 and a clean Node.js 22 install with Playwright Chromium, including reload recovery, failed history loads, temporary session errors, cross-account isolation and reduced motion. Production dependency audit: no known vulnerabilities. No live Google login or Firestore setup was performed.
+## 0.5.4 — Сессии, сохранение и анимации
 
-Durable history across Render deployments still requires Firestore or a persistent disk and stable secrets. Pending copies contain text and attachment metadata only, expire after seven days, and are removed after confirmation. No indefinite-login or instant-server-response guarantee.
+- Устранено преждевременное появление формы входа при проверке сохранённой сессии.
+- Добавлены локальные копии неотправленных изменений, повторные попытки сохранения и защита от смены аккаунта в другой вкладке.
+- Улучшены переходы интерфейса и проверки GitHub Actions.
 
-# 1.4.4 — website description and sharing metadata
+## 0.5.3 — Описание сайта
 
-- Added a product description for search engines and link previews.
-- Canonical URL, Open Graph and Twitter summary metadata use the public site and existing logo.
-- Description and preview labels follow the selected Russian/English interface language.
-- Includes the 1.4.3 icon corrections; no environment changes required.
+- Добавлены описание Pongy AI, canonical URL и метаданные для предпросмотра ссылок.
 
-Validation: 85 automated tests and 118 Chromium UI assertions passed with fixtures; dependency audit reported no known production vulnerabilities.
+## 0.5.2 — Единые иконки и CSP
 
-Search engines may choose a different snippet and update it after recrawling. Public availability checks do not replace authenticated or provider integration tests.
+- Унифицированы иконки приложения, добавлены ICO, Apple touch icon и правила доступа поисковых роботов.
+- Сохранена строгая CSP без unsafe-eval.
 
-# 1.4.3 — consistent branding and favicon compatibility
+## 0.5.1 — Поиск по необходимости и локализация
 
-- Authentication, sidebar and welcome screen now use the exact existing site favicon.
-- Added multi-size ICO and Apple touch icon derived from the same image.
-- Explicit favicon sizes and public crawler access rules.
-- Added branding, asset availability and CSP regression tests.
-- Strict CSP retained: no unsafe-eval or string-executing timers added.
+- Поиск используется по необходимости, а не при каждом вопросе. Источники собраны в отдельном раскрываемом списке.
+- Улучшены выбор быстрых моделей и согласованность русского и английского интерфейса.
 
-Validation: 83 automated tests and 114 Chromium UI assertions passed with fixtures; no CSP violations during normal branding workflows. A separate negative test confirms string evaluation remains blocked.
+## 0.5.0 — Чтение веб-страниц
 
-The reported CSP evaluation warning was not traced to a project script; source filename and line are needed if it persists. Search-engine favicon updates depend on recrawling.
+- Поиск расширен чтением публичных HTTPS-страниц. Это не полноценный интерактивный браузер: JavaScript, вход на сайты и формы не выполняются.
+- Bug fix, improvement of website stability, its structure, security, as well as minor improvements and refinement of the AI.
 
-# 1.4.2 — adaptive search, response speed and interface localization
+## 0.4.0 — ZIP, источники и создание файлов
 
-- Search is optional per question, not an automatic request before every answer.
-- Source links live in the expandable list; redundant web/Wiki cards removed.
-- Faster successful models are preferred by observed time to first response.
-- Unified Russian/English labels, settings, menus, password controls and Plus text.
-- Removed untranslated language placeholders rather than claiming ten translations.
-- Existing free-model fallback, Tavily basic mode and payment placeholder retained.
+- Добавлена обработка ZIP, поиск Wiki-страниц и фотографий, раскрываемый список источников.
+- ИИ может создавать текстовые файлы, исходный код и ZIP-проекты для скачивания.
+- Добавлено уведомление о неподдерживаемом формате файла.
 
-Validation: 79 automated tests and 101 Chromium UI assertions passed with fixtures.
-Real provider response speed and tool-selection quality require deployment checks.
+## 0.3.0 — Чаты, вложения и хранение
 
-# 1.4.1
+- Добавлены изображения и документы, уточнение ответа с цитатой, группировка истории по датам и контекст других чатов.
+- Добавлено необязательное облачное хранение. Удалены аватары сообщений, улучшена адаптивность и анимации.
 
-Bug fix, improvement of website stability, its structure, security, as well as minor improvements and refinement of the AI.
+## 0.2.0 — Авторизация Firebase
 
-# 1.4.0 — ZIP, research and downloadable answers
+- Добавлены регистрация по почте, подтверждение адреса и восстановление пароля через Firebase.
+- Сохранена возможность входа через Google при настроенном OAuth.
 
-- ZIP upload and bounded text/code/document extraction; credential exclusions.
-- Wiki article cards and Wikimedia Commons photographs with author/license credits.
-- Collapsible, deduplicated “Источники (N)” listing tool-retrieved sources.
-- Tool-driven code/text files and ZIP projects attached to assistant messages.
-- Optional explicit-request image generation through OpenRouter, off by default.
-- Bottom notification for unsupported formats; attachment metadata persists in chats.
-- Existing Plus placeholder, authentication, cloud storage and UI retained.
+## 0.1.2 — Исправления интерфейса
 
-Validation: 65 automated tests and 78 Chromium browser assertions passed with fixtures.
-No production deployment or live provider image-generation test was performed.
+- Исправлены действия в истории чатов, наведение, длинные названия и мобильная панель.
+- Уточнена настройка подключения сайта к Render.
 
-# 1.3.0 — chat, files and durable storage
+## 0.1.1 — Безопасность и стабильность
 
-- First-party API routing and cookie session restoration on every page load.
-- Optional UID-scoped Firestore chats, preferences, attachments and revocable sessions.
-- Real image/document attachments; bounded PDF/DOCX workers and vision model selection.
-- Model-specific 403 fallback, clearer 401 key errors and malformed output retry.
-- Wikipedia source retrieval, reply preview and optional cross-chat user context.
-- Removed message avatars; fixed duplicate retry/edit messages and metadata alignment.
-- Date-based history, press/open/close animations, reduced-motion and mobile layout.
-- Restored original Plus benefits and payment choices; payment still unavailable.
-- Browser-engine CI added. Local checks use Chromium; Firefox/WebKit could not launch
-  in this sandbox because required system libraries are absent.
+- Усилена защита запросов и сессий, исправлено сохранение чатов и обработка ошибок.
+- Ключи ИИ перенесены на сервер. Оплата оставлена заглушкой.
 
-Validation: 56 automated tests and 60 browser assertions passed with local fixtures.
-Production dependency audit: zero known vulnerabilities at checking time.
-No production deployment, live OAuth, live model quality or real-email test performed.
+## 0.1.0 — Первый запуск
 
-# 1.2.0 — Firebase email/password authentication
+- Начальная версия Pongy AI: интерфейс чата, страницы входа и регистрации, настройки приложения.
 
-- Added server-side Firebase REST signup, email-link verification, resend and reset.
-- Preserved Google OAuth and legacy accounts; verified-email linking retains chats.
-- Removed old password fallback after Firebase linking; remote refresh validation
-  invalidates revoked Firebase-password sessions. Refresh credentials are encrypted.
-- Added link-based UI notices, accessible resend controls, mobile and error states.
-- Firebase mode requires FIREBASE_API_KEY and FIREBASE_PROJECT_ID in server env.
-- No production deployment or real-email delivery test was performed.
+## Примечания
 
-Validation: 44 automated tests and 46 browser assertions passed with local
-fixtures. Verification/reset forms were inspected on desktop, mobile, short
-viewports and dark mode. Production dependency audit reported zero known
-vulnerabilities at checking time. Real Firebase mail delivery remains untested.
-
-# 1.1.1 — sidebar controls and split deployment
-
-- Removed opaque gradient and button hover backgrounds from chat actions.
-- Inline action layout prevents overlap with long chat titles; collapsed sidebar
-  hides actions. Mobile and touch devices keep the controls visible.
-- Keyboard access, accessible button labels, pin-focus restoration and stale
-  rename-focus guard; message actions also appear on keyboard focus.
-- Reduced-motion preference disables interface transitions and animations.
-- Static frontend API bootstrap for pongy-ai.devs.surf → Render; local same-origin
-  remains unchanged. Added exact deployment variables to README.
-- No production deployment or payment-provider activation was performed.
-
-Checks: 27 local automated tests and 32 browser assertions passed. Light/dark,
-long-title, keyboard, compact sidebar and mobile views were visually inspected.
-Production dependency audit reported no known vulnerabilities at checking time.
-
-# 1.1.0 — security and reliability foundation
-
-- Public directory separation, CSP/Helmet, DOMPurify and explicit CORS/CSRF origins.
-- HttpOnly sessions, random persistent secrets, account-version token revocation.
-- Hashed cryptographic confirmation codes, cooldowns and bounded guessing attempts.
-- Current free-model catalog, cooldowns, zero-price constraints, bounded fallback,
-  timeouts, cancellation and SSE reset events. No paid-model automatic fallback.
-- Fixed chat history schema, conversation-bound streaming, serialized writes,
-  error reporting, duplicate startup loads and SVG gradient ID collisions.
-- Password eyes, recovery dialog stacking and short-viewport form scrolling fixed.
-- Fake SBP QR and card/CVC collection removed. Real provider integration is pending.
-- Browser users never enter AI keys; server deployment still needs provider credentials.
-
-Checks: 24 local automated tests, 20 browser assertions, no reported npm-audit
-vulnerabilities at the time of checking. External AI, mail, OAuth and real payments
-were NOT tested with live credentials. This is not an availability guarantee.
+- Изменена схема обозначения версий; это не повторная реализация прежних функций. Текущая 0.6.0 соответствует прежней 1.4.7.
+- Подтверждённые локальные проверки функциональной версии: 103 автоматических теста и 151 проверка интерфейса Chromium. Это не гарантия отсутствия ошибок или успешной работы внешних сервисов.
+- Появление иконки и описания в поиске зависит от публикации сайта и переобхода поисковиком.
+- Автономного бесконечного хранения не обещаем: сохраняйте экспорт отдельно; очистка браузера удаляет локальную историю.
