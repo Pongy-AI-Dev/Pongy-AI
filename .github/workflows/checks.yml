@@ -1,8 +1,35 @@
 name: Checks
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  structure:
+    name: Files and syntax
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check project files and syntax
+        run: node tests/project-check.cjs
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
   test:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -61,3 +88,27 @@ jobs:
             tests/artifacts/
           if-no-files-found: ignore
           retention-days: 7
+  all-checks:
+    name: All checks
+    if: ${{ always() }}
+    needs: [structure, security, test, browsers]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Report overall result
+        env:
+          STRUCTURE: ${{ needs.structure.result }}
+          SECURITY: ${{ needs.security.result }}
+          TESTS: ${{ needs.test.result }}
+          BROWSERS: ${{ needs.browsers.result }}
+        shell: bash
+        run: |
+          echo "Files: $STRUCTURE; dependency audit: $SECURITY; tests: $TESTS; browsers: $BROWSERS"
+          echo "## Project check results" >> "$GITHUB_STEP_SUMMARY"
+          printf '| Files | Dependencies | Tests | Browsers |\n|---|---|---|---|\n| %s | %s | %s | %s |\n' "$STRUCTURE" "$SECURITY" "$TESTS" "$BROWSERS" >> "$GITHUB_STEP_SUMMARY"
+          for result in "$STRUCTURE" "$SECURITY" "$TESTS" "$BROWSERS"; do
+            if [ "$result" != "success" ]; then
+              echo "A required check failed, was cancelled, or was skipped. Open the corresponding job."
+              exit 1
+            fi
+          done
