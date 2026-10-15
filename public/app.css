@@ -264,3 +264,24 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
  #settingsModal .support-link{margin-top:12px}
  #logoutBtnSettings{margin-top:12px!important}
 }
+/* Balanced dark palette and browser autofill integration. */
+body{color-scheme:light}body.dark{color-scheme:dark;--bg:#171b25;--bg2:#1e2431;--bg3:#282f3f;--fg:#eef1f8;--fg2:#b1bbcf;--border:#3a4458;--accent:#9aa8ff;--accent-h:#bdc7ff;--hover:rgba(173,188,235,.08);--hover2:rgba(173,188,235,.13)}
+.inp,textarea{caret-color:var(--accent);transition:background-color .24s ease,color .24s ease,border-color .2s ease,box-shadow .2s ease}
+.inp:-webkit-autofill,.inp:-webkit-autofill:hover,.inp:-webkit-autofill:focus{background-color:var(--bg3)!important;-webkit-text-fill-color:var(--fg)!important;caret-color:var(--fg);-webkit-box-shadow:0 0 0 1000px var(--bg3) inset!important;box-shadow:0 0 0 1000px var(--bg3) inset!important}
+.inp:autofill{background-color:var(--bg3)!important;color:var(--fg)!important;box-shadow:0 0 0 1000px var(--bg3) inset!important}
+.eye,.eye:hover,.eye:active:not(:disabled){transform:translateY(-50%);touch-action:manipulation}
+.eye svg{display:block;flex-shrink:0;overflow:visible;pointer-events:none}.eye path,.eye circle{vector-effect:non-scaling-stroke}
+.eye-slash{stroke-dasharray:1;stroke-dashoffset:1;opacity:0;transition:stroke-dashoffset .25s ease,opacity .2s ease}.password-visible .eye-slash{stroke-dashoffset:0;opacity:1}.eye-pupil{opacity:1;transition:opacity .22s ease}.password-visible .eye-pupil{opacity:.2}
+.inp:focus-visible,textarea:focus-visible{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+@media(hover:hover){.mode-btn:hover,.opt:hover{box-shadow:0 3px 12px rgba(62,76,140,.12);transform:translateY(-1px)}.eye:hover svg{filter:drop-shadow(0 0 3px rgba(130,140,240,.2))}}
+.progress-panel{width:100%;margin-bottom:9px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);overflow:hidden;animation:subtleReveal .2s ease both}
+.progress-toggle{width:100%;min-height:40px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--fg2);font-size:13px;text-align:left}.progress-toggle>span{display:flex;align-items:center;gap:7px}.progress-toggle svg{flex-shrink:0;transition:transform .22s ease}.progress-toggle[aria-expanded=true]>svg{transform:rotate(180deg)}
+.progress-body{padding:0 12px 12px;color:var(--fg2);font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.progress-body[hidden]{display:none}.progress-body p{margin:5px 0}.progress-body p:last-child{animation:subtleReveal .2s ease both}.progress-note{font-size:11px;opacity:.85}.progress-live>span:after{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 1.2s infinite}
+@media(prefers-reduced-motion:reduce){.eye-slash,.eye-pupil,.progress-toggle svg,.progress-panel,.progress-body p{animation:none!important;transition:none!important}.progress-live>span:after{animation:none!important}.mode-btn:hover,.opt:hover{transform:none}}
+/* Keep text anchored while the small activity dots animate. */
+.thinking{animation:none}
+.auth-transition{animation:subtleReveal .2s ease both}
+@media(prefers-reduced-motion:reduce){.auth-transition{animation:none!important}}
+body.dark .confirm-btn.primary,body.dark .msg.user .bubble,body.dark #sendBtn.ready{color:#171b25}
+.msg.ai .msg-content:has(.progress-panel){width:min(100%,560px)}
+.progress-toggle{font-size:14px}.progress-body{font-size:14px}.progress-note{font-size:13px}
