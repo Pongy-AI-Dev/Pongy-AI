@@ -31,3 +31,8 @@ test('icons and robots are public; script CSP remains strict',async()=>{
   const robots=await(await fetch(base+'/robots.txt')).text();assert.match(robots,/Allow: \//);assert(!robots.includes('Disallow: /favicon'));
  }finally{await new Promise(r=>server.close(r));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('welcome icon has true alpha transparency and intro has no comparison',async()=>{
+ const icon=await sharp('public/welcome-logo.png').metadata();assert.equal(icon.width,256);assert.equal(icon.height,256);assert.equal(icon.hasAlpha,true);
+ const {data,info}=await sharp('public/welcome-logo.png').ensureAlpha().raw().toBuffer({resolveWithObject:true});assert.equal(info.channels,4);assert.equal(data[3],0);assert.equal(data[data.length-1],0);let visible=0,clear=0;for(let i=3;i<data.length;i+=4){if(data[i]>0)visible++;else clear++}assert(visible>10000);assert(clear>20000);
+ const js=fs.readFileSync('public/app.js','utf8');assert(!/Verity/i.test(js));assert(js.includes('Чем могу помочь?'));assert(js.includes('How can I help?'));
+});
