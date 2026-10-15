@@ -5,6 +5,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -13,10 +14,25 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm test
+      - name: Unit and integration tests
+        shell: bash
+        run: |
+          mkdir -p .ci-logs
+          set -o pipefail
+          npm test 2>&1 | tee .ci-logs/tests.log
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-log
+          path: .ci-logs/
+          if-no-files-found: ignore
+          retention-days: 7
   browsers:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
+      fail-fast: false
       matrix:
         engine: [chromium, firefox, webkit]
     steps:
@@ -27,6 +43,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps ${{ matrix.engine }}
-      - run: npm run test:ui
+      - name: Browser tests
+        shell: bash
+        run: |
+          mkdir -p .ci-logs
+          set -o pipefail
+          npm run test:ui 2>&1 | tee .ci-logs/browser.log
         env:
           BROWSER_ENGINE: ${{ matrix.engine }}
+      - name: Upload browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-diagnostics-${{ matrix.engine }}
+          path: |
+            .ci-logs/
+            tests/artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
