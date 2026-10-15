@@ -1,4 +1,4 @@
-const engineName=process.env.BROWSER_ENGINE||'chromium';const chromium=require('playwright')[engineName];
+const {launchBrowser}=require('./browser.cjs');
 const fs=require('fs'),os=require('os'),path=require('path');
 (async()=>{
  const {createApp}=await import('../server.js'),{loadConfig}=await import('../lib/config.js'),bcrypt=(await import('bcryptjs')).default;
@@ -17,7 +17,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
  };
  const runtime=createApp({config,fetchImpl});runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('fixture@example.test',bcrypt.hashSync('fixture-password',4));
  const server=await new Promise(resolve=>{const srv=runtime.app.listen(0,'127.0.0.1',()=>resolve(srv));}),base='http://127.0.0.1:'+server.address().port;
- const browser=await chromium.launch({headless:true,...(engineName==='chromium'&&process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']}),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
+ const browser=await launchBrowser(),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
  page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error:',e.message)});
  // Test-only access to internal functions; production assets remain unchanged.
  await page.route('**/app.js',async route=>{let script=fs.readFileSync('public/app.js','utf8');const at=script.lastIndexOf('})();');script=script.slice(0,at)+'window.pongyTest={renderMd:renderMd,renderMsg:renderMsg};\n'+script.slice(at);await route.fulfill({contentType:'application/javascript',body:script});});

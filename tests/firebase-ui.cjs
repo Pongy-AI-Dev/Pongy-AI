@@ -1,4 +1,5 @@
-const engineName=process.env.BROWSER_ENGINE||'chromium';const chromium=require('playwright')[engineName];const fs=require('fs'),os=require('os'),path=require('path');
+const {launchBrowser}=require('./browser.cjs');
+const fs=require('fs'),os=require('os'),path=require('path');
 (async()=>{
  const {createApp}=await import('../server.js'),{loadConfig}=await import('../lib/config.js'),jwt=(await import('jsonwebtoken')).default;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-fb-ui-')),output=path.resolve('tests/artifacts');fs.mkdirSync(output,{recursive:true});
@@ -11,7 +12,7 @@ const engineName=process.env.BROWSER_ENGINE||'chromium';const chromium=require('
   return Response.json({idToken:token(),refreshToken:'fixture-refresh-token'});
  };
  const runtime=createApp({config,fetchImpl}),server=await new Promise(resolve=>{const srv=runtime.app.listen(0,'127.0.0.1',()=>resolve(srv));}),base='http://127.0.0.1:'+server.address().port;
- const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/usr/local/bin/chromium',args:['--no-sandbox']}),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const browser=await launchBrowser(),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>localStorage.setItem('pongy_settings_ui',JSON.stringify({theme:'light',lang:'ru',nickname:''})));
  function check(value,message){if(!value)throw Error(message);assertions++;}
  async function snapshot(name){const html=await page.evaluate(()=>document.documentElement.outerHTML);fs.writeFileSync(output+'/'+name+'.html',html.replace(/<script[^>]*>[\s\S]*?<\/script>/g,'').replace('href="/app.css"','href="'+path.resolve('public/app.css')+'"').replace('href="/favicon.png"','href="'+path.resolve('public/favicon.png')+'"'));}

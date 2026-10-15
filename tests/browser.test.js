@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{getBrowserConfig}=require('./browser.cjs');
+test('default browser uses the installed Playwright Chromium without a system path',()=>{const c=getBrowserConfig({});assert.equal(c.name,'chromium');assert.equal(c.options.headless,true);assert(!Object.hasOwn(c.options,'executablePath'))});
+test('CI Chromium ignores local executable override',()=>{const c=getBrowserConfig({CI:'true',BROWSER_ENGINE:'chromium',CHROMIUM_PATH:'/custom/chromium'});assert(!Object.hasOwn(c.options,'executablePath'))});
+test('Firefox and WebKit never inherit Chromium path or arguments',()=>{for(const name of ['firefox','webkit']){const c=getBrowserConfig({BROWSER_ENGINE:name,CHROMIUM_PATH:'/custom/chromium'});assert.equal(c.name,name);assert(!Object.hasOwn(c.options,'executablePath'));assert(!Object.hasOwn(c.options,'args'))}});
+test('local Chromium can use an explicit developer path',()=>{assert.equal(getBrowserConfig({CHROMIUM_PATH:'/custom/chromium'}).options.executablePath,'/custom/chromium')});
+test('unknown browser engine fails with a clear error',()=>{assert.throws(()=>getBrowserConfig({BROWSER_ENGINE:'invalid'}),/Unsupported BROWSER_ENGINE/)});
+test('every UI suite uses the common browser launcher',()=>{const files=fs.readdirSync('tests').filter(f=>f.endsWith('ui.cjs'));assert.equal(files.length,6);for(const f of files){const code=fs.readFileSync('tests/'+f,'utf8');assert(code.includes("require('./browser.cjs')"),f);assert(code.includes('await launchBrowser()'),f);assert(!code.includes('/usr/local/bin/chromium'),f);assert(!code.includes('.launch('),f)}});

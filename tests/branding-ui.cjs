@@ -1,11 +1,12 @@
-const fs=require('fs'),path=require('path'),os=require('os'),engine=require('playwright')[process.env.BROWSER_ENGINE||'chromium'];
+const {launchBrowser}=require('./browser.cjs');
+const fs=require('fs'),path=require('path'),os=require('os');
 (async()=>{
  const {createApp}=await import('../server.js'),{loadConfig}=await import('../lib/config.js'),bcrypt=(await import('bcryptjs')).default;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-brand-ui-')),out=path.resolve('tests/artifacts');fs.mkdirSync(out,{recursive:true});let count=0;
  const runtime=createApp({config:loadConfig({DATA_DIR:dir,OPENROUTER_API_KEY:'fixture-key',JWT_SECRET:'fixture-jwt-secret-'.repeat(3),SESSION_SECRET:'fixture-session-secret-'.repeat(3)},dir),fetchImpl:async()=>Response.json({data:[]})});
  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('fixture@example.test',bcrypt.hashSync('fixture-password',4));
  const server=await new Promise(r=>{const s=runtime.app.listen(0,'127.0.0.1',()=>r(s))}),base='http://127.0.0.1:'+server.address().port;
- const browser=await engine.launch({headless:true,...(!process.env.BROWSER_ENGINE||process.env.BROWSER_ENGINE==='chromium'?{executablePath:process.env.CHROMIUM_PATH||undefined}:{}),args:['--no-sandbox']});
+ const browser=await launchBrowser();
  const context=await browser.newContext({viewport:{width:1280,height:900}});
  await context.addInitScript(()=>{window.brandViolations=[];document.addEventListener('securitypolicyviolation',e=>window.brandViolations.push({directive:e.effectiveDirective,blocked:e.blockedURI,source:e.sourceFile,line:e.lineNumber}));});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
