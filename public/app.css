@@ -68,7 +68,7 @@ body.collapsed .chat-item{padding:9px;justify-content:center}
 .msg-wrap{max-width:768px;margin:0 auto;padding:0 16px}
 .welcome{height:100%;display:flex;align-items:center;justify-content:center;padding:0 24px;text-align:center}
 .welcome-inner{max-width:520px}
-.big-logo{width:88px;height:88px;border-radius:24px;overflow:hidden;margin:0 auto 24px;box-shadow:0 8px 32px rgba(99,102,241,.35)}
+.big-logo{width:88px;height:88px;background:transparent;border:0;border-radius:0;padding:0;overflow:visible;margin:0 auto 24px;box-shadow:none;outline:none}
 .welcome p{font-size:17px;line-height:1.6;color:var(--fg2)}
 .msg{display:flex;gap:12px;padding:6px 0}
 .msg.user{flex-direction:row-reverse}
