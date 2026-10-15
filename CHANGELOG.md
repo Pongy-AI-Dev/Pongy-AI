@@ -1,3 +1,15 @@
+# 1.4.6 — neutral welcome and transparent chat logo
+
+- Neutral Russian/English welcome text; removed the comparison to another assistant.
+- Empty-chat logo uses a transparent cutout of the existing mark, with no tile, border or CSS shadow.
+- History loading status clears when loading completes instead of remaining in the footer.
+- Browser and search favicon identity and URLs are unchanged.
+- Prior session, history, motion and CI repairs retained.
+
+Validation: 96 automated tests and 140 Chromium UI assertions passed with fixtures, including alpha transparency and welcome styling. Firefox/WebKit and real provider/OAuth flows were not validated in this release.
+
+Search-result icons depend on deployment and search-engine recrawling; code cannot force their display. Passing fixture tests is not a guarantee of zero defects or live provider availability.
+
 # 1.4.5 — session restoration, pending history and interface motion
 
 - Session gate replaces the premature login screen; valid cookies restore the main view before history finishes loading.
@@ -7,8 +19,9 @@
 - Cross-tab account changes are checked before authenticated requests can read or save under the wrong account.
 - Concurrent Firebase session verification is shared only while in flight; subsequent requests still check revocation.
 - Smooth theme colors, language changes, controls, panels and new messages; reduced-motion respected.
+- CI repair: include missing PDF/DOCX fixtures; retain every test, run browser jobs independently and upload diagnostic logs.
 
-Validation: 95 automated tests and 137 Chromium UI assertions passed with fixtures, including reload recovery, failed history loads, temporary session errors, cross-account isolation and reduced motion. Production dependency audit: no known vulnerabilities. No live Google login or Firestore setup was performed.
+Validation: 95 automated tests and 137 Chromium UI assertions passed with fixtures in Node.js 24 and a clean Node.js 22 install with Playwright Chromium, including reload recovery, failed history loads, temporary session errors, cross-account isolation and reduced motion. Production dependency audit: no known vulnerabilities. No live Google login or Firestore setup was performed.
 
 Durable history across Render deployments still requires Firestore or a persistent disk and stable secrets. Pending copies contain text and attachment metadata only, expire after seven days, and are removed after confirmation. No indefinite-login or instant-server-response guarantee.
 
