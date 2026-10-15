@@ -29,6 +29,8 @@ const fs=require('fs'),path=require('path'),os=require('os');
  await page.locator('#fileInput').setInputFiles({name:'bad.rar',mimeType:'application/octet-stream',buffer:Buffer.from('fixture')});await page.waitForTimeout(150);await page.screenshot({path:output+'/unsupported-toast-mobile.png'});
  if(!await page.locator('#toast').isVisible())throw Error('mobile toast missing');count++;
  await page.emulateMedia({reducedMotion:'reduce'});if(await toggle.evaluate(el=>getComputedStyle(el.querySelector('svg')).transitionDuration)!=='0s')throw Error('reduced motion not respected');count++;
+ await page.locator('.msg.ai .attachment-open').click();await page.locator('#workspacePreview').waitFor({state:'visible'});if(!await page.locator('#workspacePreview').isVisible()||!await page.locator('#previewRun').isHidden())throw Error('ZIP preview must stay read-only');count++;
+ const zipDownload=page.waitForEvent('download');await page.locator('#previewDownload').click();const downloaded=await zipDownload;if(fs.readFileSync(await downloaded.path()).readUInt32LE(0)!==0x04034b50)throw Error('preview download corrupted ZIP bytes');count++;await page.locator('#previewClose').click();
  if(errors.length)throw Error(errors.join('; '));count++;console.log('Tool UI assertions passed: '+count);
  }finally{await browser.close();await new Promise(r=>server.close(r));runtime.close();fs.rmSync(dir,{recursive:true,force:true})}
 })().catch(e=>{console.error(e);process.exit(1)});
