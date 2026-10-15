@@ -84,8 +84,6 @@ body.collapsed .chat-item{padding:9px;justify-content:center}
 .bubble pre{background:#111;color:#f0f0f3;padding:12px;border-radius:10px;overflow-x:auto;margin:8px 0;font-family:Consolas,monospace;font-size:12.5px}
 .bubble a{color:var(--accent);text-decoration:none;word-break:break-all}
 .bubble ul,.bubble ol{margin:6px 0;padding-left:20px}
-.caret{display:inline-block;width:6px;height:15px;background:currentColor;vertical-align:-2px;margin-left:2px;animation:blink .9s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .msg-actions{display:flex;gap:4px;margin-top:6px;opacity:0;transition:opacity .15s;flex-wrap:wrap}
 .msg:hover .msg-actions,.msg:focus-within .msg-actions{opacity:1}
 .msg-act{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;font-size:11.5px;color:var(--fg2)}
@@ -294,3 +292,28 @@ body.dark .confirm-btn.primary,body.dark .msg.user .bubble,body.dark #sendBtn.re
 #authLanguageMenu[hidden]{display:none}#authLanguageMenu button{display:block;width:100%;padding:10px;border:0;border-radius:8px;text-align:left;background:transparent;color:var(--fg);cursor:pointer}#authLanguageMenu button:hover,#authLanguageMenu [aria-pressed=true]{background:var(--bg3);color:var(--accent)}
 @keyframes auth-menu-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.auth-language *{animation:none!important;transition:none!important}}
+
+/* Quiet streaming motion: no cursor, no repaint animation on existing text. */
+.stream-text,.stream-fragment{white-space:inherit;font:inherit;color:inherit}
+.stream-fragment{animation:answer-fragment-in .24s cubic-bezier(.2,.7,.2,1) both}
+@keyframes answer-fragment-in{from{opacity:.28}to{opacity:1}}
+.thinking{animation:none;gap:8px}
+.thinking .dots{display:inline-flex;align-items:center;gap:3px;min-height:18px}
+.thinking .dots span{width:4px;height:4px;animation:thinking-dot-hop 1.25s ease-in-out infinite;transform:translateY(0);opacity:.55}
+.thinking .dots span:nth-child(2){animation-delay:.14s}.thinking .dots span:nth-child(3){animation-delay:.28s}
+@keyframes thinking-dot-hop{0%,60%,100%{transform:translateY(0);opacity:.5}28%{transform:translateY(-4px);opacity:1}}
+@supports ((background-clip:text) or (-webkit-background-clip:text)){
+ .thinking-label,.progress-live .progress-title{background:linear-gradient(105deg,var(--fg2) 25%,var(--fg2) 39%,var(--accent) 47%,var(--fg) 51%,var(--fg2) 61%,var(--fg2) 75%);background-size:240% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:thinking-light-wave 2.6s ease-in-out infinite}
+}
+@keyframes thinking-light-wave{0%{background-position:150% 0}100%{background-position:-50% 0}}
+.progress-panel{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;width:100%;margin:0 0 7px;padding:0;animation:none}
+.msg.ai .msg-content:has(.progress-panel){width:auto}
+.progress-toggle{width:max-content;max-width:100%;min-height:30px;padding:2px 0;display:inline-flex;align-items:center;justify-content:flex-start;gap:3px;background:transparent!important;border:0;box-shadow:none;color:var(--fg2);font-size:14px;line-height:1.5;transform:none!important}
+.progress-toggle>span{display:inline;gap:0}.progress-toggle>svg{width:14px;height:14px;transition:transform .2s ease}
+.progress-toggle:hover{color:var(--fg)}.progress-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.progress-live>span:after{content:none}
+.progress-body{padding:2px 0 6px;font-size:14px;line-height:1.65;max-width:560px}
+.progress-body:not([hidden]){animation:progress-text-in .18s ease-out both}
+.progress-body p:last-child{animation:none}.progress-note{font-size:12px}
+@keyframes progress-text-in{from{opacity:.4;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.stream-fragment,.thinking-label,.thinking .dots span,.progress-live .progress-title,.progress-body:not([hidden]){animation:none!important;transform:none!important;opacity:1!important}.thinking-label,.progress-live .progress-title{background:none;color:var(--fg2);-webkit-text-fill-color:currentColor}.progress-toggle>svg{transition:none}}
