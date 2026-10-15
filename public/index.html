@@ -39,6 +39,7 @@
 <div id="toast" role="status" aria-live="polite"></div>
 <div class="overlay-bd" id="overlay"></div>
 <div id="authScreen">
+<div id="authLanguage" class="auth-language"><button id="authLanguageBtn" type="button" aria-expanded="false" aria-controls="authLanguageMenu" aria-label="Language"><span>EN</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div id="authLanguageMenu" hidden><button type="button" data-language="en" lang="en">English</button><button type="button" data-language="ru" lang="ru">Русский</button></div></div>
 <div class="auth-box">
 <div style="text-align:center;margin-bottom:22px">
 <div id="authLogo" style="width:64px;height:64px;border-radius:18px;overflow:hidden;margin:0 auto 16px"><img class="app-logo" src="/favicon.png" alt="Pongy AI" width="512" height="512"/></div>
@@ -57,7 +58,7 @@
 </div>
 <div style="text-align:right;margin-bottom:14px"><a id="forgotPasswordBtn" style="color:var(--accent);cursor:pointer;font-size:12.5px;text-decoration:underline">Forgot password?</a></div>
 <button class="confirm-btn primary" id="authBtn" style="width:100%;padding:14px;border-radius:12px;font-weight:700">Sign in</button>
-<div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:12px;color:var(--fg2)">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+<div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:12px;color:var(--fg2)" id="authOr">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
 <button id="googleBtn" style="width:100%;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--border);color:var(--fg);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
 <svg height="18" viewbox="0 0 48 48" width="18"><path d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" fill="#EA4335"></path><path d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" fill="#4285F4"></path><path d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" fill="#FBBC05"></path><path d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" fill="#34A853"></path></svg>
 Continue with Google
@@ -65,7 +66,7 @@ Continue with Google
 <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--fg2)"><span id="authSwitchText">No account?</span> <a id="authSwitch" style="color:var(--accent);cursor:pointer;text-decoration:underline">Sign up</a></div>
 </div>
 <div id="authCodeStep" style="display:none;text-align:center;padding:8px 0">
-<div style="font-size:15px;margin-bottom:20px;line-height:1.5"><span id="authCodeSent">We sent a code to</span> <b id="authCodeEmail"></b><br/><span style="color:var(--fg2);font-size:13px">Check your inbox</span></div>
+<div style="font-size:15px;margin-bottom:20px;line-height:1.5"><span id="authCodeSent">We sent a code to</span> <b id="authCodeEmail"></b><br/><span id="authInbox" style="color:var(--fg2);font-size:13px">Check your inbox</span></div>
 <input class="inp" id="authCode" inputmode="numeric" maxlength="6" placeholder="Enter code" style="text-align:center;font-size:20px;letter-spacing:6px;font-family:Consolas,monospace;padding:16px" type="text"/>
 <div id="authCodeTimer" style="text-align:center;margin-top:12px;font-size:12.5px;color:var(--fg2)"></div>
 <div id="authCodeResend" style="text-align:center;margin-top:8px;font-size:12.5px;color:var(--accent);cursor:pointer;text-decoration:underline;display:none">Resend code</div>
