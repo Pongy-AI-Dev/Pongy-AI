@@ -1,9 +1,13 @@
-node_modules/
-data/
-.env
-.env.*
-!.env.example
-*.db
-*.db-*
-tests/artifacts/
-download/
+* text=auto
+*.js text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.png binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.zip binary
