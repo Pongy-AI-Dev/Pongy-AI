@@ -12,3 +12,5 @@ test('history script loads before app and settings expose backup controls',()=>{
 
 test('storage permission requests have a bounded timeout instead of hanging forever',async()=>{const db=history.create(null);await assert.rejects(db.persist({persist:()=>new Promise(()=>{})},20),error=>error.code==='PERSISTENCE_TIMEOUT')});
 test('storage persistence surfaces provider rejection without claiming permission was refused',async()=>{const db=history.create(null);await assert.rejects(db.persist({persist:async()=>{throw new Error('permission unavailable')}},100),/permission unavailable/)});
+
+test('saved AI progress retains only known stage codes and never arbitrary reasoning HTML',()=>{const item=history.normalizeChat({...chat,messages:[{role:'assistant',text:'Answer',meta:{progress:['preparing','<script>bad</script>','drawing','complete'],reasoning:'private provider text'}}]});assert.equal(item.messages[0].meta.progress.join(','),'preparing,drawing,complete');assert(!JSON.stringify(item).includes('private provider text'));assert(!JSON.stringify(item).includes('<script>'))});
