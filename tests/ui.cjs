@@ -22,7 +22,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
  // Test-only access to internal functions; production assets remain unchanged.
  await page.route('**/app.js',async route=>{let script=fs.readFileSync('public/app.js','utf8');const at=script.lastIndexOf('})();');script=script.slice(0,at)+'window.pongyTest={renderMd:renderMd,renderMsg:renderMsg};\n'+script.slice(at);await route.fulfill({contentType:'application/javascript',body:script});});
  try{
-  await page.goto(base);await page.waitForTimeout(200);if(!await page.locator('#authScreen').isVisible())throw Error('login not visible');count++;
+  await page.goto(base);await page.locator('#authScreen.show').waitFor({state:'visible'});await page.waitForFunction(()=>!document.querySelector('#authBtn').disabled);if(!await page.locator('#authScreen').isVisible())throw Error('login not visible');count++;
   await page.screenshot({path:output+'/login-desktop.png'});
   await page.locator('#forgotPasswordBtn').click();
   if(!await page.locator('#resetModal').evaluate(e=>{const r=e.querySelector('.modal-box').getBoundingClientRect();return e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}))throw Error('password reset is hidden behind login');count++;
@@ -32,7 +32,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
 
   await page.locator('#authPassword').fill('fixture-password');await page.locator('#eyeAuth').click();if(await page.locator('#authPassword').getAttribute('type')!=='text')throw Error('password eye failed');count++;await page.locator('#eyeAuth').click();
   if(!await page.locator('#googleBtn').isDisabled())throw Error('unconfigured Google is not disabled');count++;
-  await page.locator('#authEmail').fill('fixture@example.test');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.querySelector('#authScreen').classList.contains('show'));
+  await page.locator('#authEmail').fill('fixture@example.test');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.body.classList.contains('booting')&&!document.querySelector('#authScreen').classList.contains('show')&&!document.querySelector('#userInput').disabled);
   const cookies=await page.context().cookies();if(!cookies.find(c=>c.name==='pongy_session'&&c.httpOnly))throw Error('HttpOnly session missing');count++;
   if(await page.evaluate(()=>localStorage.getItem('pongy_token'))!==null)throw Error('JWT left in localStorage');count++;
   await page.locator('#userInput').fill('First test question');await page.locator('#sendBtn').click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
@@ -43,7 +43,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   if(await page.locator('#searchBtn').isDisabled())throw Error('source search disabled');count++;
   if(await page.locator('#messages .avatar').count())throw Error('message avatars remain');count++;
   if(await page.locator('.sb-label').last().textContent()!=='Today')throw Error('history date groups missing');count++;
-  await page.waitForTimeout(150);await page.reload();await page.waitForFunction(()=>!document.querySelector('#authScreen').classList.contains('show'));
+  await page.waitForTimeout(150);await page.reload();await page.waitForFunction(()=>!document.body.classList.contains('booting')&&!document.querySelector('#authScreen').classList.contains('show')&&!document.querySelector('#userInput').disabled);
   if(!(await page.locator('#messages').innerText()).includes('Complete replacement'))throw Error('reload lost saved history');count++;
   await page.locator('.msg.ai [data-act=refine]').first().click();
   if(!await page.locator('#replyPreview').isVisible())throw Error('reply preview missing');count++;
@@ -61,7 +61,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.locator('#searchBtn').click();
   await page.locator('.msg.ai [data-act=retry]').last().click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
   const userCount=await page.locator('.msg.user').count();if(userCount!==5)throw Error('retry duplicated user message: '+userCount);count++;
-  await page.locator('#settingsBtn').click();await page.locator('#memoryToggle').check();await page.waitForTimeout(750);await page.locator('#closeSettings').click();await page.reload();await page.waitForFunction(()=>!document.querySelector('#authScreen').classList.contains('show'));await page.locator('#settingsBtn').click();if(!await page.locator('#memoryToggle').isChecked())throw Error('preferences not persisted');count++;await page.locator('#closeSettings').click();await page.waitForTimeout(250);
+  await page.locator('#settingsBtn').click();await page.locator('#memoryToggle').check();await page.waitForTimeout(750);await page.locator('#closeSettings').click();await page.reload();await page.waitForFunction(()=>!document.body.classList.contains('booting')&&!document.querySelector('#authScreen').classList.contains('show')&&!document.querySelector('#userInput').disabled);await page.locator('#settingsBtn').click();if(!await page.locator('#memoryToggle').isChecked())throw Error('preferences not persisted');count++;await page.locator('#closeSettings').click();await page.waitForTimeout(250);
   const msgSnapshot=await page.evaluate(()=>document.documentElement.outerHTML);fs.writeFileSync(output+'/new-features-preview.html',msgSnapshot.replace(/<script[^>]*>[\s\S]*?<\/script>/g,'').replace('href="/app.css"','href="'+path.resolve('public/app.css')+'"'));
   await page.screenshot({path:output+'/new-features-desktop.png'});await page.setViewportSize({width:390,height:844});await page.waitForTimeout(250);await page.screenshot({path:output+'/new-features-mobile.png'});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('new features mobile overflow');count++;await page.setViewportSize({width:1280,height:800});
   const safe=await page.evaluate(()=>{const el=document.createElement('div');el.innerHTML=window.pongyTest.renderMd('<img src=x onerror=alert(1)> [bad](javascript:alert(1)) **safe**');return {danger:!!el.querySelector('img,script,[onerror]'),js:!!el.querySelector('[href^="javascript:"]'),bold:!!el.querySelector('strong')};});if(safe.danger||safe.js||!safe.bold)throw Error('unsafe Markdown');count++;
@@ -116,7 +116,10 @@ const fs=require('fs'),os=require('os'),path=require('path');
   hold=true;await page.locator('#userInput').fill('Bound to this conversation');await page.locator('#sendBtn').click();await page.waitForFunction(()=>document.querySelector('#messages').textContent.includes('First fragment'));
   const original=await page.locator('#topbarTitle').textContent();await page.locator('#newChatBtn').click();release();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
   if((await page.locator('#messages').innerText()).includes('original conversation'))throw Error('stream escaped into a different chat');count++;
-  const saved=runtime.db.prepare('SELECT messages FROM chats').all().map(r=>JSON.parse(r.messages));if(!saved.some(m=>m.some(x=>x.text.includes('from the original conversation'))))throw Error('original chat not saved');count++;
+  // Stream completion schedules an asynchronous save; assert the durable result, not its timing.
+  const savedOriginal=()=>runtime.db.prepare('SELECT messages FROM chats').all().some(r=>JSON.parse(r.messages).some(x=>x.text.includes('from the original conversation')));
+  const saveDeadline=Date.now()+5000;while(!savedOriginal()&&Date.now()<saveDeadline)await new Promise(resolve=>setTimeout(resolve,50));
+  if(!savedOriginal())throw Error('original chat not saved within 5 seconds');count++;
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:output+'/chat-mobile.png'});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('mobile horizontal overflow');count++;
   await page.locator('#menuBtn').click();await page.locator('#upgradeBtn').click();await page.locator('#buyBtn').click();await page.locator('[data-method=sbp]').click();if(!await page.locator('.payment-notice').isVisible())throw Error('payment notice missing');await page.screenshot({path:output+'/payment-unconfigured-mobile.png'});await page.locator('#closeSub').click();
   await page.context().clearCookies();await page.reload();await page.waitForFunction(()=>document.querySelector('#authScreen').classList.contains('show'));
