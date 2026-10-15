@@ -1,0 +1,42 @@
+(function(root){
+'use strict';
+var format='pongy-local-history',limit=50*1024*1024;
+function accountKey(value){if(typeof value!=='string'||!value||value.length>320)throw new Error('Invalid account');return value.toLowerCase()}
+function text(value,max){return typeof value==='string'?value.slice(0,max):''}
+function url(value){try{var u=new URL(value);return u.protocol==='https:'||u.protocol==='http:'?u.href:null}catch(e){return null}}
+function normalizeChat(input){
+ if(!input||typeof input.id!=='string'||!/^[\w-]{1,64}$/.test(input.id)||!Array.isArray(input.messages)||input.messages.length>200)throw new Error('Invalid chat');
+ var messages=input.messages.map(function(m){if(!m||!['user','assistant'].includes(m.role)||typeof m.text!=='string'||m.text.length>60000)throw new Error('Invalid message');var out={role:m.role,text:m.text};
+  if(Array.isArray(m.attachments))out.attachments=m.attachments.slice(0,8).filter(function(f){return f&&typeof f.id==='string'&&/^[\w-]{1,64}$/.test(f.id)}).map(function(f){return{id:f.id,name:text(f.name,200),downloadName:text(f.downloadName,200),mime:text(f.mime,100),size:Math.max(0,Number(f.size)||0),image:!!f.image,archive:!!f.archive,generated:!!f.generated}});
+  if(m.reply&&typeof m.reply.text==='string')out.reply={text:text(m.reply.text,4000)};
+  if(m.meta&&typeof m.meta==='object'){var meta=m.meta;out.meta={id:text(meta.id,64),smart:!!meta.smart,search:!!meta.search,error:!!meta.error,model:text(meta.model,120),retries:Math.max(0,Math.min(8,Number(meta.retries)||0)),startTime:Number(meta.startTime)||0,endTime:Number(meta.endTime)||null,chars:m.text.length};
+   out.meta.sources=(Array.isArray(meta.sources)?meta.sources:[]).slice(0,64).filter(function(v){return v&&url(v.url)}).map(function(v){return{title:text(v.title,120),url:url(v.url)}});
+   out.meta.pages=(Array.isArray(meta.pages)?meta.pages:[]).slice(0,24).filter(function(v){return v&&url(v.url)}).map(function(v){return{title:text(v.title,120),url:url(v.url),excerpt:text(v.excerpt,350),kind:v.kind==='web'?'web':'wiki'}});
+   out.meta.images=(Array.isArray(meta.images)?meta.images:[]).slice(0,24).filter(function(v){return v&&url(v.url)&&url(v.page)}).map(function(v){return{title:text(v.title,120),url:url(v.url),page:url(v.page),author:text(v.author,400),license:text(v.license,400)}});
+  }return out;
+ });
+ return{id:input.id,title:text(input.title,200),messages:messages,pinned:!!input.pinned,updatedAt:Number.isFinite(Number(input.updatedAt||input.updated_at))&&Number(input.updatedAt||input.updated_at)>0?Number(input.updatedAt||input.updated_at):Date.now()};
+}
+function preferences(input){input=input||{};return{theme:input.theme==='dark'?'dark':'light',lang:input.lang==='ru'?'ru':'en',nickname:text(input.nickname,32),memory:input.memory===true}}
+function parseBackup(data,account){if(!data||data.format!==format||data.version!==1||accountKey(data.account)!==accountKey(account)||!Array.isArray(data.chats)||data.chats.length>1000)throw new Error('Invalid backup or account');if(new Blob([JSON.stringify(data)]).size>limit)throw new Error('Backup too large');var seen=new Set();var chats=data.chats.map(function(c){var item=normalizeChat(c);if(seen.has(item.id))throw new Error('Duplicate chat');seen.add(item.id);return item});return{chats:chats,settings:preferences(data.settings)}}
+function create(indexedDB){var opened;
+ function open(){if(opened)return opened;opened=new Promise(function(resolve,reject){if(!indexedDB){reject(new Error('IndexedDB is unavailable'));return}var request=indexedDB.open('pongy-history-v1',1);request.onupgradeneeded=function(){var db=request.result;['chats','deleted'].forEach(function(name){var store=db.createObjectStore(name,{keyPath:['account','id']});store.createIndex('account','account',{unique:false})});db.createObjectStore('preferences',{keyPath:'account'})};request.onsuccess=function(){var db=request.result;db.onversionchange=function(){db.close();opened=null};resolve(db)};request.onerror=function(){opened=null;reject(request.error||new Error('Unable to open history'))};request.onblocked=function(){opened=null;reject(new Error('Close other Pongy tabs and retry'))}});return opened}
+ function transaction(names,mode,work){return open().then(function(db){return new Promise(function(resolve,reject){var tx=db.transaction(names,mode),result;tx.oncomplete=function(){resolve(result)};tx.onerror=tx.onabort=function(){reject(tx.error||new Error('Unable to store history'))};try{work(tx,function(value){result=value})}catch(error){try{tx.abort()}catch(e){}reject(error)}})})}
+ function rows(account,name){account=accountKey(account);return transaction([name],'readonly',function(tx,done){var req=tx.objectStore(name).index('account').getAll(account);req.onsuccess=function(){done(req.result)}})}
+ var api={
+  list:function(account){return rows(account,'chats').then(function(items){return items.map(function(row){return row.value}).sort(function(a,b){return b.updatedAt-a.updatedAt})})},
+  put:function(account,chat){account=accountKey(account);chat=normalizeChat(chat);return transaction(['chats','deleted'],'readwrite',function(tx){tx.objectStore('chats').put({account:account,id:chat.id,value:chat});tx.objectStore('deleted').delete([account,chat.id])})},
+  mirror:function(account,chats){account=accountKey(account);chats=chats.map(normalizeChat);return transaction(['chats'],'readwrite',function(tx){var store=tx.objectStore('chats'),req=store.index('account').openCursor(account);req.onsuccess=function(){var cursor=req.result;if(cursor){cursor.delete();cursor.continue()}else chats.forEach(function(chat){store.put({account:account,id:chat.id,value:chat})})}})},
+  remove:function(account,id){account=accountKey(account);return transaction(['chats','deleted'],'readwrite',function(tx){tx.objectStore('chats').delete([account,id]);tx.objectStore('deleted').put({account:account,id:id,pending:true,time:Date.now()})})},
+  deleted:function(account){return rows(account,'deleted')},
+  acknowledgeDelete:function(account,id){account=accountKey(account);return transaction(['deleted'],'readwrite',function(tx){var store=tx.objectStore('deleted'),req=store.get([account,id]);req.onsuccess=function(){if(req.result){req.result.pending=false;store.put(req.result)}}})},
+  getPreferences:function(account){account=accountKey(account);return transaction(['preferences'],'readonly',function(tx,done){var req=tx.objectStore('preferences').get(account);req.onsuccess=function(){done(req.result?req.result.value:null)}})},
+  setPreferences:function(account,data){account=accountKey(account);data=preferences(data);return transaction(['preferences'],'readwrite',function(tx){tx.objectStore('preferences').put({account:account,value:data})})},
+  export:function(account){account=accountKey(account);return Promise.all([api.list(account),api.getPreferences(account)]).then(function(values){return{format:format,version:1,account:account,createdAt:new Date().toISOString(),chats:values[0],settings:values[1]||preferences({}),attachmentsIncluded:false}})},
+  import:function(account,data){account=accountKey(account);var backup=parseBackup(data,account);return api.list(account).then(function(existing){var ids=new Set(existing.map(function(c){return c.id}));backup.chats.forEach(function(c){if(ids.has(c.id))c.id=Date.now()+'-'+Math.random().toString(36).slice(2,12);ids.add(c.id);c.updatedAt=Date.now()});return transaction(['chats','deleted','preferences'],'readwrite',function(tx){backup.chats.forEach(function(c){tx.objectStore('chats').put({account:account,id:c.id,value:c});tx.objectStore('deleted').delete([account,c.id])});tx.objectStore('preferences').put({account:account,value:backup.settings})}).then(function(){return backup})})},
+  estimate:function(storage){return storage&&storage.estimate?storage.estimate():Promise.resolve({})},
+  persist:function(storage){return storage&&storage.persist?storage.persist():Promise.resolve(false)}
+ };return api;
+}
+root.PongyHistory={create:create,normalizeChat:normalizeChat,parseBackup:parseBackup,preferences:preferences};
+})(typeof window==='object'?window:globalThis);

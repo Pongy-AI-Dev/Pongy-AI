@@ -248,3 +248,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 #sidebar{transition:width .25s ease,background-color .24s ease,color .24s ease,border-color .24s ease}
 @media(prefers-reduced-motion:reduce){#sidebar{transition:none!important}}
+
+.local-history-card{margin-top:16px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
+.local-history-card summary{cursor:pointer;font-size:14px;font-weight:600;min-height:44px;line-height:44px}
+.local-history-card p{font-size:14px;line-height:1.5;color:var(--fg2);margin:12px 0}
+.local-history-action{min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--fg);font:inherit;font-size:14px;cursor:pointer;transition:background .18s,transform .18s}
+.local-history-action:hover{background:var(--bg3)}.local-history-action:active{transform:scale(.98)}
+#persistHistory{width:100%;margin-top:8px}#localHistoryStatus:empty{display:none}
+@media(prefers-reduced-motion:reduce){.local-history-action{transition:none}.local-history-action:active{transform:none}}
+@media(max-width:767px){
+ #settingsModal .modal-body{padding:16px}
+ #settingsModal .modal-body>div[style*="margin-bottom"]{margin-bottom:14px!important}
+ #settingsModal .field-label{margin-bottom:8px}
+ #settingsModal .local-history-card:not([open]){padding-top:6px;padding-bottom:6px}
+ #settingsModal .support-link{margin-top:12px}
+ #logoutBtnSettings{margin-top:12px!important}
+}

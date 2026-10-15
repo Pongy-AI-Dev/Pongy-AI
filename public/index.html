@@ -139,6 +139,7 @@ Continue with Google
 <label class="memory-setting"><input type="checkbox" id="memoryToggle"/> <span>Контекст из других чатов / Cross-chat context</span></label>
 <div style="margin-bottom:18px"><div class="field-label" id="nickLabel">Nickname</div><input class="inp" id="nickInput" maxlength="32"/></div>
 <div><div class="field-label" id="subscriptionLabel">Subscription</div><div id="subStatusBox"></div></div>
+<details class="local-history-card"><summary id="localHistoryTitle">History on this device</summary><p id="localHistoryNote"></p><div class="grid2"><button class="local-history-action" id="exportHistory">Export backup</button><button class="local-history-action" id="importHistory">Import backup</button></div><button class="local-history-action" id="persistHistory">Request persistent storage</button><p id="localHistoryStatus" role="status"></p><input id="historyFile" type="file" accept=".json,application/json" hidden/></details>
 <a class="support-link" href="mailto:support@pongy.ai"><div class="support-icon"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><path d="M22 6l-10 7L2 6"></path></svg></div><div><div class="support-title">Support</div><div class="support-email">support@pongy.ai</div></div></a>
 <button id="logoutBtnSettings" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:600;font-size:13.5px;cursor:pointer">Sign out</button>
 </div>
@@ -174,6 +175,6 @@ Continue with Google
 <div class="confirm-actions"><button class="confirm-btn secondary" id="confirmNo">Cancel</button><button class="confirm-btn primary" id="confirmYes">OK</button></div>
 </div>
 </div>
-<script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script>
+<script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script><script src="/local-history.js"></script>
 <script src="/app.js"></script></body>
 </html>
