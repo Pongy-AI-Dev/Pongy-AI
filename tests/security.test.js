@@ -19,7 +19,7 @@ async function setup(options={}){
   if(url.endsWith('/models'))return new Response(JSON.stringify({data:[{id:'fixture-a:free',pricing:{prompt:'0',completion:'0'},context_length:10000},{id:'fixture-b:free',pricing:{prompt:'0',completion:'0'},context_length:20000},{id:'paid-model',pricing:{prompt:'0.1',completion:'0.1'}}]}));
   return options.aiFetch?options.aiFetch(url,opts):SSE([delta('Fixture answer'), 'data: [DONE]\n\n']);
  };
- const runtime=createApp({config,fetchImpl,checkMx:async()=>true});
+ config.localConversation=false;const runtime=createApp({config,fetchImpl,checkMx:async()=>true});
  const server=await new Promise(resolve=>{const server=runtime.app.listen(0,'127.0.0.1',()=>resolve(server));});const base='http://127.0.0.1:'+server.address().port;
  const request=async(route,{method='GET',body,cookie,headers={}}={})=>fetch(base+route,{method,headers:{Origin:base,...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),...headers},body:body?JSON.stringify(body):undefined,redirect:'manual'});
  const seed=(email)=>{runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run(email,bcrypt.hashSync('test-password-123',4));return runtime.db.prepare('SELECT * FROM users WHERE email=?').get(email);};
