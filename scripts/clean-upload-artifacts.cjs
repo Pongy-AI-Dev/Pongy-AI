@@ -1,0 +1,6 @@
+'use strict';
+// Removes only byte-identical download/template duplicates, never deployment .env files.
+const fs=require('node:fs'),path=require('node:path');
+function plan(root){const pairs=[['download','.gitattributes'],['download (1)','.gitignore'],['env.example','.env.example']],files=[];for(const [extra,canonical] of pairs){const a=path.join(root,extra),b=path.join(root,canonical);if(!fs.existsSync(a))continue;if(!fs.lstatSync(a).isFile()||!fs.existsSync(b)||!fs.lstatSync(b).isFile()||!fs.readFileSync(a).equals(fs.readFileSync(b)))throw Error('Refusing to remove non-identical duplicate: '+extra+'. Review it manually; contents withheld.');files.push(extra)}return files}
+module.exports={plan};
+if(require.main===module){try{const files=plan(process.cwd());for(const file of files){if(process.argv.includes('--apply')){fs.unlinkSync(path.join(process.cwd(),file));console.log('Removed identical duplicate: '+file)}else console.log('Would remove identical duplicate: '+file)}if(!files.length)console.log('No duplicate upload artifacts found.');else if(!process.argv.includes('--apply'))console.log('Dry run only. Pass --apply to remove these identical duplicates.')}catch(e){console.error(e.message);process.exitCode=1}}
