@@ -109,7 +109,7 @@ Continue with Google
 <button class="tb-btn" id="shareBtn"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg></button>
 </div>
 </div>
-<div id="composerMode" hidden><span id="composerModeText"></span><button type="button" id="clearComposerMode" aria-label="Normal chat">×</button></div>
+
 <div id="pinnedMessages" hidden></div><div id="messages"></div>
 <div id="inputArea">
 <div id="inputInner">
@@ -131,7 +131,7 @@ Continue with Google
 <input id="cameraInput" type="file" hidden accept="image/jpeg,image/png,image/webp" capture="environment"/>
 <input id="galleryInput" type="file" hidden accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple/>
 <button id="attachBtn" type="button" aria-label="Tools and attachments">+</button>
-<textarea id="userInput" placeholder="Ask Pongy your first question" rows="1"></textarea>
+<div class="composer-editor"><div id="composerMode" class="skill-chip" hidden><i id="composerModeIcon" aria-hidden="true"></i><span id="composerModeText"></span><button type="button" id="clearComposerMode" aria-label="Remove skill">×</button></div><div id="uploadSkill" class="skill-chip" hidden><i id="uploadSkillIcon" aria-hidden="true"></i><span id="uploadSkillText"></span><button type="button" id="clearUploadSkill" aria-label="Remove upload skill">×</button></div><textarea id="userInput" placeholder="Ask Pongy your first question" rows="1"></textarea></div>
 <button id="micBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><rect height="12" rx="3" width="6" x="9" y="2"></rect><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3M8 22h8"></path></svg></button>
 <button disabled="" id="sendBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg></button>
 <button id="stopBtn" style="display:none"><svg fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><rect height="10" rx="2" width="10" x="7" y="7"></rect></svg></button>

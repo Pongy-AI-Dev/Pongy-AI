@@ -399,3 +399,13 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 #composerMode{width:auto;margin:0;border-radius:0;padding:9px 16px;border:0;background:color-mix(in srgb,var(--accent) 16%,var(--bg));color:var(--accent);flex-shrink:0;justify-content:space-between;font-size:13px}#composerMode button{margin-left:auto}
 #chatLimitNotice{padding:18px 12px;color:var(--text2);text-align:center;font-size:14px}#chatLimitNotice[hidden],.input-box[hidden]{display:none!important}
 .delivery-failed{display:flex;align-items:center;gap:6px;color:#e34850;font-size:12px;margin-top:7px}.delivery-failed>span{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid currentColor;border-radius:50%;font-weight:700}
+/* Inline skill prefixes are controls, not prompt text. */
+.composer-editor{display:flex;align-items:center;flex:1;flex-wrap:wrap;gap:4px 6px;min-width:0;align-self:center;padding:2px 0}
+.composer-editor #userInput{flex:1 1 120px;width:0;min-width:90px;padding:8px 4px}
+#composerMode.skill-chip,#uploadSkill.skill-chip{display:inline-flex;align-items:center;justify-content:flex-start;gap:5px;flex:0 1 auto;max-width:100%;width:auto;padding:4px 5px 4px 8px;margin:0;border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:8px;background:color-mix(in srgb,var(--accent) 11%,var(--bg3));color:var(--accent);font-size:12px;line-height:18px;animation:skill-appear .35s ease-out}
+.skill-chip i{display:inline-flex;flex-shrink:0;font-style:normal}.skill-chip span{min-width:0;overflow-wrap:anywhere}.skill-chip button,#composerMode.skill-chip button{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin:0;min-width:24px;min-height:24px;width:24px;height:24px;border-radius:5px;color:inherit;font-size:18px;opacity:0;transition:opacity .25s ease,background-color .25s ease}
+.skill-chip:hover button,.skill-chip:focus-within button{opacity:1}.skill-chip button:hover{background:color-mix(in srgb,var(--accent) 15%,transparent)}#uploadSkill[hidden]{display:none!important}
+@media(hover:none),(pointer:coarse){.skill-chip button,#composerMode.skill-chip button{opacity:1;min-width:30px;min-height:30px}}
+@keyframes skill-appear{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#composerMode.skill-chip,#uploadSkill.skill-chip{animation:none}.skill-chip button{transition:none}}
+#composerMode.skill-chip:hover button,#composerMode.skill-chip:focus-within button{opacity:1}
