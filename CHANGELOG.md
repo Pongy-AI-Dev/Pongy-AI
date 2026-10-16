@@ -1,6 +1,15 @@
 # Журнал изменений Pongy AI
 
 
+## 0.12.0
+
+- Add live zero-price verification across all pricing fields, curated task-specific candidates and a maximum of five reserves including the free router; paid models remain disabled.
+- Shorten first-output waits for stalled providers and answer exact greetings locally after authentication, safety and message limits.
+- Expand RU/EN contextual slang and response-format guidance; preserve account-isolated personalization and trusted developer facts.
+- Allow requested source links in answer text, expose research tools for explicit link requests, and render Markdown URLs containing parentheses correctly.
+- Increase the default answer budget, report token truncation honestly, and do not attach truncated code as a completed file.
+- Block legacy paid-image activation while Plus is inactive; no free image-generation endpoint is claimed.
+
 ## 0.11.5
 
 - Use a black/white theme-aware stop button with a centered opposite-color square.
