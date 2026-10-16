@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import audit from '../scripts/source-audit.cjs';
+function fixture(run){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-source-audit-'));try{fs.mkdirSync(path.join(dir,'lib'));fs.mkdirSync(path.join(dir,'tests'));run(dir)}finally{fs.rmSync(dir,{recursive:true,force:true})}}
+test('source audit catches missing UI script before browsers run',()=>fixture(root=>{const errors=audit.references(root,[],{scripts:{'test:ui':'node tests/recovery-ui.cjs && node tests/session-ui.cjs'}});assert.equal(errors.length,2);assert(errors.some(v=>v.includes('recovery-ui.cjs')))}));
+test('source audit catches missing server imports and worker entrypoints',()=>fixture(root=>{fs.writeFileSync(path.join(root,'server.js'),"import {policy} from './lib/chat-policy.js';\nnew URL('./lib/worker.js', import.meta.url);");const errors=audit.references(root,['server.js'],{});assert.equal(errors.length,2);assert(errors.some(v=>v.includes('chat-policy.js')))}));
+test('source audit accepts complete scripts/imports and test globs',()=>fixture(root=>{fs.writeFileSync(path.join(root,'server.js'),"import './lib/policy.js';");fs.writeFileSync(path.join(root,'lib/policy.js'),'');assert.deepEqual(audit.references(root,['server.js','lib/policy.js'],{scripts:{start:'node server.js',test:'node --test tests/*.test.js'}}),[])}));
+test('release integrity detects missing, altered and unexpected files',()=>fixture(root=>{fs.writeFileSync(path.join(root,'server.js'),'good');const hash=crypto.createHash('sha256').update('good').digest('hex');fs.writeFileSync(path.join(root,'MANIFEST.sha256'),hash+'  server.js\n');assert.deepEqual(audit.releaseIntegrity(root,['server.js','MANIFEST.sha256']),[]);fs.writeFileSync(path.join(root,'server.js'),'old');assert.match(audit.releaseIntegrity(root,['server.js','MANIFEST.sha256'])[0],/differs/);assert.match(audit.releaseIntegrity(root,['MANIFEST.sha256'])[0],/missing/);assert(audit.releaseIntegrity(root,['server.js','MANIFEST.sha256','extra.js']).some(v=>v.includes('not in release manifest')))}));
+test('release integrity refuses manifest traversal and duplicate entries',()=>fixture(root=>{const hash='0'.repeat(64);fs.writeFileSync(path.join(root,'MANIFEST.sha256'),hash+'  ../outside\n'+hash+'  server.js\n'+hash+'  server.js\n');const errors=audit.releaseIntegrity(root,['MANIFEST.sha256']);assert(errors.some(v=>v.includes('Invalid or duplicate')))}));
+
+test('credential scanner checks environment templates and test files without logging values',()=>{const secret='sk-or-'+'v1-'+'a'.repeat(64);for(const file of ['tests/fixture.js','public/app.js']){const errors=audit.secretIssues(file,secret);assert.equal(errors.length,1);assert(!errors[0].includes(secret))}assert(audit.secretIssues('.env.example','OPENROUTER_API_KEY='+secret).length);assert.deepEqual(audit.secretIssues('.env.example','OPENROUTER_API_KEY=\nJWT_SECRET=\nPORT=3000'),[])});
