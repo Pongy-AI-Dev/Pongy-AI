@@ -316,7 +316,7 @@ body.dark .confirm-btn.primary,body.dark .msg.user .bubble,body.dark #sendBtn.re
 .progress-body:not([hidden]){animation:progress-text-in .18s ease-out both}
 .progress-body p:last-child{animation:none}.progress-note{font-size:12px}
 @keyframes progress-text-in{from{opacity:.4;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
-@media(prefers-reduced-motion:reduce){.stream-fragment,.thinking-label,.thinking .dots span,.progress-live .progress-title,.progress-body:not([hidden]){animation:none!important;transform:none!important;opacity:1!important}.thinking-label,.progress-live .progress-title{background:none;color:var(--fg2);-webkit-text-fill-color:currentColor}.progress-toggle>svg{transition:none}}
+@media(prefers-reduced-motion:reduce){.stream-fragment,.thinking-label,.thinking .dots span,.progress-live .progress-title,.progress-body:not([hidden]){animation:none!important}.thinking-label,.progress-live .progress-title{background:none;color:var(--fg2);-webkit-text-fill-color:currentColor}.progress-toggle>svg{transition:none}}
 
 /* 0.7: readable answers and an optional, isolated workspace. */
 .msg-wrap,#inputInner{max-width:1100px}.msg.ai .msg-content,.msg.ai .msg-content:has(.progress-panel){width:100%;max-width:100%}.msg.user .msg-content{max-width:85%}
@@ -409,3 +409,45 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 @keyframes skill-appear{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#composerMode.skill-chip,#uploadSkill.skill-chip{animation:none}.skill-chip button{transition:none}}
 #composerMode.skill-chip:hover button,#composerMode.skill-chip:focus-within button{opacity:1}
+
+/* Slow, anchored feedback: no button displacement and no text layout animation. */
+@media(prefers-reduced-motion:no-preference){
+ button,a,[role="button"]{transition:background-color .38s ease,color .38s ease,border-color .38s ease,box-shadow .45s ease,opacity .35s ease;}
+ button:hover:not(:disabled){box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 7%,transparent);}
+ button:active:not(:disabled){transform:none;box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 15%,transparent);}
+ .task-indicator .thinking-label{animation:thinking-light-wave 3.6s linear infinite;background-image:linear-gradient(105deg,var(--fg2) 24%,var(--fg2) 36%,var(--accent) 47%,var(--fg) 52%,var(--fg2) 65%);background-size:260% 100%;}
+ .task-indicator .dots span{animation:thinking-dot-hop 1.9s ease-in-out infinite;will-change:transform;}
+ .task-indicator .dots span:nth-child(2){animation-delay:.22s}.task-indicator .dots span:nth-child(3){animation-delay:.44s}
+ .stream-fragment{animation-duration:.7s}
+}
+#composerMode.skill-chip{flex-wrap:nowrap;align-items:center;gap:6px;padding:4px 6px 4px 9px;min-height:32px;}
+#composerMode.skill-chip>i{align-items:center;justify-content:center;line-height:1}
+#composerMode.skill-chip>span{line-height:20px}
+#composerMode.skill-chip #clearComposerMode{display:inline-flex;align-items:center;justify-content:center;align-self:center;flex:0 0 26px;width:26px;height:26px;min-width:26px;min-height:26px;margin:0;padding:0;line-height:1;position:static;}
+#clearComposerMode svg{display:block;flex:none;width:14px;height:14px;pointer-events:none;}
+#uploadSkill{display:none!important}
+.checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
+@media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
+
+:root{--pongy-build:0.11.2}
+#chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
+#chatViewport>#messages{width:100%;min-height:0}
+#scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
+#scrollToEnd svg{display:block}#scrollToEnd[hidden],#voiceHelp[hidden],#voiceInstall[hidden],#voiceRetry[hidden],#buildNotice[hidden]{display:none!important}
+#voiceHelp,#buildNotice{margin:6px 0 10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--fg2);font-size:12px;line-height:1.6}
+#voiceHelp>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px}#voiceHelp button,#buildNotice button{padding:6px 9px;border-radius:7px;color:var(--accent);min-height:32px}#voiceHelpClose{margin-left:auto}#buildNotice{margin-bottom:3px}.motion-setting{margin-bottom:18px}.motion-setting select{width:100%}#motionHint{font-size:12px;line-height:1.6;color:var(--fg2);margin-top:8px}
+:root[data-motion="reduced"] *,:root[data-motion="reduced"] *::before,:root[data-motion="reduced"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+:root[data-motion="reduced"] .thinking-label,:root[data-motion="reduced"] .progress-title{background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important}
+/* Full motion is an explicit device preference, never a silent override of accessibility settings. */
+:root[data-motion="full"] .task-indicator .thinking-label,:root[data-motion="full"] .progress-live .progress-title{background-image:linear-gradient(105deg,var(--fg2) 24%,var(--fg2) 36%,var(--accent) 47%,var(--fg) 52%,var(--fg2) 65%)!important;background-size:260% 100%!important;background-clip:text!important;-webkit-background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;animation:thinking-light-wave 3.6s linear infinite!important}
+:root[data-motion="full"] .task-indicator .dots span{animation:thinking-dot-hop 1.9s ease-in-out infinite!important;transform:translateY(0);will-change:transform}
+:root[data-motion="full"] .task-indicator .dots span:nth-child(2){animation-delay:.22s!important}:root[data-motion="full"] .task-indicator .dots span:nth-child(3){animation-delay:.44s!important}
+:root[data-motion="full"] .stage-icon{animation:stage-breathe 3s ease-in-out infinite!important}:root[data-motion="full"] .stream-fragment{animation:answer-fragment-in .7s ease-out both!important}
+:root[data-motion="full"] button,:root[data-motion="full"] a{transition:background-color .38s ease,color .38s ease,border-color .38s ease,box-shadow .45s ease,opacity .35s ease!important}
+:root[data-motion="full"] button:hover:not(:disabled){box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 7%,transparent)}
+:root[data-motion="full"] button:active:not(:disabled){box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 15%,transparent)}
+@media(max-width:1024px){#scrollToEnd{right:16px;bottom:12px;width:44px;height:44px}#voiceHelp button{min-height:40px}}
+:root[data-motion="full"] .overlay.open,:root[data-motion="full"] .modal-overlay.open,:root[data-motion="full"] .modal.open{animation:overlayIn .4s ease both!important}
+:root[data-motion="full"] .open .modal-box,:root[data-motion="full"] .confirm-modal.open .confirm-box{animation:panelIn .45s ease-out both!important}
+:root[data-motion="full"] body,:root[data-motion="full"] #sidebar,:root[data-motion="full"] #main,:root[data-motion="full"] .input-box,:root[data-motion="full"] .modal-box,:root[data-motion="full"] .auth-box{transition:background-color .45s ease,color .4s ease,border-color .4s ease,box-shadow .4s ease!important}
+:root[data-motion="full"] .language-transition{animation:language-fade .55s ease-out both!important}
