@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.10.3
+
+- Synchronize sidebar accessibility on breakpoint changes and page restoration.
+- Await asynchronous mobile viewport state in the WebKit session test without removing inert or aria-expanded assertions.
+- Include viewport and sidebar state in fixture diagnostics.
+
 ## 0.10.2
 - Removed duplicate upload artifacts from the release and restored the complete environment template under its canonical dotfile name. A dry-run cleanup utility refuses to delete non-identical files.
 - Deferred-delete browser assertions wait for the actual successful DELETE response rather than an unreliable fixed 300 ms delay.
