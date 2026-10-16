@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.12.1"}
+:root{--pongy-build:"0.12.2"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -492,3 +492,32 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 @media(prefers-reduced-motion:no-preference){.icon-btn,.chat-act,.site-proposal button,.code-card header button,.msg-actions button,.composer-menu>button,.skill-chip{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}}
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
+
+/* 0.12.2: shared, layout-stable motion and synchronous settings commits. */
+:root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
+.sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
+.brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.message-time{font-size:11px;line-height:1.6;color:var(--fg2);white-space:nowrap;align-self:center;flex:none;opacity:0;transition:opacity .35s ease;padding:0 6px;font-variant-numeric:tabular-nums}
+.msg:hover .message-time,.msg:focus-within .message-time{opacity:1}.msg.user .message-time{margin-right:4px}.msg.ai .message-time{margin-left:4px}
+@media(hover:none),(pointer:coarse){.message-time{opacity:1}}
+/* One frame updates ALL palette and translated UI, without staggered old colors. */
+@layer pongy-settings-sync{html body.settings-commit,html body.settings-commit *,html body.settings-commit *::before,html body.settings-commit *::after{transition:none!important}}
+html body.settings-commit .language-transition{animation:none!important}
+@media(prefers-reduced-motion:no-preference){
+ :root:not([data-motion="reduced"]) button,:root:not([data-motion="reduced"]) a{transition:background-color .32s var(--motion-ease),color .32s var(--motion-ease),border-color .32s var(--motion-ease),box-shadow .36s var(--motion-ease),opacity .3s ease}
+ :root:not([data-motion="reduced"]) button:hover:not(:disabled){box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 6%,transparent)}
+ :root:not([data-motion="reduced"]) button:active:not(:disabled){box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--accent) 13%,transparent)}
+ :root:not([data-motion="reduced"]) .composer-menu,:root:not([data-motion="reduced"]) #authLanguageMenu,:root:not([data-motion="reduced"]) #agentPopup{animation:quiet-surface-in .42s var(--motion-ease) both}
+ :root:not([data-motion="reduced"]) .progress-body:not([hidden]),:root:not([data-motion="reduced"]) .pinned-list:not([hidden]),:root:not([data-motion="reduced"]) details[open]>*:not(summary){animation:quiet-surface-in .42s var(--motion-ease) both}
+}
+:root[data-motion="full"] .composer-menu,:root[data-motion="full"] #authLanguageMenu,:root[data-motion="full"] #agentPopup,:root[data-motion="full"] .progress-body:not([hidden]),:root[data-motion="full"] .pinned-list:not([hidden]){animation:quiet-surface-in .42s var(--motion-ease) both!important}
+html .overlay.open.closing,html .confirm-modal.open.closing,html .modal.open.closing{animation:overlayOut .3s ease both!important;pointer-events:none}
+html .overlay.open.closing .modal-box,html .confirm-modal.open.closing .confirm-box,html .modal.open.closing .modal-box{animation:quiet-surface-out .3s var(--motion-ease) both!important}
+@keyframes quiet-surface-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes quiet-surface-out{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(4px)}}
+:root[data-motion="reduced"] .message-time{transition:none}
+:root[data-motion="reduced"] .overlay.open.closing,:root[data-motion="reduced"] .overlay.open.closing .modal-box{animation:none!important}
+@media(prefers-reduced-motion:reduce){:root:not([data-motion="full"]) .overlay.open.closing,:root:not([data-motion="full"]) .overlay.open.closing .modal-box{animation:none!important}}
+
+:root[data-motion="full"] .overlay.open.closing,:root[data-motion="full"] .confirm-modal.open.closing,:root[data-motion="full"] .modal.open.closing{animation:overlayOut .3s ease both!important;pointer-events:none}
+:root[data-motion="full"] .overlay.open.closing .modal-box,:root[data-motion="full"] .confirm-modal.open.closing .confirm-box,:root[data-motion="full"] .modal.open.closing .modal-box{animation:quiet-surface-out .3s var(--motion-ease) both!important}
