@@ -1,6 +1,6 @@
 # Pongy AI
 
-**Версия 0.9.1** · Веб-приложение для компьютеров и телефонов.
+**Версия 0.10.0** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
@@ -108,3 +108,23 @@ npm start
 По явной просьбе ИИ может прочитать другой сохранённый чат этого же аккаунта. Названия сравниваются без учёта регистра; неоднозначный выбор требует уточнения. Вложения не входят в текст чтения. Большие чаты могут не помещаться в контекст целиком; модель получает явный признак неполноты и не должна утверждать обратное.
 
 Навыки меню «+» показываются метками в начале поля ввода и не входят в текст запроса. Крестик доступен при наведении и фокусе, а на сенсорном экране виден постоянно. Удаление метки не удаляет прикреплённые файлы.
+
+## Optional APILayer resources
+Disabled by default (`APILAYER_ENABLED=false`). Enable only after confirming the product subscriptions, HTTPS access and quota in the provider dashboard. Set credentials only in the server environment: a product-specific `APILAYER_<PRODUCT>_KEY` overrides `APILAYER_API_KEY`. A Marketplace API key is not assumed to work with the direct product APIs used here. No arbitrary endpoint overrides, HTTP downgrade, automated retries or paid fallback are implemented.
+
+| Product | Integration scope | Cache |
+| --- | --- | --- |
+| Mediastack | Published news, up to 5 records | 15 minutes |
+| Numverify | Phone formatting/country/carrier metadata; not ownership or reachability | 24 hours, account-scoped memory only |
+| IPstack | Approximate location of an explicitly supplied public IP; no automatic IP profiling | 24 hours, account-scoped memory only |
+| Aviationstack | Flight status by flight code, airline reference by IATA code | 5 minutes |
+| Positionstack | Forward/reverse geocoding of an explicitly supplied address/coordinates; no map tiles or routing | 30 days, account-scoped memory only |
+| Countrylayer | Country reference by ISO alpha-2 code; offsets may not reflect current daylight saving | 7 days |
+| Marketstack | Up to 5 historical/end-of-day stock records; not live quotes, forex or investment advice | 1 hour |
+| Mailboxlayer | Syntax and domain/MX signals; SMTP and catch-all checks disabled, no guaranteed mailbox existence/delivery | 6 hours, account-scoped memory only |
+
+Queries are offered to the model only for relevant explicit requests. They are not mandatory, even when a tool is offered. A phone/email/address/IP must come from the current request, not account settings, server network metadata or earlier chats. Removing an instruction to use external services prevents offering these tools. At most two different specialized products can be used in one answer; a product is not retried in that answer. The provider receives only the needed lookup arguments, not the whole conversation. Data and timestamps are reference material, never governing instructions. Sources are added to the standard source list.
+
+`APILAYER_MONTHLY_LIMIT` is capped at 100 per product **for all users combined**; lower it to reserve quota for other applications. SQLite atomically reserves requests before sending; failed HTTP calls, malformed replies and timeouts count conservatively. Identical concurrent lookups are coalesced. Valid cache hits do not consume requests. The cap also covers a rolling 31-day window, so crossing a calendar month cannot create an accidental burst above a free allowance. This is stricter than some provider billing cycles. Limits do not include other applications using the same key: inspect actual provider usage and lower the local cap accordingly. This integration does not enable paid plans or configure the provider's billing/overage settings.
+
+Quota and public-cache tables use the server SQLite file and require a persistent disk to survive service recreation. Separate server instances with independent databases do not share quotas; use one instance or implement shared atomic quota storage before scaling. Do not delete the database to reset limits. Failed authorization/plan checks open a protective circuit; a changed key changes that circuit identity. A provider quota response blocks that credential/product for 31 days. Errors are never returned with raw provider bodies or keys. Personal lookup responses are not persisted to the public cache or request-count tables.

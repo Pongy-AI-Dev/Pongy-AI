@@ -1,6 +1,13 @@
 # Журнал изменений Pongy AI
 
 
+## 0.10.0
+- Added optional Mediastack, Numverify, IPstack, Aviationstack, Positionstack, Countrylayer, Marketstack and Mailboxlayer tools, disabled until configured on the server.
+- Prompt-specific tool availability, explicit personal-data arguments, account-scoped private caches, bounded HTTPS requests, sanitized output and source attribution.
+- Global per-product cap of up to 100 attempts in a rolling 31-day window, durable SQLite counters, request coalescing, public caches and protective circuits. No automatic paid fallback, background refresh or HTTP downgrade.
+- Integration intentionally exposes only supported bounded lookups, not universal geographic data, live forex/stock quotes, or proof of phone/email ownership.
+
+
 ## 0.9.1
 - Навыки из меню «+» отображаются компактными метками внутри поля ввода перед текстом вместо полосы над чатом.
 - Крестик удаления появляется при наведении или клавиатурном фокусе; на сенсорных устройствах всегда виден. Удаление метки не стирает текст и не удаляет вложения. Метки не добавляются в текст запроса.
