@@ -1,6 +1,15 @@
 # Журнал изменений Pongy AI
 
 
+## 0.12.2
+
+- Raise the bounded free-only candidate pool from six to eight; retain live zero-price checks and the free router reserve.
+- Increase first-output budgets to 6/8 seconds, stream idle timeout to 18 seconds and overall deadline to 75 seconds; terminal account quota failures do not trigger futile retries.
+- Respect per-model Retry-After cooldowns and distinguish explicit provider daily free-model quotas from transient model rate limits.
+- Persist message timestamps locally and server-side; show localized times alongside message actions, with honest unknown-time labels for legacy messages.
+- Commit theme and translated UI synchronously without staggered color transitions.
+- Add an accessible five-turn logo animation followed by a title-letter wave, unified surface/control motion and complete modal exit timing; respect reduced motion.
+
 ## 0.12.1
 
 - Compare requested settings with a fresh UI/account snapshot and suppress no-op proposals; recheck before applying stale cards.
