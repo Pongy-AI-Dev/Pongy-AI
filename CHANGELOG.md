@@ -1,6 +1,17 @@
 # Журнал изменений Pongy AI
 
 
+## 0.10.2
+- Removed duplicate upload artifacts from the release and restored the complete environment template under its canonical dotfile name. A dry-run cleanup utility refuses to delete non-identical files.
+- Deferred-delete browser assertions wait for the actual successful DELETE response rather than an unreliable fixed 300 ms delay.
+- UI suites now run with named results, bounded execution and an aggregate failure report; no browser suite or security check is disabled. CI uploads the hidden diagnostic-log directory explicitly.
+- Keepalive chat saves retain request deadlines; stalled AI startup hooks release their concurrency slots. Incomplete upstream streams no longer become completed saved answers.
+- Account transitions clear unsent composer drafts. Export/import recheck account identity across pending local writes.
+- Resending verification creates an encrypted HttpOnly pending verification session and restarts automatic confirmation polling without exposing refresh credentials.
+- Specialized resources respect common external-service opt-out wording; email punctuation and coordinate signs remain significant.
+- Attachment budgets count expanded model-bound text and image payloads rather than compressed ZIP sizes, including top-level attachments.
+- IME confirmation does not prematurely submit; a closed mobile sidebar is inert and its trigger exposes expanded state.
+
 ## 0.10.1
 - Complete release includes all UI suites, test fixtures and server modules; required files and script targets are checked before browser tests.
 - Source checks resolve local server imports and worker entrypoints, validate syntax across the project and scan credential markers including tests and the environment template.

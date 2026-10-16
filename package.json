@@ -1,13 +1,13 @@
 {
   "name": "pongy-server",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node tests/project-check.cjs",
-    "test:ui": "node tests/ui.cjs && node tests/firebase-ui.cjs && node tests/tools-ui.cjs && node tests/i18n-ui.cjs && node tests/branding-ui.cjs && node tests/session-ui.cjs && node tests/auth-polish-ui.cjs && node tests/auth-verification-ui.cjs && node tests/motion-ui.cjs && node tests/workspace-ui.cjs && node tests/stability-ui.cjs && node tests/recovery-ui.cjs && node tests/product-ui.cjs && node tests/chat-policy-ui.cjs",
+    "test:ui": "node tests/ui-runner.cjs",
     "check:release": "node tests/project-check.cjs --release"
   },
   "dependencies": {

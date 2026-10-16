@@ -1,6 +1,6 @@
 # Pongy AI
 
-**Версия 0.10.1** · Веб-приложение для компьютеров и телефонов.
+**Версия 0.10.2** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
@@ -138,3 +138,5 @@ Quota and public-cache tables use the server SQLite file and require a persisten
 Browser history is stored locally without a separate encryption password. A returning workspace may display that device’s cached history while the server is unavailable; this does not authorize API access or sending messages. Use a separate browser profile on shared devices and sign out before handing the device to someone else.
 
 The 50 MB aggregate attachment cap currently applies to SQLite storage. Firestore enforces a per-document bound, but this release does not provide a trusted atomic aggregate attachment quota across multiple server instances or direct authenticated Firestore clients. Monitor cloud storage usage; do not interpret the local cap as a cloud billing guarantee.
+
+Cloud deletion reconciliation between separate devices remains limited: a stale local copy on another device can be re-uploaded after a server-side deletion. This release does not claim global deletion consistency.
