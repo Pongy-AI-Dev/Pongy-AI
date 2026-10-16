@@ -1,6 +1,15 @@
 # Журнал изменений Pongy AI
 
 
+## 0.10.1
+- Complete release includes all UI suites, test fixtures and server modules; required files and script targets are checked before browser tests.
+- Source checks resolve local server imports and worker entrypoints, validate syntax across the project and scan credential markers including tests and the environment template.
+- Optional release-integrity check verifies every delivered file against SHA-256 and rejects missing, changed or additional files. Normal development checks do not require unchanged release hashes.
+- Fixed a race that discarded local chat history after a fast session-server failure and a slower browser-storage response. Cached data never authorizes message sending.
+- Session tests explicitly check required controls and hold the server response until cached-start assertions finish instead of racing a fixed delay.
+- Prevented delayed attachment fetch/blob/text handlers from reopening another account’s preview after logout, account switching or closing the panel.
+- Invalid primitive JSON from optional resource providers returns a bounded failure instead of rejecting the tool promise.
+
 ## 0.10.0
 - Added optional Mediastack, Numverify, IPstack, Aviationstack, Positionstack, Countrylayer, Marketstack and Mailboxlayer tools, disabled until configured on the server.
 - Prompt-specific tool availability, explicit personal-data arguments, account-scoped private caches, bounded HTTPS requests, sanitized output and source attribution.

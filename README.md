@@ -1,6 +1,6 @@
 # Pongy AI
 
-**Версия 0.10.0** · Веб-приложение для компьютеров и телефонов.
+**Версия 0.10.1** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
@@ -128,3 +128,13 @@ Queries are offered to the model only for relevant explicit requests. They are n
 `APILAYER_MONTHLY_LIMIT` is capped at 100 per product **for all users combined**; lower it to reserve quota for other applications. SQLite atomically reserves requests before sending; failed HTTP calls, malformed replies and timeouts count conservatively. Identical concurrent lookups are coalesced. Valid cache hits do not consume requests. The cap also covers a rolling 31-day window, so crossing a calendar month cannot create an accidental burst above a free allowance. This is stricter than some provider billing cycles. Limits do not include other applications using the same key: inspect actual provider usage and lower the local cap accordingly. This integration does not enable paid plans or configure the provider's billing/overage settings.
 
 Quota and public-cache tables use the server SQLite file and require a persistent disk to survive service recreation. Separate server instances with independent databases do not share quotas; use one instance or implement shared atomic quota storage before scaling. Do not delete the database to reset limits. Failed authorization/plan checks open a protective circuit; a changed key changes that circuit identity. A provider quota response blocks that credential/product for 31 days. Errors are never returned with raw provider bodies or keys. Personal lookup responses are not persisted to the public cache or request-count tables.
+
+## Release integrity
+
+`npm run check` validates project syntax, required files, npm script targets and local server dependencies. `npm run check:release` additionally verifies the original complete release against `MANIFEST.sha256`; intentional source edits invalidate that release snapshot. Neither command proves the absence of all bugs or secrets.
+
+## Storage security boundaries
+
+Browser history is stored locally without a separate encryption password. A returning workspace may display that device’s cached history while the server is unavailable; this does not authorize API access or sending messages. Use a separate browser profile on shared devices and sign out before handing the device to someone else.
+
+The 50 MB aggregate attachment cap currently applies to SQLite storage. Firestore enforces a per-document bound, but this release does not provide a trusted atomic aggregate attachment quota across multiple server instances or direct authenticated Firestore clients. Monitor cloud storage usage; do not interpret the local cap as a cloud billing guarantee.
