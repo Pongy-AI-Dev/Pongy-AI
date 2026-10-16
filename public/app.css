@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.12.0"}
+:root{--pongy-build:"0.12.1"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -473,3 +473,22 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 :root[data-motion="full"] .task-indicator .dots span:nth-child(2){animation-delay:calc(var(--task-phase,0s) + .2s)!important}:root[data-motion="full"] .task-indicator .dots span:nth-child(3){animation-delay:calc(var(--task-phase,0s) + .4s)!important}
 
 .task-indicator .stage-icon{animation-delay:var(--task-phase,0s)!important}
+
+/* Unified controls: stable geometry, quiet depth, no hover translation. */
+:root{--control-radius:12px;--panel-radius:20px;--control-ease:cubic-bezier(.22,.61,.36,1);--panel-shadow:0 12px 34px rgba(17,24,39,.07)}
+body.dark{--panel-shadow:0 12px 34px rgba(0,0,0,.19)}
+.icon-btn,.chat-act,.preview-head button,.modal-head button{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;border-radius:var(--control-radius)}
+.icon-btn svg,.chat-act svg,.preview-head button svg,.modal-head button svg{display:block;flex-shrink:0}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.site-proposal{border-radius:14px;background:var(--bg2);box-shadow:0 2px 8px rgba(17,24,39,.025);gap:14px;padding:12px 14px;align-items:center}
+.site-proposal>span{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+.site-proposal button{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:34px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:10px;line-height:1.2;font-weight:500;background:color-mix(in srgb,var(--accent) 6%,var(--bg))}
+.site-proposal button:disabled{color:var(--fg2);border-color:var(--border);background:transparent;opacity:.8;cursor:default}
+.composer-menu,.auth-lang-menu{border-radius:16px;box-shadow:var(--panel-shadow)}
+.composer-menu>button{border-radius:11px;gap:12px;line-height:1.4}
+.skill-chip{border-radius:10px}.skill-chip>button{display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.code-card{border-radius:14px;overflow:hidden}.code-card header{align-items:center;min-height:42px;gap:12px}.code-card header>div{display:flex;align-items:center;gap:4px}.code-card header button{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;line-height:1;border-radius:8px}
+.msg-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;line-height:1.35;border-radius:8px;min-height:30px}
+@media(prefers-reduced-motion:no-preference){.icon-btn,.chat-act,.site-proposal button,.code-card header button,.msg-actions button,.composer-menu>button,.skill-chip{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}}
+:root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
+:root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
