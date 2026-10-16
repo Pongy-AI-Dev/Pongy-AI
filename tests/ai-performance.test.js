@@ -44,3 +44,18 @@ test('programming mode applies task routing even to a short contextual follow-up
  const {EventEmitter}=await import('node:events');let chosen;const ai=new FreeAI({openrouterKey:'fixture',aiTotalMs:1000,aiAttemptMs:300,maxConcurrent:1,maxOutputTokens:128,maxAiAttempts:1,modelPreferences:[]},async(_url,opts)=>{chosen=JSON.parse(opts.body).model;return new Response('data: {"choices":[{"delta":{"content":"Complete"},"finish_reason":"stop"}]}\n\n')});ai.expires=Date.now()+10000;ai.catalog=[{id:'qwen-3b:free',context:10000},{id:'qwen-32b:free',context:10000,reasoning:true}];ai.mark('qwen-3b:free',true,20,200,10);
  const res=new EventEmitter();res.set=()=>res;res.flushHeaders=()=>{res.headersSent=true};res.write=()=>true;res.end=()=>{res.writableEnded=true};await ai.respond({user:{id:1},body:{mode:'coding'}},res,[{role:'user',content:'Продолжай'}]);assert.equal(chosen,'qwen-32b:free');
 });
+
+test('explicit daily free-model quota is terminal for HTTP and streamed errors, while model throttles can fall back',async()=>{
+ const {EventEmitter}=await import('node:events');
+ for(const stream of [false,true]){
+  let calls=0;const ai=new FreeAI({openrouterKey:'fixture',aiTotalMs:1000,aiAttemptMs:200,maxConcurrent:1,maxOutputTokens:128,maxAiAttempts:8},async()=>{calls++;const error={code:429,message:'Rate limit exceeded: free-models-per-day. private-token'};return stream?new Response('data: '+JSON.stringify({error})+'\n\n'):Response.json({error},{status:429})});
+  ai.expires=Date.now()+10000;ai.catalog=Array.from({length:10},(_,i)=>({id:'fixture-'+i+':free',context:10000}));
+  const res=new EventEmitter();res.output='';res.set=()=>res;res.flushHeaders=()=>res.headersSent=true;res.write=x=>{res.output+=x;return true};res.end=x=>{res.output+=x||'';res.writableEnded=true};
+  await ai.respond({user:{id:1},body:{}},res,[{role:'user',content:'Explain a concept'}]);assert.equal(calls,1);assert.match(res.output,/AI_FREE_DAILY_LIMIT/);assert(!res.output.includes('private-token'));assert(!res.output.includes('[DONE]'));assert.equal(ai.busy.size,0);
+ }
+});
+test('eight eligible free candidates can recover from seven transient throttles and retain bounded retry cooldowns',async()=>{
+ const {EventEmitter}=await import('node:events');let calls=0;const ai=new FreeAI({openrouterKey:'fixture',aiTotalMs:1000,aiAttemptMs:100,maxConcurrent:1,maxOutputTokens:128,maxAiAttempts:99},async(_url,options)=>{calls++;const body=JSON.parse(options.body);assert.equal(body.provider.max_price.completion,0);return body.model==='openrouter/free'?new Response('data: {"choices":[{"delta":{"content":"Recovered"},"finish_reason":"stop"}]}\n\n'):new Response('Model temporarily rate limited',{status:429,headers:{'Retry-After':'120'}})});
+ ai.expires=Date.now()+10000;ai.catalog=Array.from({length:12},(_,i)=>({id:'fixture-'+i+':free',context:10000}));const start=Date.now();const res=new EventEmitter();res.output='';res.set=()=>res;res.flushHeaders=()=>res.headersSent=true;res.write=x=>{res.output+=x;return true};res.end=x=>{res.output+=x||'';res.writableEnded=true};await ai.respond({user:{id:1},body:{}},res,[{role:'user',content:'Explain a concept'}]);assert.equal(calls,8);assert.match(res.output,/Recovered/);assert.match(res.output,/DONE/);assert(ai.stats.get('fixture-0:free').until>=start+120000);assert.equal(ai.busy.size,0);
+ ai.mark('fixture-0:free',false,0,429,0,Infinity);assert(ai.stats.get('fixture-0:free').until<=Date.now()+300000);
+});

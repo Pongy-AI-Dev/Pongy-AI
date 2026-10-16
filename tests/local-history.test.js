@@ -14,3 +14,8 @@ test('storage permission requests have a bounded timeout instead of hanging fore
 test('storage persistence surfaces provider rejection without claiming permission was refused',async()=>{const db=history.create(null);await assert.rejects(db.persist({persist:async()=>{throw new Error('permission unavailable')}},100),/permission unavailable/)});
 
 test('saved AI progress retains only known stage codes and never arbitrary reasoning HTML',()=>{const item=history.normalizeChat({...chat,messages:[{role:'assistant',text:'Answer',meta:{progress:['preparing','<script>bad</script>','drawing','complete'],reasoning:'private provider text'}}]});assert.equal(item.messages[0].meta.progress.join(','),'preparing,drawing,complete');assert(!JSON.stringify(item).includes('private provider text'));assert(!JSON.stringify(item).includes('<script>'))});
+
+test('message timestamps survive backup while invalid dates and unknown legacy times are not invented',()=>{
+ const at=Date.UTC(2026,1,2,3,4);const row=history.normalizeChat({...chat,messages:[{role:'user',text:'Hello',createdAt:at},{role:'assistant',text:'Hi',createdAt:at+1000}]});assert.equal(row.messages[0].createdAt,at);assert.equal(row.messages[1].createdAt,at+1000);
+ for(const bad of [null,0,-1,Infinity,'2026-01-01',8640000000000001])assert(!('createdAt' in history.normalizeChat({...chat,messages:[{role:'user',text:'Old',createdAt:bad}]}).messages[0]));assert(!('createdAt' in history.normalizeChat(chat).messages[0]));
+});
