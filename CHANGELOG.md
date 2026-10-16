@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.11.5
+
+- Use a black/white theme-aware stop button with a centered opposite-color square.
+- Prime the audio context from the user gesture and drive microphone bars from measured waveform RMS and speech-band energy, with smoothed attack/release and honest unavailable-state feedback.
+- Preserve task animation phase across re-renders and strengthen visible shimmer/dot contrast without overriding reduced-motion preferences.
+
 ## 0.11.4
 
 - Encode the stylesheet build version as a quoted CSS string to avoid numeric-token serialization differences between browser engines.
