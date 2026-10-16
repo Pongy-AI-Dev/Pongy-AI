@@ -13,8 +13,8 @@ test('balanced, programming and mathematics route only to eligible free catalogu
  const ai=ready();assert.equal((await ai.models(null))[0],main);assert.equal((await ai.models(null,false,100,true,'coding'))[0],'poolside/laguna-s-2.1:free');assert.equal((await ai.models(null,true,100,true,'coding'))[0],main);
  assert.equal(modelOrder('complex')[1],'nvidia/nemotron-3-ultra-550b-a55b:free');assert.equal(requestProfile([{role:'user',content:'Реши задачу по геометрии'}]),'complex');assert.equal(requestProfile([{role:'user',content:'Поч?'}],'coding'),'coding');assert.equal(requestProfile([{role:'user',content:'Напиши Python код'}]),'coding');
 });
-test('main plus at most seven reserves; free router stays reachable; cooldowns are respected',async()=>{
- const ai=ready([],100),first=await ai.models(null);assert.equal(first.length,8);assert.equal(new Set(first).size,8);assert.equal(first.at(-1),'openrouter/free');assert(first.every(isFreeId));
+test('expanded free pool caps at twelve unique candidates; free router stays reachable; cooldowns are respected',async()=>{
+ const ai=ready([],100);ai.catalog.push(...Array.from({length:12},(_,i)=>({id:'extra-'+i+':free',context:100000})));const first=await ai.models(null);assert.equal(first.length,12);assert.equal(new Set(first).size,12);assert.equal(first.at(-1),'openrouter/free');assert(first.every(isFreeId));
  ai.mark(main,false,0,429);assert(!(await ai.models(null)).includes(main));ai.mark('openrouter/free',false,0,429);assert(!(await ai.models(null)).includes('openrouter/free'));
  ai.config.modelPreferences=['paid/model','google/gemma-4-31b-it:free'];assert.equal((await ai.models(null))[0],'google/gemma-4-31b-it:free');ai.catalog.push({id:'paid/model',context:1000000,tools:true});assert(!(await ai.models(null)).includes('paid/model'));
 });
