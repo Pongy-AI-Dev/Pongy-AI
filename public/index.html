@@ -25,7 +25,7 @@
 <link href="/favicon.ico" rel="icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/x-icon"/>
 <link href="/favicon.png" rel="icon" sizes="512x512" type="image/png"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
-<link href="/app.css?v=0.11.4" rel="stylesheet"/>
+<link href="/app.css?v=0.11.5" rel="stylesheet"/>
 <link rel="stylesheet" href="/vendor/katex/katex.min.css"/></head>
 <body class="booting">
 <div id="sessionGate" role="status" aria-live="polite">
@@ -119,7 +119,7 @@ Continue with Google
 <button class="mode-btn" id="agentBtn"><svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14"><rect height="12" rx="3" width="16" x="4" y="7"></rect><circle cx="9" cy="13" fill="currentColor" r="1.5"></circle><circle cx="15" cy="13" fill="currentColor" r="1.5"></circle><path d="M12 3v4"></path></svg><span id="agentLabel" style="font-size:11px;opacity:.85">Agent: Pongy AI V1.0 Low</span></button>
 <div id="agentPopup" style="position:absolute;bottom:calc(100% + 8px);left:0;min-width:320px;background:var(--bg);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:8px;z-index:60;display:none"></div>
 </div>
-<div id="voiceHelp" hidden role="status"><span id="voiceHelpText"></span><div><button type="button" id="voiceRetry">Retry</button><button type="button" id="voiceInstall" hidden>Install offline language</button><button type="button" id="voiceHelpClose" aria-label="Close">×</button></div></div><div id="voiceMeter" hidden role="status"><span id="voiceStatus">Listening…</span><div id="voiceBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><button id="voiceStop" type="button">■</button></div><div id="musicBar" hidden><span id="musicTitle"></span><button id="musicStop" type="button" aria-label="Stop music">■</button></div><div id="replyPreview" hidden="" role="status"></div><div id="attachmentPreview" class="attachment-list"></div>
+<div id="voiceHelp" hidden role="status"><span id="voiceHelpText"></span><div><button type="button" id="voiceRetry">Retry</button><button type="button" id="voiceInstall" hidden>Install offline language</button><button type="button" id="voiceHelpClose" aria-label="Close">×</button></div></div><div id="voiceMeter" hidden role="status"><span id="voiceStatus">Listening…</span><div id="voiceBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><button id="voiceStop" type="button" aria-label="Stop dictation">■</button><small id="voiceLevelStatus" hidden></small></div><div id="musicBar" hidden><span id="musicTitle"></span><button id="musicStop" type="button" aria-label="Stop music">■</button></div><div id="replyPreview" hidden="" role="status"></div><div id="attachmentPreview" class="attachment-list"></div>
 
 <div id="chatLimitNotice" hidden role="status"></div>
 <div class="input-box">
@@ -134,7 +134,7 @@ Continue with Google
 <div class="composer-editor"><div id="composerMode" class="skill-chip" hidden><i id="composerModeIcon" aria-hidden="true"></i><span id="composerModeText"></span><button type="button" id="clearComposerMode" aria-label="Remove skill">×</button></div><div id="uploadSkill" class="skill-chip" hidden><i id="uploadSkillIcon" aria-hidden="true"></i><span id="uploadSkillText"></span><button type="button" id="clearUploadSkill" aria-label="Remove upload skill">×</button></div><textarea id="userInput" placeholder="Ask Pongy your first question" rows="1"></textarea></div>
 <button id="micBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><rect height="12" rx="3" width="6" x="9" y="2"></rect><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3M8 22h8"></path></svg></button>
 <button disabled="" id="sendBtn"><svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg></button>
-<button id="stopBtn" style="display:none"><svg fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><rect height="10" rx="2" width="10" x="7" y="7"></rect></svg></button>
+<button id="stopBtn" style="display:none"><svg fill="currentColor" height="18" viewbox="0 0 24 24" width="18"><rect height="12" rx="1.5" width="12" x="6" y="6"></rect></svg></button>
 </div>
 <div id="buildNotice" hidden role="status"><span></span><button id="reloadInterface" type="button">Reload</button></div><div class="footer-text" id="footerText"></div>
 </div>
@@ -188,5 +188,5 @@ Continue with Google
 <div class="overlay" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="supportTitle"><div class="modal-box"><div class="modal-head"><h2 id="supportTitle">Contact support</h2><button type="button" class="icon-btn" id="supportClose" aria-label="Close">×</button></div><div class="modal-body"><p id="supportNote"></p><div id="supportAddresses"></div></div></div></div>
 <aside id="workspacePreview" hidden aria-label="Preview"><header><strong id="previewTitle"></strong><div><button id="previewRun" type="button">Run</button><button id="previewCopy" type="button">Copy</button><button id="previewDownload" type="button">Download</button><button id="previewClose" type="button" aria-label="Close preview">×</button></div></header><p id="previewNote"></p><div id="previewBody"></div></aside><script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script><script src="/local-history.js"></script>
 <script src="/vendor/katex/katex.min.js"></script><script src="/video-frames.js"></script>
-<script src="/rich-text.js"></script><script src="/app.js?v=0.11.4"></script></body>
+<script src="/rich-text.js"></script><script src="/app.js?v=0.11.5"></script></body>
 </html>

@@ -114,7 +114,7 @@ body.collapsed .chat-item{padding:9px;justify-content:center}
 #userInput::placeholder{color:var(--fg2)}
 #sendBtn{background:var(--hover2);color:var(--fg2);cursor:not-allowed}
 #sendBtn.ready{background:var(--accent);color:#fff;cursor:pointer}
-#stopBtn{background:#ef4444!important;color:#fff!important}
+#stopBtn{background:#000!important;color:#fff!important}body.dark #stopBtn{background:#fff!important;color:#000!important}
 #micBtn.recording{background:var(--danger)!important;color:#fff!important}
 .footer-text{text-align:center;font-size:11px;color:var(--fg2);margin-top:8px}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;z-index:100}
@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.11.4"}
+:root{--pongy-build:"0.11.5"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -451,3 +451,25 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 :root[data-motion="full"] .open .modal-box,:root[data-motion="full"] .confirm-modal.open .confirm-box{animation:panelIn .45s ease-out both!important}
 :root[data-motion="full"] body,:root[data-motion="full"] #sidebar,:root[data-motion="full"] #main,:root[data-motion="full"] .input-box,:root[data-motion="full"] .modal-box,:root[data-motion="full"] .auth-box{transition:background-color .45s ease,color .4s ease,border-color .4s ease,box-shadow .4s ease!important}
 :root[data-motion="full"] .language-transition{animation:language-fade .55s ease-out both!important}
+
+/* Stable, high-contrast stop action and input-driven microphone levels. */
+#stopBtn{padding:0;align-items:center;justify-content:center;border:0;border-radius:50%;line-height:0;box-shadow:none!important;transform:none!important}
+#stopBtn svg{display:block;flex:none;width:24px;height:24px;margin:0;pointer-events:none}
+#stopBtn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#stopBtn:hover{opacity:.86}#stopBtn:active{opacity:.72}
+#voiceMeter{flex-wrap:wrap}#voiceBars i{animation:none!important;transition:none!important;will-change:height}
+#voiceLevelStatus{flex:1 0 100%;font-size:11px;line-height:1.5}#voiceLevelStatus[hidden]{display:none}
+/* Keep the animation phase across source/tool/fallback re-renders. */
+.task-indicator{overflow:visible;animation:none!important;opacity:1}
+.task-indicator .task-glyph{flex-shrink:0;overflow:visible}
+.task-indicator .dots{gap:5px;height:28px;overflow:visible}
+@keyframes thinking-dot-hop{0%,62%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+@media(prefers-reduced-motion:no-preference){:root:not([data-motion="reduced"]) .task-indicator .thinking-label{background-image:linear-gradient(105deg,var(--fg2) 25%,var(--fg2) 40%,var(--accent) 47%,var(--fg) 51%,var(--accent) 55%,var(--fg2) 64%)!important;background-size:260% 100%!important;background-clip:text!important;-webkit-background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;animation:thinking-light-wave 3.2s linear infinite!important;animation-delay:var(--task-phase,0s)!important}
+:root:not([data-motion="reduced"]) .task-indicator .dots span{width:5px;height:5px;animation:thinking-dot-hop 1.8s ease-in-out infinite!important;animation-delay:var(--task-phase,0s)!important}
+:root:not([data-motion="reduced"]) .task-indicator .dots span:nth-child(2){animation-delay:calc(var(--task-phase,0s) + .2s)!important}:root:not([data-motion="reduced"]) .task-indicator .dots span:nth-child(3){animation-delay:calc(var(--task-phase,0s) + .4s)!important}
+}
+:root[data-motion="full"] .task-indicator .thinking-label{background-image:linear-gradient(105deg,var(--fg2) 25%,var(--fg2) 40%,var(--accent) 47%,var(--fg) 51%,var(--accent) 55%,var(--fg2) 64%)!important;background-size:260% 100%!important;background-clip:text!important;-webkit-background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;animation:thinking-light-wave 3.2s linear infinite!important;animation-delay:var(--task-phase,0s)!important}
+:root[data-motion="full"] .task-indicator .dots span{width:5px;height:5px;animation:thinking-dot-hop 1.8s ease-in-out infinite!important;animation-delay:var(--task-phase,0s)!important}
+:root[data-motion="full"] .task-indicator .dots span:nth-child(2){animation-delay:calc(var(--task-phase,0s) + .2s)!important}:root[data-motion="full"] .task-indicator .dots span:nth-child(3){animation-delay:calc(var(--task-phase,0s) + .4s)!important}
+
+.task-indicator .stage-icon{animation-delay:var(--task-phase,0s)!important}
