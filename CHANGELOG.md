@@ -1,6 +1,16 @@
 # Журнал изменений Pongy AI
 
 
+## 0.14.0
+
+- Add a public work journal with supplied-context counts, planned steps, actual tool operations, syntax-check results and attached filenames; do not expose private reasoning or label plans as completed actions.
+- Attach real named source files from complete code blocks automatically; safely highlight code and preserve copy/download bytes.
+- Add account/chat-scoped saved project-file listing and paged text reading; retain accepted UTF-8 source text without silent truncation.
+- Parse JavaScript and JSON without executing generated code; explicitly mark unsupported languages and runtime testing as not checked.
+- Start browser speech recognition directly from the user gesture; provide explicit installed-local retry and keyboard fallback without automatic pack installation.
+- Answer conversational developer-status questions from authenticated account facts and center the developer badge.
+- Animate expandable journals, sources, pinned-message panels and long answers with reduced-motion support.
+
 ## 0.13.0
 
 - Add account-isolated notes with SQLite/Firestore persistence, device drafts, optimistic revision checks, search, pinning, renaming and deletion.
