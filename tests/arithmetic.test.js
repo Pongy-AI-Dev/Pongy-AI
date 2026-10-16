@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {calculateArithmetic,arithmeticAnswer} from '../lib/arithmetic.js';
+test('local arithmetic respects precedence, fractions, decimal commas and unary signs',()=>{for(const [q,n,d] of [['2+2',4n,1n],['0.1+0.2',3n,10n],['(5-3)/(5+3)',1n,4n],['2,5*4',10n,1n],['-2^2',-4n,1n],['2^3^2',512n,1n],['2^-2',1n,4n],['2--3',5n,1n]]){const result=calculateArithmetic(q);assert.equal(result.n,n,q);assert.equal(result.d,d,q)}});
+test('calculator never executes code, accepts unrelated prompts or expands unbounded expressions',()=>{for(const q of ['process.exit()','1/0','0^0','9^99999','9^9^9','1+2;alert(1)','2+','(2+3','Math.sqrt(4)','1..2+1','('.repeat(300)+'1'])assert.equal(calculateArithmetic(q),null,q);assert.equal(arithmeticAnswer('Привет, напиши код'),null);assert.equal(arithmeticAnswer('Explain 2+2 with a proof'),null)});
+test('local answers stay localized and preserve exact fractional results',()=>{assert.match(arithmeticAnswer('Сколько будет 0,1 + 0,2?','ru'),/^Ответ:.*\\frac\{3\}\{10\}.*0,3/);assert.match(arithmeticAnswer('What is 2+2?'),/^Answer:.*4/);assert.equal(arithmeticAnswer('Сколько будет 1/0?'),null)});
+
+test('ISO dates are not mistaken for unsolicited subtraction',()=>{assert.equal(arithmeticAnswer('2026-10-16'),null)});

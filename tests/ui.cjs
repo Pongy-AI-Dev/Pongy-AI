@@ -20,7 +20,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
  const browser=await launchBrowser(),page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];
  page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error:',e.message)});
  // Test-only access to internal functions; production assets remain unchanged.
- await page.route('**/app.js',async route=>{let script=fs.readFileSync('public/app.js','utf8');const at=script.lastIndexOf('})();');script=script.slice(0,at)+'window.pongyTest={renderMd:renderMd,renderMsg:renderMsg};\n'+script.slice(at);await route.fulfill({contentType:'application/javascript',body:script});});
+ await page.route('**/app.js*',async route=>{let script=fs.readFileSync('public/app.js','utf8');const at=script.lastIndexOf('})();');script=script.slice(0,at)+'window.pongyTest={renderMd:renderMd,renderMsg:renderMsg};\n'+script.slice(at);await route.fulfill({contentType:'application/javascript',body:script});});
  try{
   await page.goto(base);await page.locator('#authScreen.show').waitFor({state:'visible'});await page.waitForFunction(()=>!document.querySelector('#authBtn').disabled);if(!await page.locator('#authScreen').isVisible())throw Error('login not visible');count++;
   await page.screenshot({path:output+'/login-desktop.png'});
@@ -109,7 +109,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   const hoverSnapshot=await page.evaluate(()=>{document.querySelector('.chat-item.active').classList.add('preview-actions');return document.documentElement.outerHTML});
   fs.writeFileSync(output+'/sidebar-preview.html',hoverSnapshot.replace('<head>','<head><style>.preview-actions .chat-actions{display:flex}</style>').replace(/<script[^>]*>[\s\S]*?<\/script>/g,'').replace('href="/app.css"','href="'+path.resolve('public/app.css')+'"').replace('href="/favicon.png"','href="'+path.resolve('public/favicon.png')+'"'));
   await page.screenshot({path:output+'/chat-desktop.png'});
-  await page.locator('#upgradeBtn').click();await page.locator('#buyBtn').click();await page.locator('[data-method=sbp]').click();if(!await page.locator('.payment-notice').isVisible())throw Error('payment notice missing');
+  await page.locator('#upgradeBtn').click();await page.locator('#buyBtn').click();await page.locator('[data-method=sbp]').click();if(await page.locator('.payment-notice').count())throw Error('payment error shown before Pay');await page.locator('#payNext').click();if(await page.locator('.payment-notice').count())throw Error('payment error shown before final Pay');await page.locator('#payConfirm').click();if(!await page.locator('.payment-notice').isVisible())throw Error('final payment notice missing');
   if(await page.locator('#pCvc,#pNum,.qr-wrap').count())throw Error('fake QR/card collection still visible');count++;
   await page.screenshot({path:output+'/payment-unconfigured-desktop.png'});
   await page.locator('#closeSub').click();
@@ -121,7 +121,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   const saveDeadline=Date.now()+5000;while(!savedOriginal()&&Date.now()<saveDeadline)await new Promise(resolve=>setTimeout(resolve,50));
   if(!savedOriginal())throw Error('original chat not saved within 5 seconds');count++;
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:output+'/chat-mobile.png'});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('mobile horizontal overflow');count++;
-  await page.locator('#menuBtn').click();await page.locator('#upgradeBtn').click();await page.locator('#buyBtn').click();await page.locator('[data-method=sbp]').click();if(!await page.locator('.payment-notice').isVisible())throw Error('payment notice missing');await page.screenshot({path:output+'/payment-unconfigured-mobile.png'});await page.locator('#closeSub').click();
+  await page.locator('#menuBtn').click();await page.locator('#upgradeBtn').click();await page.locator('#buyBtn').click();await page.locator('[data-method=sbp]').click();if(await page.locator('.payment-notice').count())throw Error('payment error shown before Pay');await page.locator('#payNext').click();if(await page.locator('.payment-notice').count())throw Error('payment error shown before final Pay');await page.locator('#payConfirm').click();if(!await page.locator('.payment-notice').isVisible())throw Error('final payment notice missing');await page.screenshot({path:output+'/payment-unconfigured-mobile.png'});await page.locator('#closeSub').click();
   await page.context().clearCookies();await page.reload();await page.waitForFunction(()=>document.querySelector('#authScreen').classList.contains('show'));
   if((await page.locator('#messages').innerText()).includes('Complete replacement'))throw Error('expired session displayed private chat');count++;
   await page.screenshot({path:output+'/login-mobile.png'});
