@@ -1,6 +1,27 @@
 # Журнал изменений Pongy AI
 
 
+## 0.13.0
+
+- Add account-isolated notes with SQLite/Firestore persistence, device drafts, optimistic revision checks, search, pinning, renaming and deletion.
+- Add selection-only note formatting, font sizes, indents, spoiler text and attachment placement/replacement/removal tools.
+- Add explicit-request note reading and confirmation-only note edit proposals; preserve attachments and reject stale proposals.
+- Persist composer modes in sent messages and include the actual selected mode in model instructions.
+- Preserve partial answers with localized red interruption markers; treat truncated streams without DONE as interrupted, not successful.
+- Measure collapsed answers at whole visual-line boundaries and scroll to the latest message after sending.
+- Add tactile button motion, a floating workspace switch and unclipped logo rotation, respecting reduced motion.
+- Add indexed own-account history retrieval with character-level continuation and exact previous-answer replay.
+- Include all fixes from 0.12.3 in the patch relative to 0.12.2.
+
+## 0.12.3
+
+- Answer own-account identity questions from authenticated facts without introducing the assistant or exposing other accounts.
+- Cache verified Firebase registration dates and repair verified local identity flags; preserve unknown dates for legacy accounts.
+- Advance duplicate-message protection only after a completed successful reply; failed, empty or interrupted responses remain retryable.
+- Increase the default free-only candidate pool to ten (configurable ceiling: twelve), deduplicate candidates and distinguish shared minute quotas from per-model failures; external provider quotas are unchanged.
+- Generate transparent browser/touch icons from the welcome logo and verify their pixels and ICO frames.
+- Retain dynamic UI-suite discovery instead of a hard-coded suite count.
+
 ## 0.12.2
 
 - Raise the bounded free-only candidate pool from six to eight; retain live zero-price checks and the free router reserve.
