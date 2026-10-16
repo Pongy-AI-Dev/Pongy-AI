@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.11.3
+
+- Wait for the actual visual viewport and responsive layout before scrolling settings in localization UI checks.
+- Verify the full sign-out button is visible, padded and clickable across portrait, short and landscape mobile sizes in both interface languages.
+- Preserve all existing localization, account-isolation and browser assertions.
+
 ## 0.11.2
 
 - Route coding and mathematical tasks using conservative capability hints while retaining owner preferences, modality/context checks and free-only restrictions.
