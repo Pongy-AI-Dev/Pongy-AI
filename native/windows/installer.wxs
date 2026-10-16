@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+ <Product Id="*" Name="Pongy AI" Language="1033" Version="0.15.0" Manufacturer="Pongy AI Dev" UpgradeCode="A552734F-4A0F-4F6B-9D69-F1F46B56C0D3">
+  <Package InstallerVersion="500" Compressed="yes" InstallScope="perUser" Manufacturer="Pongy AI Dev" Description="Pongy AI online application"/>
+  <MajorUpgrade DowngradeErrorMessage="A newer version of Pongy AI is already installed."/>
+  <Media Id="1" Cabinet="pongy.cab" EmbedCab="yes"/>
+  <Icon Id="PongyIcon" SourceFile="../../public/favicon.ico"/>
+  <Property Id="ARPPRODUCTICON" Value="PongyIcon"/>
+  <Property Id="ARPURLINFOABOUT" Value="https://pongy-ai.devs.surf/"/>
+  <Directory Id="TARGETDIR" Name="SourceDir">
+   <Directory Id="LocalAppDataFolder"><Directory Id="INSTALLDIR" Name="Pongy AI">
+    <Component Id="Application" Guid="1BC5F3E5-6405-4E68-B294-55E16C0A4B73" Win64="yes">
+     <File Id="Launcher" Source="build/PongyAI.exe"/><RemoveFolder Id="RemoveInstallFolder" On="uninstall"/><RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="InstalledVersion" Type="string" Value="0.15.0" KeyPath="yes"/>
+    </Component>
+   </Directory></Directory>
+   <Directory Id="ProgramMenuFolder"><Directory Id="MenuFolder" Name="Pongy AI">
+    <Component Id="MenuShortcut" Guid="2C7D2BB7-DA73-40C6-8148-0BCC3AC13425">
+     <Shortcut Id="StartShortcut" Name="Pongy AI" Target="[#Launcher]" WorkingDirectory="INSTALLDIR" Icon="PongyIcon"/>
+     <RemoveFolder Id="RemoveMenuFolder" On="uninstall"/>
+     <RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="StartMenu" Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+   </Directory></Directory>
+   <Directory Id="DesktopFolder"><Component Id="DesktopShortcut" Guid="8DB77EC8-7005-43D1-8531-115C10C978DA">
+    <Shortcut Id="DesktopApp" Name="Pongy AI" Target="[#Launcher]" WorkingDirectory="INSTALLDIR" Icon="PongyIcon"/>
+    <RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="Desktop" Type="integer" Value="1" KeyPath="yes"/>
+   </Component></Directory>
+  </Directory>
+  <Feature Id="Complete" Level="1" Title="Pongy AI"><ComponentRef Id="Application"/><ComponentRef Id="MenuShortcut"/><ComponentRef Id="DesktopShortcut"/></Feature>
+ </Product>
+</Wix>
