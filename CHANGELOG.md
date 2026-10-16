@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.10.4
+
+- Restore oauth 0.10.2 and all third-party lockfile entries after an application-version replacement accidentally modified dependency metadata.
+- Change only root application versions when bumping package manifests.
+- Retain the mobile sidebar and WebKit regression fixes from 0.10.3.
+
 ## 0.10.3
 
 - Synchronize sidebar accessibility on breakpoint changes and page restoration.
