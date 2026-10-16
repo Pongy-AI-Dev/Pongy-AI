@@ -394,3 +394,8 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 #developerBadge{padding:10px 12px;border:1px solid var(--accent);border-radius:10px;color:var(--accent);font-size:13px;margin-bottom:15px}#developerBadge[hidden]{display:none}
 
 .composer-menu{max-height:calc(var(--app-height) - 120px);overflow-y:auto;overscroll-behavior:contain}
+
+/* Chat policy and workspace mode */
+#composerMode{width:auto;margin:0;border-radius:0;padding:9px 16px;border:0;background:color-mix(in srgb,var(--accent) 16%,var(--bg));color:var(--accent);flex-shrink:0;justify-content:space-between;font-size:13px}#composerMode button{margin-left:auto}
+#chatLimitNotice{padding:18px 12px;color:var(--text2);text-align:center;font-size:14px}#chatLimitNotice[hidden],.input-box[hidden]{display:none!important}
+.delivery-failed{display:flex;align-items:center;gap:6px;color:#e34850;font-size:12px;margin-top:7px}.delivery-failed>span{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid currentColor;border-radius:50%;font-weight:700}
