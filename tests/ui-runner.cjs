@@ -1,0 +1,16 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
+const suites=['ui.cjs','firebase-ui.cjs','tools-ui.cjs','i18n-ui.cjs','branding-ui.cjs','session-ui.cjs','auth-polish-ui.cjs','auth-verification-ui.cjs','motion-ui.cjs','workspace-ui.cjs','stability-ui.cjs','recovery-ui.cjs','product-ui.cjs','chat-policy-ui.cjs'];
+async function runSuites(names,{cwd=process.cwd(),timeout=120000,output=s=>process.stdout.write(s)}={}){
+ const results=[];
+ for(const name of names){const started=Date.now();output('\n=== UI SUITE: '+name+' ['+(process.env.BROWSER_ENGINE||'chromium')+'] ===\n');
+  const result=await new Promise(resolve=>{let timedOut=false,finished=false,hardKill;const child=spawn(process.execPath,[name],{cwd,env:process.env,stdio:['ignore','pipe','pipe'],detached:process.platform!=='win32'});
+   const kill=signal=>{try{if(process.platform!=='win32')process.kill(-child.pid,signal);else child.kill(signal)}catch{}};
+   const timer=setTimeout(()=>{timedOut=true;kill('SIGTERM');hardKill=setTimeout(()=>kill('SIGKILL'),1000)},timeout);
+   const done=(code,signal,error)=>{if(finished)return;finished=true;clearTimeout(timer);clearTimeout(hardKill);resolve({suite:name,status:timedOut?'timeout':error||code!==0?'failed':'passed',exitCode:code,signal,error:error?.message,durationMs:Date.now()-started})};
+   child.stdout.on('data',b=>output(b.toString()));child.stderr.on('data',b=>output(b.toString()));child.once('error',error=>done(null,null,error));child.once('close',(code,signal)=>done(code,signal));
+  });results.push(result);output('=== '+result.status.toUpperCase()+': '+name+' ('+result.durationMs+'ms) ===\n');
+ }return results;
+}
+module.exports={suites,runSuites};
+if(require.main===module){runSuites(suites.map(n=>'tests/'+n)).then(results=>{const engine=process.env.BROWSER_ENGINE||'chromium';fs.mkdirSync('.ci-logs',{recursive:true});fs.writeFileSync(path.join('.ci-logs','ui-summary-'+engine.replace(/[^a-z]/gi,'')+'.json'),JSON.stringify({engine,results},null,2));const failures=results.filter(r=>r.status!=='passed');console.log('\nUI summary: '+(results.length-failures.length)+'/'+results.length+' suites passed.');for(const r of failures)console.error('FAILED SUITE: '+r.suite+' ('+r.status+')');if(failures.length)process.exitCode=1}).catch(e=>{console.error(e);process.exitCode=1})}
