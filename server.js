@@ -1,3 +1,4 @@
+import {mountAppDownloads} from './lib/app-downloads.js';
 import {cleanWorkLog} from './lib/workbench.js';
 import {createNotesRepository,cleanNote,noteAccess,historySegment} from './lib/notes.js';
 import {arithmeticAnswer} from './lib/arithmetic.js';
@@ -68,7 +69,9 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const allowed=(origin,req)=>!origin||config.allowedOrigins.has(origin)||origin===ownOrigin(req);
  app.use((req,res,next)=>{const origin=req.get('origin');if(!allowed(origin,req))return res.status(403).json({error:'Недопустимый источник запроса'});next();});
  app.use(cors({origin:(origin,cb)=>cb(null,!origin||config.allowedOrigins.has(origin)),credentials:true,exposedHeaders:['Retry-After']}));
- app.use(rateLimit({windowMs:60000,max:200,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много запросов. Попробуйте позже.'}}));
+ const dynamicLimit=rateLimit({windowMs:60000,max:200,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много запросов. Попробуйте позже.'}}),assetLimit=rateLimit({windowMs:60000,max:2000,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много загрузок. Попробуйте позже.'}});
+ // Public interface assets must not consume the authentication/API budget.
+ app.use((req,res,next)=>(!['GET','HEAD'].includes(req.method)||/^\/(?:api|auth|downloads)(?:\/|$)/i.test(req.path)?dynamicLimit:assetLimit)(req,res,next));
  app.use('/api/chats',express.json({limit:'2mb',strict:true}));app.use(express.json({limit:'256kb',strict:true}));app.use(cookieParser());
  const dummyHash=bcrypt.hashSync(crypto.randomBytes(32).toString('hex'),12);
  const cookieOptions={httpOnly:true,secure:config.cookieSecure,sameSite:config.cookieSameSite,path:'/',maxAge:30*86400000};
@@ -277,6 +280,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }else app.get(['/auth/google','/auth/google/callback'],(_req,res)=>res.status(503).json({error:'Вход через Google ещё не настроен.'}));
  app.get('/preview-runner',(_req,res)=>res.set({'Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; sandbox allow-scripts",'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}).type('html').send(`<!doctype html><meta charset="utf-8"><script>addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='pongy-preview'||typeof e.data.html!=='string'||e.data.html.length>200000)return;document.open();document.write(e.data.html);document.close()},{once:true});parent.postMessage({type:'pongy-preview-ready'},'*');</script>`));
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:''}).replace(/</g,'\\u003c')+';'));
+ mountAppDownloads(app,moduleRoot);
  app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){if(p.endsWith('.html')||/\/(?:app\.js|app\.css)$/.test(p))res.setHeader('Cache-Control','no-store');}}));
  app.use((_req,res)=>res.status(404).json({error:'Не найдено'}));
  app.use((err,_req,res,_next)=>{if(res.headersSent){res.end();return;}const status=err instanceof multer.MulterError?413:err.type==='entity.too.large'?413:err instanceof SyntaxError?400:err.status||500;if(status>=500&&publicErrorCode(err.code))console.warn('[service]',err.code);const friendly=/^(FIREBASE_|FIRESTORE_)/.test(err.code||'');res.status(status).json({error:friendly?'Что-то пошло не так. Попробуйте позже.':err.publicMessage?err.message:status>=500?'Сервис временно недоступен. Проверьте настройки сервера.':status===413?'Слишком большой запрос':status===400?'Некорректный запрос':err.message,...(publicErrorCode(err.code)?{code:err.code}:{})});});

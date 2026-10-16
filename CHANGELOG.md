@@ -1,6 +1,16 @@
 # Журнал изменений Pongy AI
 
 
+## 0.15.0
+
+- Add real Windows x64 MSI and self-signed Android APK online clients with publisher metadata Pongy AI Dev; use browser sessions rather than embedded Google credential forms.
+- Add public attachment download endpoints, versioned package URLs, byte lengths, SHA-256 hashes and an Android certificate fingerprint.
+- Add localized header/settings download controls, platform choices and a close-only state after requesting a download.
+- Hide installation controls in client sessions, show newer-native-package notices and display website/client versions in settings.
+- Describe actual browser/internet requirements, unsigned Windows publisher warnings and OS-confirmed updates; make no unmeasured speed or quota claims.
+- Separate public asset and dynamic API/authentication rate budgets so repeated page loads do not block login; retain authentication, chat and dynamic request limits.
+- Exclude native build intermediates and private signing keys from release payloads; fail source checks if a private keystore is committed.
+
 ## 0.14.0
 
 - Add a public work journal with supplied-context counts, planned steps, actual tool operations, syntax-check results and attached filenames; do not expose private reasoning or label plans as completed actions.
