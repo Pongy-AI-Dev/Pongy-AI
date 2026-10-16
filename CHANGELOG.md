@@ -1,6 +1,30 @@
 # Журнал изменений Pongy AI
 
 
+## 0.11.2
+
+- Route coding and mathematical tasks using conservative capability hints while retaining owner preferences, modality/context checks and free-only restrictions.
+- Reuse stale model metadata immediately and cap cold catalogue waiting; cancelling one user no longer cancels the shared catalogue refresh.
+- Remove the unrelated public-configuration dependency from validated history/preferences loading without bypassing authentication.
+
+## 0.11.1
+
+- Add a circular latest-message button without moving the composer.
+- Add explicit system/full/reduced motion preferences and actual build-version diagnostics.
+- Version frontend assets and disable stale caching for the main UI files.
+- Prefer on-device speech when supported and its language pack is installed; provide explicit offline-pack installation and persistent recovery controls.
+- Keep dictation drafts on browser-service errors and never silently upload audio to another provider.
+
+## 0.11.0
+
+- Add bounded exact local arithmetic, independent of model availability.
+- Improve conversational/slang instructions without claiming universal language support.
+- Reserve the free-only router fallback and bound time to first output.
+- Preserve finer image and sampled-video detail within existing upload bounds.
+- Remove the upload-file skill prefix; align the mode close icon and soften interactive feedback.
+- Move unconfigured-payment errors to the final Pay action; never collect card details or fabricate QR codes without a provider.
+- Add real-time animation and checkout regressions.
+
 ## 0.10.4
 
 - Restore oauth 0.10.2 and all third-party lockfile entries after an application-version replacement accidentally modified dependency metadata.

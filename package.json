@@ -1,6 +1,6 @@
 {
   "name": "pongy-server",
-  "version": "0.10.4",
+  "version": "0.11.2",
   "type": "module",
   "main": "server.js",
   "scripts": {
