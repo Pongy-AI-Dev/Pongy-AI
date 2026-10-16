@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.13.0"}
+:root{--pongy-build:"0.14.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.13.0: shared, layout-stable motion and synchronous settings commits. */
+/* 0.14.0: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -539,3 +539,14 @@ button:not(:disabled){transition:background-color .3s ease,color .3s ease,box-sh
 #chatList [data-note-id] .chat-actions .note-tool{width:24px;height:28px;border-radius:6px}#chatList [data-note-id] .chat-actions svg{width:13px;height:13px}
 @media(hover:none){#chatList [data-note-id] .chat-actions{display:flex}}
 body.notes-active #shareBtn{display:none}#noteSave,#noteCopy{display:inline-flex;align-items:center;justify-content:center}
+/* Public work journal; real actions, never a simulated private monologue. */
+.work-entry{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.65}.work-entry:last-child{border:0}.work-plan ol{padding-left:22px;margin:7px 0}.work-plan li{padding:3px 0}.code-check{white-space:pre-wrap;overflow-wrap:anywhere}.check-passed{color:var(--success)}.check-failed{color:var(--danger)}.code-check pre{max-height:180px;overflow:auto;font-size:11px;background:var(--bg3);border-radius:8px;padding:8px;color:var(--fg2)}
+#developerBadge{display:flex;justify-content:center;align-items:center;padding:15px 14px;border-radius:15px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 12%,var(--bg2)),var(--bg2));box-shadow:inset 0 1px 0 #ffffff12}.developer-identity{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:750;text-align:center}.dev-symbol{display:inline-flex;align-items:center;justify-content:center;width:32px;height:28px;background:color-mix(in srgb,var(--accent) 15%,transparent);border-radius:8px;font-family:ui-monospace,monospace;font-weight:800;font-size:14px}.developer-identity strong{font-weight:750}
+.progress-toggle svg,.source-toggle svg,.pinned-toggle svg{transition:transform .48s cubic-bezier(.22,.75,.2,1)}.progress-toggle[aria-expanded=true] svg,.source-toggle[aria-expanded=true] svg{transform:rotate(180deg)}.note-tool svg,.icon-btn svg,.tb-btn svg,.mode-btn svg,.chat-act svg{transition:transform .45s cubic-bezier(.22,.8,.25,1),opacity .35s ease}
+@media(hover:hover){.note-tool:hover svg,.icon-btn:hover svg,.tb-btn:hover svg,.mode-btn:hover svg{transform:translateY(-1px) rotate(-4deg)}.chat-act:hover svg{transform:scale(1.08)}}
+body.notes-active #notesEditor .note-scroll{animation:quiet-surface-in .55s var(--motion-ease) both}.progress-body,.source-list{transform-origin:top}.answer-body{transition:max-height .48s cubic-bezier(.22,.75,.2,1)}
+:root[data-motion=reduced] .note-tool svg,:root[data-motion=reduced] .icon-btn svg,:root[data-motion=reduced] .tb-btn svg,:root[data-motion=reduced] .mode-btn svg,:root[data-motion=reduced] .chat-act svg,:root[data-motion=reduced] .answer-body{transition:none!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){:root:not([data-motion=full]) .note-tool svg,:root:not([data-motion=full]) .icon-btn svg,:root:not([data-motion=full]) .tb-btn svg,:root:not([data-motion=full]) .mode-btn svg,:root:not([data-motion=full]) .chat-act svg,:root:not([data-motion=full]) .answer-body{transition:none!important;transform:none!important}:root:not([data-motion=full]) #notesEditor .note-scroll{animation:none!important}}
+.code-card .syntax-keyword{color:#c9a7ff}.code-card .syntax-string{color:#9bd3af}.code-card .syntax-number{color:#f3c899}.code-card .syntax-comment{color:#929ba9;font-style:italic}.code-card .syntax-tag{color:#8ecdf2}.code-card pre{tab-size:2;line-height:1.65}.code-card header{min-height:40px;gap:10px}.code-card header>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Readable syntax colours in both palettes, committed with the theme. */
+body:not(.dark) .code-card .syntax-keyword{color:#7139a8}body:not(.dark) .code-card .syntax-string{color:#23643d}body:not(.dark) .code-card .syntax-number{color:#94501a}body:not(.dark) .code-card .syntax-comment{color:#626b78}body:not(.dark) .code-card .syntax-tag{color:#155e88}
