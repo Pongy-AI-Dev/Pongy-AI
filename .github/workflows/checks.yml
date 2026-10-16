@@ -55,6 +55,7 @@ jobs:
           path: .ci-logs/
           if-no-files-found: ignore
           retention-days: 7
+          include-hidden-files: true
   browsers:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -88,6 +89,7 @@ jobs:
             tests/artifacts/
           if-no-files-found: ignore
           retention-days: 7
+          include-hidden-files: true
   all-checks:
     name: All checks
     if: ${{ always() }}
