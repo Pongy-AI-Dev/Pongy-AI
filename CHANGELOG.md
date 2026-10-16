@@ -1,6 +1,16 @@
 # Журнал изменений Pongy AI
 
 
+## 0.12.1
+
+- Compare requested settings with a fresh UI/account snapshot and suppress no-op proposals; recheck before applying stale cards.
+- Add server-verified own-account answers for email, nickname, status, saved-chat count and account age with an explicit creation-date source.
+- Add confirmation-only nickname, other-chat memory and animation actions; retain them across history reloads.
+- Add a scoped explicit saved-chat reader with completeness metadata and stricter action-intent validation.
+- Refine response-language instructions for mixed quotations and short follow-ups without translating code or proper names.
+- Add bounded nested decoding and independent generated-code checks; preserve account isolation and safe-tool boundaries.
+- Unify control geometry, focus indicators, code-card actions and restrained hover feedback with reduced-motion support.
+
 ## 0.12.0
 
 - Add live zero-price verification across all pricing fields, curated task-specific candidates and a maximum of five reserves including the free router; paid models remain disabled.
