@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.11.4
+
+- Encode the stylesheet build version as a quoted CSS string to avoid numeric-token serialization differences between browser engines.
+- Expose completed build-check state and non-secret UI/server/CSS version diagnostics; tests now wait for that state, independently of login/history readiness.
+- Retain and extend warnings for mixed server versions, stale CSS and missing stylesheet build markers, including recovery checks.
+
 ## 0.11.3
 
 - Wait for the actual visual viewport and responsive layout before scrolling settings in localization UI checks.
