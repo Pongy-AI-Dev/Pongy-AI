@@ -25,7 +25,7 @@
 <link href="/favicon.ico" rel="icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/x-icon"/>
 <link href="/favicon.png" rel="icon" sizes="512x512" type="image/png"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
-<link href="/app.css?v=0.14.0" rel="stylesheet"/>
+<link href="/app.css?v=0.15.0" rel="stylesheet"/>
 <link rel="stylesheet" href="/vendor/katex/katex.min.css"/></head>
 <body class="booting">
 <div id="sessionGate" role="status" aria-live="polite">
@@ -105,12 +105,13 @@ Continue with Google
 <span class="tb-title" id="topbarTitle">Pongy AI</span>
 </div>
 <div class="tb-actions">
+<button class="tb-btn app-download-link" id="downloadAppTop" type="button">Download app</button>
 <button class="tb-btn" id="hideSidebarBtn"><svg fill="none" height="18" id="eyeIcon" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
 <button class="tb-btn" id="shareBtn"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg></button>
 </div>
 </div>
 
-<div id="pinnedMessages" hidden></div><div id="chatViewport"><div id="messages"></div><button id="scrollToEnd" type="button" hidden aria-label="Go to latest message"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></button></div>
+<div id="nativeUpdateNotice" hidden role="status"><span></span> <button id="nativeUpdateLink" type="button">Update app</button></div><div id="pinnedMessages" hidden></div><div id="chatViewport"><div id="messages"></div><button id="scrollToEnd" type="button" hidden aria-label="Go to latest message"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></button></div>
 <div id="inputArea">
 <div id="inputInner">
 <div class="modes">
@@ -143,7 +144,7 @@ Continue with Google
 <div class="overlay" id="settingsModal">
 <div class="modal-box">
 <div class="modal-head"><h2>Settings</h2><button class="icon-btn" id="closeSettings"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M18 6L6 18M6 6l12 12"></path></svg></button></div>
-<div class="modal-body"><div id="developerBadge" hidden></div>
+<div class="modal-body"><div id="developerBadge" hidden></div><button id="downloadAppSettings" class="app-settings-button" type="button">Download app</button>
 <div style="margin-bottom:18px"><div class="field-label" id="langLabel">Language</div><div class="grid2" id="langGrid"></div></div>
 <div style="margin-bottom:18px"><div class="field-label" id="themeLabel">Theme</div><div class="grid2" id="themeGrid"></div></div>
 <div class="motion-setting"><label class="field-label" id="motionLabel" for="motionPreference">Animations</label><select class="inp" id="motionPreference"><option value="system">System default</option><option value="full">Smooth animations</option><option value="reduced">Reduce motion</option></select><p id="motionHint" role="status"></p></div><label class="memory-setting"><input type="checkbox" id="memoryToggle"/> <span>Контекст из других чатов / Cross-chat context</span></label>
@@ -151,7 +152,7 @@ Continue with Google
 <div><div class="field-label" id="subscriptionLabel">Subscription</div><div id="subStatusBox"></div></div>
 <details class="local-history-card"><summary id="localHistoryTitle">History on this device</summary><p id="localHistoryNote"></p><div class="grid2"><button class="local-history-action" id="exportHistory">Export backup</button><button class="local-history-action" id="importHistory">Import backup</button></div><button class="local-history-action" id="persistHistory">Request persistent storage</button><p id="localHistoryStatus" role="status"></p><input id="historyFile" type="file" accept=".json,application/json" hidden/></details>
 <a class="support-link" href="mailto:support@pongy.ai"><div class="support-icon"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><path d="M22 6l-10 7L2 6"></path></svg></div><div><div class="support-title">Support</div><div class="support-email">support@pongy.ai</div></div></a>
-<button id="logoutBtnSettings" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:600;font-size:13.5px;cursor:pointer">Sign out</button>
+<button id="logoutBtnSettings" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:600;font-size:13.5px;cursor:pointer">Sign out</button><p id="settingsAppVersion" class="settings-app-version"></p>
 </div>
 </div>
 </div>
@@ -186,7 +187,8 @@ Continue with Google
 </div>
 </div>
 <div class="overlay" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="supportTitle"><div class="modal-box"><div class="modal-head"><h2 id="supportTitle">Contact support</h2><button type="button" class="icon-btn" id="supportClose" aria-label="Close">×</button></div><div class="modal-body"><p id="supportNote"></p><div id="supportAddresses"></div></div></div></div>
+<div class="overlay" id="downloadAppModal" role="dialog" aria-modal="true" aria-labelledby="downloadAppTitle"><div class="modal-box"><div class="modal-head"><h2 id="downloadAppTitle">Pongy AI</h2><button id="downloadAppX" type="button" class="icon-btn" aria-label="Close">×</button></div><div class="modal-body"><p id="downloadAppDescription"></p><p id="downloadAppTrust" class="download-trust"></p><div id="downloadAppActions"></div><p id="downloadAppStatus" role="status"></p></div></div></div>
 <aside id="workspacePreview" hidden aria-label="Preview"><header><strong id="previewTitle"></strong><div><button id="previewRun" type="button">Run</button><button id="previewCopy" type="button">Copy</button><button id="previewDownload" type="button">Download</button><button id="previewClose" type="button" aria-label="Close preview">×</button></div></header><p id="previewNote"></p><div id="previewBody"></div></aside><script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script><script src="/local-history.js"></script>
 <script src="/vendor/katex/katex.min.js"></script><script src="/video-frames.js"></script>
-<script src="/notes.js?v=0.14.0"></script><script src="/rich-text.js"></script><script src="/app.js?v=0.14.0"></script></body>
+<script src="/notes.js?v=0.15.0"></script><script src="/rich-text.js"></script><script src="/app.js?v=0.15.0"></script><script src="/downloads.js?v=0.15.0"></script></body>
 </html>
