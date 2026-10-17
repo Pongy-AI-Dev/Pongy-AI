@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
-const suites=['ui.cjs','firebase-ui.cjs','tools-ui.cjs','i18n-ui.cjs','branding-ui.cjs','session-ui.cjs','auth-polish-ui.cjs','auth-verification-ui.cjs','motion-ui.cjs','workspace-ui.cjs','stability-ui.cjs','recovery-ui.cjs','product-ui.cjs','chat-policy-ui.cjs','voice-scroll-ui.cjs','brand-time-ui.cjs','notes-ui.cjs','workbench-ui.cjs','app-downloads-ui.cjs','speech-ui.cjs','upload-scroll-ui.cjs'];
+const suites=['ui.cjs','firebase-ui.cjs','tools-ui.cjs','i18n-ui.cjs','branding-ui.cjs','session-ui.cjs','auth-polish-ui.cjs','auth-verification-ui.cjs','motion-ui.cjs','workspace-ui.cjs','stability-ui.cjs','recovery-ui.cjs','product-ui.cjs','chat-policy-ui.cjs','voice-scroll-ui.cjs','brand-time-ui.cjs','notes-ui.cjs','workbench-ui.cjs','app-downloads-ui.cjs','upload-scroll-ui.cjs','speech-ui.cjs'];
 async function runSuites(names,{cwd=process.cwd(),timeout=120000,output=s=>process.stdout.write(s)}={}){
  const results=[];
  for(const name of names){const started=Date.now();output('\n=== UI SUITE: '+name+' ['+(process.env.BROWSER_ENGINE||'chromium')+'] ===\n');
@@ -8,7 +8,7 @@ async function runSuites(names,{cwd=process.cwd(),timeout=120000,output=s=>proce
    const kill=signal=>{try{if(process.platform!=='win32')process.kill(-child.pid,signal);else child.kill(signal)}catch{}};
    const timer=setTimeout(()=>{timedOut=true;kill('SIGTERM');hardKill=setTimeout(()=>kill('SIGKILL'),1000)},timeout);
    const done=(code,signal,error)=>{if(finished)return;finished=true;clearTimeout(timer);clearTimeout(hardKill);resolve({suite:name,status:timedOut?'timeout':error||code!==0?'failed':'passed',exitCode:code,signal,error:error?.message,durationMs:Date.now()-started})};
-   child.stdout.on('data',b=>output(b.toString()));child.stderr.on('data',b=>output(b.toString()));child.once('error',error=>done(null,null,error));child.once('close',(code,signal)=>done(code,signal));
+   child.stdout.on('data',b=>output(b.toString()));child.stderr.on('data',b=>output(b.toString()));child.once('error',error=>done(null,null,error));child.once('exit',()=>{kill('SIGTERM')});child.once('close',(code,signal)=>{kill('SIGKILL');done(code,signal)});
   });results.push(result);output('=== '+result.status.toUpperCase()+': '+name+' ('+result.durationMs+'ms) ===\n');
  }return results;
 }

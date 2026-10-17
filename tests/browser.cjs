@@ -5,7 +5,7 @@ function getBrowserConfig(env=process.env){
  if(!['chromium','firefox','webkit'].includes(name))throw new Error('Unsupported BROWSER_ENGINE: '+name);
  const options={headless:true};
  if(name==='chromium'){
-  options.args=['--no-sandbox'];
+  options.args=['--no-sandbox','--disable-dev-shm-usage'];
   if(!env.CI&&env.CHROMIUM_PATH)options.executablePath=env.CHROMIUM_PATH;
  }
  return {name,options};
