@@ -612,3 +612,13 @@ html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers
 
 /* Exceptional states only; no permanent banner or composer blocking. */
 #serviceWarning{display:flex;align-items:center;gap:8px;padding:9px 12px;margin:0 0 9px;border:1px solid color-mix(in srgb,#d89b28 35%,var(--border));border-radius:12px;background:color-mix(in srgb,#d89b28 8%,var(--bg2));color:var(--fg);font-size:12px;line-height:1.45;animation:service-notice-in .4s ease-out}#serviceWarning[hidden]{display:none!important}#serviceWarning svg{flex:0 0 17px;color:#b47a13}#serviceWarning[data-kind=offline] svg,#serviceWarning[data-kind=ai] svg{color:var(--danger)}#serviceWarning span{min-width:0;overflow-wrap:anywhere}@keyframes service-notice-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}:root[data-motion=reduced] #serviceWarning{animation:none}@media(prefers-reduced-motion:reduce){:root:not([data-motion=full]) #serviceWarning{animation:none}}
+
+/* System reduced motion takes precedence before the media change listener runs.
+   An explicitly chosen Smooth animations setting remains an intentional override. */
+@media(prefers-reduced-motion:reduce){
+ html:root[data-motion-explicit="false"] .task-indicator .thinking-label,
+ html:root[data-motion-explicit="false"] .task-indicator .dots span,
+ html:root[data-motion-explicit="false"] .progress-live .progress-title{animation:none!important;transition:none!important}
+ html:root[data-motion-explicit="false"] .task-indicator .thinking-label,
+ html:root[data-motion-explicit="false"] .progress-live .progress-title{background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important}
+}
