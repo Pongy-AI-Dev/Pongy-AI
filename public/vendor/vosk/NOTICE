@@ -1,0 +1,6 @@
+Vosk Browser 0.0.8, Apache-2.0. Upstream: https://github.com/ccoreilly/vosk-browser
+Modified: extracted a same-origin static worker and replaced the Emscripten named-function generator with a static closure to avoid that named-function string evaluation. Upstream Embind invokers still require dynamic bindings in the isolated worker; the main page CSP remains strict.
+Models: Alpha Cephei Inc. https://alphacephei.com/vosk/models
+vosk-model-small-ru-0.22 and vosk-model-small-en-us-0.15: Apache-2.0.
+Decompressed model files use memory-only MEMFS instead of IDBFS to support browsers with unavailable or restricted IndexedDB. Compressed model downloads may be retained in the ordinary HTTP cache.
+Explicit retrieveFinalResult responses include final:true to distinguish a drained audio queue from intermediate endpoint results.
