@@ -1,6 +1,12 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.5
+
+- Add compact localized exceptional-state warnings above the composer with a circled-exclamation icon.
+- Detect offline state, repeated network failures, browser-estimated slow links, explicit maintenance, AI unavailability and account-specific daily exhaustion without confusing provider quotas with user limits.
+- Add an authenticated no-cache service-status endpoint and an explicit MAINTENANCE_MODE switch; retain cancellation semantics and UTC daily reset.
+
 ## 0.16.4
 
 - Add account-scoped persistent reminder schedules, one-time and daily modes, 1–10 repetitions five minutes apart, ownership checks and cancel/delete controls.
