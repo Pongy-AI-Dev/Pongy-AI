@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.17.0"}
+:root{--pongy-build:"0.17.1"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.17.0: shared, layout-stable motion and synchronous settings commits. */
+/* 0.17.1: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -576,7 +576,7 @@ html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-del
 html:not([data-motion=reduced]) .stream-fragment{animation:answer-fragment-in .85s ease-out both}#messages .stream-fragment{display:inline;transform:none}@keyframes answer-fragment-in{from{opacity:.12}to{opacity:1}}
 html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) .upload-ring .ring-value{animation:none}}
 
-/* 0.17.0: stable actions, compact file cards and readable answer structure. */
+/* 0.17.1: stable actions, compact file cards and readable answer structure. */
 .msg .msg-actions{opacity:1;visibility:visible;row-gap:3px;column-gap:4px}
 .msg-actions .msg-act{min-height:32px;border-radius:10px;padding:6px 8px;transition:background-color .3s ease,color .3s ease,transform .3s ease}
 .msg-actions .msg-act:disabled{opacity:.4}.msg-actions [data-act="like"] svg{transform-origin:50% 80%;overflow:visible}
@@ -630,8 +630,8 @@ html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers
 #topbar .tb-actions>button{display:inline-flex;align-items:center;justify-content:center;height:40px;min-height:40px;min-width:40px;padding:0 9px;line-height:1;vertical-align:middle;flex-shrink:0}
 #topbar .tb-actions>button[hidden]{display:none!important}#topbar .tb-actions>button svg{display:block;flex-shrink:0}
 :is(.input-box,.auth-box,.inp,.modal-box,.confirm-box,.opt,.attachment-chip,.message-file-card,.code-card,.site-proposal,.sb-search-inner,.skill-chip,.mode-btn,.app-settings-button,.note-file,.support-card,.support-link,.plan-card,.pay-method,.auth-notice){border-width:2px}
-#reminderModal{padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));align-items:center;justify-content:center;overflow:hidden}
-#reminderModal .reminder-box{box-sizing:border-box;width:min(440px,100%);min-width:0;max-width:100%;max-height:calc(var(--app-height,100dvh) - 24px);padding:28px 20px 20px;border:2px solid var(--border);border-radius:22px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#reminderModal{--reminder-top:max(12px,env(safe-area-inset-top));--reminder-bottom:max(12px,env(safe-area-inset-bottom));box-sizing:border-box;height:100%;height:100dvh;max-height:var(--app-height,100dvh);bottom:auto;padding:var(--reminder-top) 12px var(--reminder-bottom);align-items:center;justify-content:center;overflow:hidden}
+#reminderModal .reminder-box{box-sizing:border-box;width:min(440px,100%);min-width:0;max-width:100%;min-height:0;flex:0 1 auto;max-height:100%;max-height:min(100%,calc(100dvh - var(--reminder-top) - var(--reminder-bottom)));padding:28px 20px 20px;border:2px solid var(--border);border-radius:22px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 #reminderTitle{font-size:22px;line-height:1.3;font-weight:750;text-align:center;margin:8px 24px 0;padding:0!important}
 #reminderHint{font-size:13px;line-height:1.5;margin:8px 12px 20px;color:var(--fg2)}
 #reminderClose{right:8px;top:8px;width:36px;height:36px;padding:0;line-height:1;min-width:36px;min-height:36px;border-radius:10px}
@@ -654,3 +654,6 @@ input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)
 /* Pointer users reveal actions as the pointer enters their reserved row. Touch requires an explicit message tap. */
 @media(hover:hover){.msg .msg-actions{pointer-events:auto}.msg:hover .msg-actions{opacity:1!important}}
 @media(forced-colors:active){input[type=checkbox]{appearance:auto;-webkit-appearance:auto}input[type=checkbox]::before{content:none}}
+
+/* Keep scrollable reminder content intact while the dialog shrinks on rotation or keyboard resize. */
+#reminderModal .reminder-box>*{flex-shrink:0}
