@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.16.3"}
+:root{--pongy-build:"0.16.4"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.16.3: shared, layout-stable motion and synchronous settings commits. */
+/* 0.16.4: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -538,7 +538,7 @@ button:not(:disabled){transition:background-color .3s ease,color .3s ease,box-sh
 @media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #workspaceSwitch *,html:not([data-motion=full]) #sendBtn{animation:none!important;transition:none!important}}html[data-motion=reduced] #workspaceSwitch *,html[data-motion=reduced] #sendBtn{animation:none!important;transition:none!important}
 #chatList [data-note-id] .chat-actions .note-tool{width:24px;height:28px;border-radius:6px}#chatList [data-note-id] .chat-actions svg{width:13px;height:13px}
 @media(hover:none){#chatList [data-note-id] .chat-actions{display:flex}}
-body.notes-active #shareBtn{display:none}#noteSave,#noteCopy{display:inline-flex;align-items:center;justify-content:center}
+body.notes-active #shareBtn{display:inline-flex}#noteSave,#noteCopy{display:inline-flex;align-items:center;justify-content:center}
 /* Public work journal; real actions, never a simulated private monologue. */
 .work-entry{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.65}.work-entry:last-child{border:0}.work-plan ol{padding-left:22px;margin:7px 0}.work-plan li{padding:3px 0}.code-check{white-space:pre-wrap;overflow-wrap:anywhere}.check-passed{color:var(--success)}.check-failed{color:var(--danger)}.code-check pre{max-height:180px;overflow:auto;font-size:11px;background:var(--bg3);border-radius:8px;padding:8px;color:var(--fg2)}
 #developerBadge{display:flex;justify-content:center;align-items:center;padding:15px 14px;border-radius:15px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 12%,var(--bg2)),var(--bg2));box-shadow:inset 0 1px 0 #ffffff12}.developer-identity{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:750;text-align:center}.dev-symbol{display:inline-flex;align-items:center;justify-content:center;width:32px;height:28px;background:color-mix(in srgb,var(--accent) 15%,transparent);border-radius:8px;font-family:ui-monospace,monospace;font-weight:800;font-size:14px}.developer-identity strong{font-weight:750}
@@ -576,7 +576,7 @@ html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-del
 html:not([data-motion=reduced]) .stream-fragment{animation:answer-fragment-in .85s ease-out both}#messages .stream-fragment{display:inline;transform:none}@keyframes answer-fragment-in{from{opacity:.12}to{opacity:1}}
 html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) .upload-ring .ring-value{animation:none}}
 
-/* 0.16.3: stable actions, compact file cards and readable answer structure. */
+/* 0.16.4: stable actions, compact file cards and readable answer structure. */
 .msg .msg-actions{opacity:1;visibility:visible;row-gap:3px;column-gap:4px}
 .msg-actions .msg-act{min-height:32px;border-radius:10px;padding:6px 8px;transition:background-color .3s ease,color .3s ease,transform .3s ease}
 .msg-actions .msg-act:disabled{opacity:.4}.msg-actions [data-act="like"] svg{transform-origin:50% 80%;overflow:visible}
@@ -602,3 +602,10 @@ html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers
 @media(prefers-reduced-motion:reduce){.message-file-card,.message-file-card button,.msg-actions .msg-act{transition:none}#previewBody[aria-busy="true"]::before{animation:none}}
 :root[data-motion="reduced"] .message-file-card,:root[data-motion="reduced"] .message-file-card button,:root[data-motion="reduced"] .msg-actions .msg-act{transition:none}
 :root[data-motion="reduced"] #previewBody[aria-busy="true"]::before{animation:none}
+/* Private reminder settings, matching the workspace palette. */
+.reminder-box{position:relative;padding:26px 24px;max-height:calc(100dvh - 32px);overflow:auto;width:min(440px,calc(100vw - 32px))}.reminder-box h2{text-align:center;font-size:21px;padding:0 20px}#reminderHint{text-align:center;color:var(--fg2);font-size:13px;margin:10px 0 18px}#reminderClose{position:absolute;right:8px;top:8px;width:32px;height:32px;display:grid;place-items:center;font-size:24px}#reminderMode{display:flex;position:relative;background:var(--bg3);padding:4px;border-radius:14px;margin-bottom:18px}#reminderMode>span{position:absolute;inset:4px auto 4px 4px;width:calc(50% - 4px);background:var(--bg);box-shadow:0 2px 8px #0001;border-radius:10px;transition:transform .5s cubic-bezier(.2,.8,.2,1)}#reminderMode[data-mode=daily]>span{transform:translateX(100%)}#reminderMode button{position:relative;flex:1;padding:10px;font-size:13px}#reminderModal label{display:block;color:var(--fg2);font-size:12px}#reminderModal textarea,#reminderModal input:not([type=checkbox]){display:block;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;margin:6px 0 14px;color:var(--fg);min-width:0}#reminderModal textarea{resize:vertical}.reminder-fields{display:flex;gap:12px}.reminder-fields>label{flex:1;min-width:0}.reminder-fields>[hidden]{display:none!important}#reminderZone{display:block;color:var(--fg2);margin-bottom:14px}#reminderNotifyLabel{display:flex!important;align-items:center;gap:6px}#reminderDelivery{font-size:11px;line-height:1.55;color:var(--fg2);margin:12px 0}#reminderStatus{font-size:12px;min-height:16px;margin-bottom:8px}#reminderSave{display:block;margin:auto}#reminderList{margin-top:18px;border-top:1px solid var(--border)}.reminder-row{display:flex;align-items:center;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.reminder-row button{border-radius:8px;padding:6px}.reminder-edit{flex:1;min-width:0;text-align:left}.reminder-edit strong,.reminder-edit span{display:block;overflow-wrap:anywhere}.reminder-edit strong{font-size:12px;font-weight:600}.reminder-edit span{color:var(--fg2);font-size:10px;margin-top:4px}.note-reminder.ringing svg{animation:reminder-ring .8s ease-in-out}@keyframes reminder-ring{0%,100%{transform:rotate(0)}20%{transform:rotate(18deg)}40%{transform:rotate(-15deg)}60%{transform:rotate(10deg)}80%{transform:rotate(-5deg)}}html[data-motion=reduced] #reminderMode>span{transition:none}html[data-motion=reduced] .note-reminder.ringing svg{animation:none}
+
+/* Smooth is the default; only an explicit Full choice overrides OS accessibility. */
+@media(prefers-reduced-motion:reduce){html:root[data-motion=full][data-motion-explicit=false] *,html:root[data-motion=full][data-motion-explicit=false] *::before,html:root[data-motion=full][data-motion-explicit=false] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}html:root[data-motion=full][data-motion-explicit=false] .thinking-label,html:root[data-motion=full][data-motion-explicit=false] .progress-title{background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important}}
+
+.note-reminder.ringing .reminder-rays{transform-origin:center;animation:reminder-sound-wave .8s ease-out}@keyframes reminder-sound-wave{0%,100%{opacity:.4}30%,60%{opacity:1;stroke-width:2.2}}html[data-motion=reduced] .note-reminder.ringing .reminder-rays{animation:none}

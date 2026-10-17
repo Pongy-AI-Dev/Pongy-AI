@@ -1,0 +1,3 @@
+/* No data/page caching. Only explicit user-authorized reminder notifications. */
+self.addEventListener('push',e=>e.waitUntil((async()=>{let p;try{p=e.data.json();}catch{return;}if(!p||typeof p.body!=='string')return;await self.registration.showNotification(String(p.title||'Pongy AI').slice(0,100),{body:p.body.slice(0,260),tag:String(p.id||'reminder'),icon:'/welcome-logo.png',data:{url:'/'}});})()));
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil((async()=>{const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true}),existing=windows.find(c=>new URL(c.url).origin===self.location.origin);if(existing)return existing.focus();return self.clients.openWindow('/');})());});
