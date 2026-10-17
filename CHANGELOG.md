@@ -1,5 +1,12 @@
 # Журнал изменений Pongy AI
 
+## 0.17.1
+
+- Bound the mobile reminder overlay and scrollable form to the actual CSS viewport, independently of stale visual-viewport measurements during rotation.
+- Keep reminder controls at their natural size inside the scrolling form.
+- Preserve viewport boundary assertions; add detailed geometry diagnostics and a stale-height regression case.
+- Native installers, dependencies and backend behavior are unchanged.
+
 ## 0.17.0
 
 - Add application requirement clarification and stack recommendations instead of defaulting to Python.
