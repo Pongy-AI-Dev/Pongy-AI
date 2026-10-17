@@ -1,5 +1,15 @@
 # Журнал изменений Pongy AI
 
+## 0.17.3
+
+- Search before asking for a missing textbook author; keep discovered books provisional.
+- Add bounded keyless public RSS search with source-page verification, not invented conditions.
+- Accept current-minute reminders and distinguish past from over-year deadlines.
+- Restore motion before first paint, including legacy storage, and release stale commit locks.
+- Add opt-in ready/error email and push through the existing durable delivery queue.
+- Show unavailable push channels rather than silently swallowing subscription errors.
+- Dependencies and native installers are unchanged.
+
 ## 0.17.2
 
 - Give reduced-motion accessibility rules priority over ID-specific transitions.
