@@ -1,0 +1,50 @@
+{
+  "ru": {
+    "name": "vosk-model-small-ru-0.22",
+    "url": "/speech-models/small-ru-0.22.tar.gz",
+    "bytes": 46105705,
+    "sha256": "5a71a76bdd5f4e0484dab474114a0788732fb88c08ca0e25f0f37e7b38282024",
+    "parts": [
+      {
+        "file": "small-ru-0.22.part1",
+        "bytes": 16777216,
+        "sha256": "370d734e407ef003aeaf7bd27e68abfd1a3e7d51c68b93aabbbd6e5e2b37fba6"
+      },
+      {
+        "file": "small-ru-0.22.part2",
+        "bytes": 16777216,
+        "sha256": "979f56ad12156af9bcd1fd2728407a73601f5f065da2f4876d5500b311e4a612"
+      },
+      {
+        "file": "small-ru-0.22.part3",
+        "bytes": 12551273,
+        "sha256": "ae1f74b9e8eb380c4ab4b28173ea50f2291fc9e58ab94771826d573ee251b4f0"
+      }
+    ],
+    "license": "Apache-2.0"
+  },
+  "en": {
+    "name": "vosk-model-small-en-us-0.15",
+    "url": "/speech-models/small-en-us-0.15.tar.gz",
+    "bytes": 41116533,
+    "sha256": "93b3c9c94491edf2440bc8c9f1f5e3daa7a540f861a0fc5714c49395ee1a761a",
+    "parts": [
+      {
+        "file": "small-en-us-0.15.part1",
+        "bytes": 16777216,
+        "sha256": "52009681845e01bd8569d42222755051a22eaa74898f085884d1a52235114410"
+      },
+      {
+        "file": "small-en-us-0.15.part2",
+        "bytes": 16777216,
+        "sha256": "482ec4c9d5a86d8cc3ec2ee9978894145724ed4780f3afcd5a8e28574aabbca4"
+      },
+      {
+        "file": "small-en-us-0.15.part3",
+        "bytes": 7562101,
+        "sha256": "2064105375914f8a309c572f8b4c11b332f8a0874868d7e005c27727c380b5f8"
+      }
+    ],
+    "license": "Apache-2.0"
+  }
+}
