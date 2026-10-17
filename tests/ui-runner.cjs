@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
-const suites=['ui.cjs','firebase-ui.cjs','tools-ui.cjs','i18n-ui.cjs','branding-ui.cjs','session-ui.cjs','auth-polish-ui.cjs','auth-verification-ui.cjs','motion-ui.cjs','workspace-ui.cjs','stability-ui.cjs','recovery-ui.cjs','product-ui.cjs','chat-policy-ui.cjs','voice-scroll-ui.cjs','brand-time-ui.cjs','notes-ui.cjs','workbench-ui.cjs','app-downloads-ui.cjs','speech-ui.cjs'];
+const suites=['ui.cjs','firebase-ui.cjs','tools-ui.cjs','i18n-ui.cjs','branding-ui.cjs','session-ui.cjs','auth-polish-ui.cjs','auth-verification-ui.cjs','motion-ui.cjs','workspace-ui.cjs','stability-ui.cjs','recovery-ui.cjs','product-ui.cjs','chat-policy-ui.cjs','voice-scroll-ui.cjs','brand-time-ui.cjs','notes-ui.cjs','workbench-ui.cjs','app-downloads-ui.cjs','speech-ui.cjs','upload-scroll-ui.cjs'];
 async function runSuites(names,{cwd=process.cwd(),timeout=120000,output=s=>process.stdout.write(s)}={}){
  const results=[];
  for(const name of names){const started=Date.now();output('\n=== UI SUITE: '+name+' ['+(process.env.BROWSER_ENGINE||'chromium')+'] ===\n');
