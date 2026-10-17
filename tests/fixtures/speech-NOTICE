@@ -1,0 +1,2 @@
+speech-en.wav: Vosk API example test.wav, Apache-2.0, Alpha Cephei Inc. https://github.com/alphacep/vosk-api/blob/master/python/example/test.wav
+speech-ru.wav: synthetic test speech generated with eSpeak NG; no personal recording or conversation content. Text: Один два три четыре пять. Шесть семь восемь девять десять.
