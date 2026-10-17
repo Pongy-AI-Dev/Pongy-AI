@@ -105,6 +105,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.setViewportSize({width:1280,height:800});
   await page.emulateMedia({reducedMotion:'reduce'});
   if(await page.locator('#sidebar').evaluate(el=>getComputedStyle(el).transitionDuration)!=='0s')throw Error('reduced motion ignored');count++;
+  for(let attempt=0;attempt<3;attempt++){await page.emulateMedia({reducedMotion:'no-preference'});await page.emulateMedia({reducedMotion:'reduce'});if(await page.locator('#sidebar').evaluate(el=>getComputedStyle(el).transitionDuration)!=='0s')throw Error('immediate reduced motion media change ignored');count++;}
   await page.emulateMedia({reducedMotion:'no-preference'});await row.focus();
   const hoverSnapshot=await page.evaluate(()=>{document.querySelector('.chat-item.active').classList.add('preview-actions');return document.documentElement.outerHTML});
   fs.writeFileSync(output+'/sidebar-preview.html',hoverSnapshot.replace('<head>','<head><style>.preview-actions .chat-actions{display:flex}</style>').replace(/<script[^>]*>[\s\S]*?<\/script>/g,'').replace('href="/app.css"','href="'+path.resolve('public/app.css')+'"').replace('href="/favicon.png"','href="'+path.resolve('public/favicon.png')+'"'));
