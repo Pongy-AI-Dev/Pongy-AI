@@ -1,6 +1,14 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.2
+
+- Keep controls for previous messages available during streaming; preserve like-button focus and animate the reaction without replacing the message tree.
+- Replace attachment excerpts with centered filenames, plus-icon previews and download controls; show file previews immediately, cancel stale fetches, and preserve complete download bytes.
+- Retain download object URLs long enough for native save dialogs and prevent duplicate concurrent attachment downloads.
+- Avoid automatic experimental native speech-package probes from error banners; offer the bundled on-device engine explicitly.
+- Refine answer typography, quotes and tables with sanitized markup and reduced-motion support.
+
 ## 0.16.1
 
 - Center and enlarge the voice-recovery close control with its own background.
