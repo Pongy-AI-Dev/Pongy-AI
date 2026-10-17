@@ -1,3 +1,4 @@
+import {mountSpeechModels} from './lib/speech-models.js';
 import {mountAppDownloads} from './lib/app-downloads.js';
 import {cleanWorkLog} from './lib/workbench.js';
 import {createNotesRepository,cleanNote,noteAccess,historySegment} from './lib/notes.js';
@@ -64,7 +65,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const store=new CloudStore(config,fetchImpl);
  const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),firebase=new FirebaseAuth(config,fetchImpl),app=express();
  app.disable('x-powered-by');if(config.trustProxy!==false){if(!Number.isInteger(config.trustProxy)||config.trustProxy<1)throw new Error('TRUST_PROXY must be a trusted hop count');app.set('trust proxy',config.trustProxy);}
- app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],mediaSrc:["'self'",'blob:'],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
+ app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],workerSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],mediaSrc:["'self'",'blob:'],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
  const ownOrigin=req=>req.protocol+'://'+req.get('host');
  const allowed=(origin,req)=>!origin||config.allowedOrigins.has(origin)||origin===ownOrigin(req);
  app.use((req,res,next)=>{const origin=req.get('origin');if(!allowed(origin,req))return res.status(403).json({error:'Недопустимый источник запроса'});next();});
@@ -280,6 +281,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }else app.get(['/auth/google','/auth/google/callback'],(_req,res)=>res.status(503).json({error:'Вход через Google ещё не настроен.'}));
  app.get('/preview-runner',(_req,res)=>res.set({'Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; sandbox allow-scripts",'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}).type('html').send(`<!doctype html><meta charset="utf-8"><script>addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='pongy-preview'||typeof e.data.html!=='string'||e.data.html.length>200000)return;document.open();document.write(e.data.html);document.close()},{once:true});parent.postMessage({type:'pongy-preview-ready'},'*');</script>`));
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:''}).replace(/</g,'\\u003c')+';'));
+ mountSpeechModels(app,moduleRoot);
  mountAppDownloads(app,moduleRoot);
  app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){if(p.endsWith('.html')||/\/(?:app\.js|app\.css)$/.test(p))res.setHeader('Cache-Control','no-store');}}));
  app.use((_req,res)=>res.status(404).json({error:'Не найдено'}));

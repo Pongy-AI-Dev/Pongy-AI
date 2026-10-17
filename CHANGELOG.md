@@ -1,6 +1,15 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.0
+
+- Add bundled RU/EN on-device Vosk dictation as automatic recovery from unavailable browser speech services; retain drafts and microphone permission handling.
+- Package model archives as upload-sized parts and stream them from fixed same-origin routes; isolate WebAssembly runtime bindings in a worker while retaining the strict main-page CSP.
+- Reuse a loaded language model within the tab, stop microphone tracks on cancellation, and drive level bars from actual microphone samples.
+- Replace the text developer emblem with a centered vector icon and add reduced-motion-aware, gentle download/button feedback.
+- Use a bold localized download title and the qualified slogan about possible local-interface speed; retain platform signing disclosures.
+- Add real audio recognition tests and archive/hash/CSP checks. Existing native 0.15.0 packages remain unchanged.
+
 ## 0.15.0
 
 - Add real Windows x64 MSI and self-signed Android APK online clients with publisher metadata Pongy AI Dev; use browser sessions rather than embedded Google credential forms.
