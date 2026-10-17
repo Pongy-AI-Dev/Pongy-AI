@@ -1,6 +1,15 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.1
+
+- Center and enlarge the voice-recovery close control with its own background.
+- Accept 25 MiB photo inputs and 100 MiB local video inputs; preserve bounded normalization, two-minute frame sampling and cloud-document limits.
+- Show immediate attachment cards, blob previews and actual upload progress; optimize large photos before transfer and spool server inputs to private temporary files with bounded concurrency.
+- Remove full-height unclipping during streaming measurements, stabilize wrapper swaps, add cancellable smooth following and gentler incremental text reveal.
+- Add provider-independent product/upgrade answers and verified product facts for model context.
+- Use up to 12 free-only attempts, permit one short Retry-After recovery within that budget, and cache explicit shared quota cooldowns to avoid futile provider calls. These changes do not bypass provider quotas.
+
 ## 0.16.0
 
 - Add bundled RU/EN on-device Vosk dictation as automatic recovery from unavailable browser speech services; retain drafts and microphone permission handling.
