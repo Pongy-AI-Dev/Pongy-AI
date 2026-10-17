@@ -1,6 +1,14 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.6
+
+- Fix an unclosed hover media query that hid mobile reminder, upload and message styling on touch devices.
+- Rework responsive reminder controls, align header buttons, use optional reminder text and default-enabled notification requests, and animate accessible checkboxes.
+- Scope the header reminder control to a concrete open note; keep message actions icon-only on phones and reveal previous actions on hover, focus or touch.
+- Add model-independent note creation/edit proposals and reminder command clarification; preserve ownership, validation and explicit confirmation.
+- Retain the reduced-motion hotfix. Native installers and external service configuration are unchanged.
+
 ## 0.16.5
 
 - Add compact localized exceptional-state warnings above the composer with a circled-exclamation icon.
