@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.16.0"}
+:root{--pongy-build:"0.16.1"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.16.0: shared, layout-stable motion and synchronous settings commits. */
+/* 0.16.1: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -568,3 +568,10 @@ html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-del
 @media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #downloadAppActions>*{animation:none!important}html:not([data-motion=full]) .icon-btn svg,html:not([data-motion=full]) .note-tool svg{transform:none!important;transition:none!important}}
 
 #downloadAppDescription{margin:0 0 22px}.download-details{margin-top:16px;color:var(--fg2);font-size:12px;line-height:1.6}.download-details summary{cursor:pointer;list-style-position:inside}.download-details #downloadAppTrust{margin:10px 0 0}
+
+/* Stable upload previews and a centered, accessible recovery close control. */
+#voiceHelp{position:relative;padding-right:60px}#voiceHelp #voiceHelpClose{position:absolute;right:10px;top:50%;margin:0;transform:translateY(-50%);display:grid;place-items:center;width:38px;height:38px;min-height:38px;padding:0;border:1px solid var(--border);background:var(--bg3);border-radius:11px;font-size:26px;line-height:1;color:var(--fg2)}#voiceHelp #voiceHelpClose:active{transform:translateY(-50%) scale(.94)}
+.file-visual{position:relative;overflow:hidden;flex-shrink:0;background:var(--bg3)}.file-visual.media-loading img,.file-visual.media-loading video{opacity:.35;filter:blur(3px)}.file-visual img,.file-visual video{transition:opacity .45s ease,filter .45s ease}.upload-ring{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--bg3) 60%,transparent);pointer-events:none}.upload-ring svg{width:28px;height:28px;transform:rotate(-90deg)}.upload-ring circle{fill:none;stroke-width:3}.upload-ring .ring-track{stroke:var(--border)}.upload-ring .ring-value{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:76;stroke-dashoffset:38;transform-origin:center;animation:upload-orbit 1.5s linear infinite}.upload-ring[data-progress] .ring-value{animation:none;transition:stroke-dashoffset .2s ease}.attachment-upload-status{display:block;font-size:11px;color:var(--fg2);line-height:1.5}.attachment-chip.upload-failed{border-color:var(--danger)}.attachment-chip.upload-failed .attachment-upload-status{color:var(--danger)}
+@keyframes upload-orbit{to{transform:rotate(360deg)}}
+html:not([data-motion=reduced]) .stream-fragment{animation:answer-fragment-in .85s ease-out both}#messages .stream-fragment{display:inline;transform:none}@keyframes answer-fragment-in{from{opacity:.12}to{opacity:1}}
+html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) .upload-ring .ring-value{animation:none}}
