@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.15.0"}
+:root{--pongy-build:"0.16.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.15.0: shared, layout-stable motion and synchronous settings commits. */
+/* 0.16.0: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -553,3 +553,18 @@ body:not(.dark) .code-card .syntax-keyword{color:#7139a8}body:not(.dark) .code-c
 /* Native client downloads; no account data or credentials are cached here. */
 #downloadAppModal{z-index:1400}#downloadAppModal .modal-box{max-width:470px}#downloadAppDescription{line-height:1.7;font-size:14px}#downloadAppTrust{font-size:12px;line-height:1.6;color:var(--fg2);margin:14px 0 20px}#downloadAppActions{display:flex;flex-direction:column;gap:10px}.download-primary{display:block;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--accent);color:#fff;padding:13px 16px;text-align:center;font-size:13px;text-decoration:none;cursor:pointer;transition:transform .3s ease,filter .3s ease,box-shadow .3s ease}.download-primary:hover{filter:brightness(1.07);box-shadow:0 5px 18px rgba(105,96,230,.17)}.download-primary:active{transform:scale(.98)}#downloadAppStatus{font-size:12px;color:var(--fg2);line-height:1.6;margin-top:14px}.app-settings-button{display:block;width:100%;margin:0 0 18px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);color:var(--accent);font-weight:600}.settings-app-version{text-align:center;font-size:11px;color:var(--fg2);margin:14px 0 0}.app-download-link{font-size:12px!important;white-space:nowrap;color:var(--accent)!important;padding:7px 10px!important;width:auto!important}#topbar .tb-left{min-width:0}#topbar .tb-title{min-width:0;overflow:hidden;text-overflow:ellipsis}#topbar .tb-actions{flex-shrink:0}#nativeUpdateNotice{flex-shrink:0;align-self:center;text-align:center;max-width:calc(100% - 24px);border:1px solid var(--border);border-radius:12px;background:var(--bg2);padding:10px 14px;margin:10px auto 0;font-size:12px;line-height:1.6}#nativeUpdateNotice button{color:var(--accent);text-decoration:underline;background:transparent;border:0;cursor:pointer}@media(max-width:480px){.app-download-link{font-size:10px!important;padding:7px 5px!important}#topbar .tb-actions{gap:2px}}
 #downloadAppTop[hidden],#downloadAppSettings[hidden],#nativeUpdateNotice[hidden]{display:none!important}
+
+/* Calm, transform-only interaction feedback; no reflow or input-text flashing. */
+#downloadAppTitle{font-size:22px;font-weight:750;line-height:1.3}
+#downloadAppDescription{color:var(--fg2);font-size:14px;line-height:1.65}
+.dev-symbol{width:34px;height:32px;border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);color:var(--accent);box-shadow:inset 0 1px 0 #ffffff18}
+.dev-symbol svg{width:23px;height:23px;stroke-width:1.7}
+@media(hover:hover){html:not([data-motion=reduced]) .icon-btn:hover svg,html:not([data-motion=reduced]) .note-tool:hover svg{transform:translateY(-1px) scale(1.07)}
+html:not([data-motion=reduced]) .icon-btn:active svg,html:not([data-motion=reduced]) .note-tool:active svg{transform:scale(.91)}
+html:not([data-motion=reduced]) .download-primary{transition:transform .5s cubic-bezier(.22,.8,.25,1),box-shadow .5s ease,filter .45s ease,background-color .45s ease}
+html:not([data-motion=reduced]) #downloadAppActions>*{animation:download-choice-in .48s cubic-bezier(.22,.8,.25,1) both}
+html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-delay:.07s}
+@keyframes download-choice-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #downloadAppActions>*{animation:none!important}html:not([data-motion=full]) .icon-btn svg,html:not([data-motion=full]) .note-tool svg{transform:none!important;transition:none!important}}
+
+#downloadAppDescription{margin:0 0 22px}.download-details{margin-top:16px;color:var(--fg2);font-size:12px;line-height:1.6}.download-details summary{cursor:pointer;list-style-position:inside}.download-details #downloadAppTrust{margin:10px 0 0}
