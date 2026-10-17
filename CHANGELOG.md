@@ -1,5 +1,12 @@
 # Журнал изменений Pongy AI
 
+## 0.17.0
+
+- Add application requirement clarification and stack recommendations instead of defaulting to Python.
+- Add checked multi-file source ZIP delivery, exact paginated project-member reads, dependency/reference findings and honest syntax-only reports. Never execute generated application code.
+- Add confirmed settings/notes/chats navigation and composer-mode commands, owned named-note resolution, current-state detection and supported-action capability context.
+- Add unit and browser regression coverage. Native installers, provider configuration and quotas are unchanged.
+
 
 ## 0.16.6
 
