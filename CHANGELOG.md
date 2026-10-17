@@ -1,6 +1,14 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.4
+
+- Add account-scoped persistent reminder schedules, one-time and daily modes, 1–10 repetitions five minutes apart, ownership checks and cancel/delete controls.
+- Add durable chat events, verified-account email via configured Resend, user-authorized Web Push with private automatically generated VAPID keys, and bounded retries. Explicitly disclose running-server, persistent-disk, browser and email requirements.
+- Add note reminder controls and text sharing, preserve combined selected-text formatting, and default to smooth animations while retaining explicit reduced-motion preferences.
+- Add bounded literary source reading, free Wikisource fallback, partial-source labels and evidence-based retelling/essay guidance; strengthen mathematics, language and code response instructions.
+- Native MSI/APK packages are unchanged. No personal conversations, live credentials, databases or private signing keys are included.
+
 ## 0.16.3
 
 - Add bounded textbook/GDZ lookup using the configured web-search provider and actual public page reads; use explicit country context, require textbook identification and distinguish matching candidates from verified solutions.

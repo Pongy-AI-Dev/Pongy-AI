@@ -1,6 +1,6 @@
 {
   "name": "pongy-server",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "saxes": "^6.0.0",
     "session-file-store": "^1.5.0",
     "sharp": "^0.35.5",
+    "web-push": "3.6.7",
     "yauzl": "^3.4.0",
     "yazl": "^3.3.1"
   },
