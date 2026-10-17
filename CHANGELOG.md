@@ -1,5 +1,13 @@
 # Журнал изменений Pongy AI
 
+## 0.17.2
+
+- Give reduced-motion accessibility rules priority over ID-specific transitions.
+- Keep explicit full-motion selection; cover immediate media-query changes.
+- Align credentialed CORS with the existing same-origin/allowlist policy.
+- Keep settings in the durable outbox rather than launching unload-only PUTs.
+- Native installers and dependencies are unchanged.
+
 ## 0.17.1
 
 - Bound the mobile reminder overlay and scrollable form to the actual CSS viewport, independently of stale visual-viewport measurements during rotation.

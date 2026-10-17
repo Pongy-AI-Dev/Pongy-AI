@@ -75,7 +75,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const ownOrigin=req=>req.protocol+'://'+req.get('host');
  const allowed=(origin,req)=>!origin||config.allowedOrigins.has(origin)||origin===ownOrigin(req);
  app.use((req,res,next)=>{const origin=req.get('origin');if(!allowed(origin,req))return res.status(403).json({error:'Недопустимый источник запроса'});next();});
- app.use(cors({origin:(origin,cb)=>cb(null,!origin||config.allowedOrigins.has(origin)),credentials:true,exposedHeaders:['Retry-After','X-Pongy-Daily-Remaining']}));
+ app.use(cors((req,cb)=>cb(null,{origin:allowed(req.get('origin'),req),credentials:true,exposedHeaders:['Retry-After','X-Pongy-Daily-Remaining']})));
  const dynamicLimit=rateLimit({windowMs:60000,max:200,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много запросов. Попробуйте позже.'}}),assetLimit=rateLimit({windowMs:60000,max:2000,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много загрузок. Попробуйте позже.'}});
  // Public interface assets must not consume the authentication/API budget.
  app.use((req,res,next)=>(!['GET','HEAD'].includes(req.method)||/^\/(?:api|auth|downloads)(?:\/|$)/i.test(req.path)?dynamicLimit:assetLimit)(req,res,next));
