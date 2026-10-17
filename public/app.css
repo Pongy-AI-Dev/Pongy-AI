@@ -429,7 +429,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.16.4"}
+:root{--pongy-build:"0.16.5"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -493,7 +493,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.16.4: shared, layout-stable motion and synchronous settings commits. */
+/* 0.16.5: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -576,7 +576,7 @@ html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-del
 html:not([data-motion=reduced]) .stream-fragment{animation:answer-fragment-in .85s ease-out both}#messages .stream-fragment{display:inline;transform:none}@keyframes answer-fragment-in{from{opacity:.12}to{opacity:1}}
 html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) .upload-ring .ring-value{animation:none}}
 
-/* 0.16.4: stable actions, compact file cards and readable answer structure. */
+/* 0.16.5: stable actions, compact file cards and readable answer structure. */
 .msg .msg-actions{opacity:1;visibility:visible;row-gap:3px;column-gap:4px}
 .msg-actions .msg-act{min-height:32px;border-radius:10px;padding:6px 8px;transition:background-color .3s ease,color .3s ease,transform .3s ease}
 .msg-actions .msg-act:disabled{opacity:.4}.msg-actions [data-act="like"] svg{transform-origin:50% 80%;overflow:visible}
@@ -609,3 +609,6 @@ html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers
 @media(prefers-reduced-motion:reduce){html:root[data-motion=full][data-motion-explicit=false] *,html:root[data-motion=full][data-motion-explicit=false] *::before,html:root[data-motion=full][data-motion-explicit=false] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}html:root[data-motion=full][data-motion-explicit=false] .thinking-label,html:root[data-motion=full][data-motion-explicit=false] .progress-title{background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important}}
 
 .note-reminder.ringing .reminder-rays{transform-origin:center;animation:reminder-sound-wave .8s ease-out}@keyframes reminder-sound-wave{0%,100%{opacity:.4}30%,60%{opacity:1;stroke-width:2.2}}html[data-motion=reduced] .note-reminder.ringing .reminder-rays{animation:none}
+
+/* Exceptional states only; no permanent banner or composer blocking. */
+#serviceWarning{display:flex;align-items:center;gap:8px;padding:9px 12px;margin:0 0 9px;border:1px solid color-mix(in srgb,#d89b28 35%,var(--border));border-radius:12px;background:color-mix(in srgb,#d89b28 8%,var(--bg2));color:var(--fg);font-size:12px;line-height:1.45;animation:service-notice-in .4s ease-out}#serviceWarning[hidden]{display:none!important}#serviceWarning svg{flex:0 0 17px;color:#b47a13}#serviceWarning[data-kind=offline] svg,#serviceWarning[data-kind=ai] svg{color:var(--danger)}#serviceWarning span{min-width:0;overflow-wrap:anywhere}@keyframes service-notice-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}:root[data-motion=reduced] #serviceWarning{animation:none}@media(prefers-reduced-motion:reduce){:root:not([data-motion=full]) #serviceWarning{animation:none}}
