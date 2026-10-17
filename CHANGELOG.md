@@ -1,5 +1,12 @@
 # Журнал изменений Pongy AI
 
+## 0.17.4
+
+- Add authenticated SMTP email delivery with mandatory TLS, certificate verification and bounded connection timeouts.
+- Reuse the verified-recipient durable reminder/answer notification queue, retry limits and private text-only notices.
+- Preserve Resend with explicit provider selection; SMTP configuration takes precedence in auto mode.
+- Add Nodemailer as the only new dependency; native installers are unchanged.
+
 ## 0.17.3
 
 - Search before asking for a missing textbook author; keep discovered books provisional.
