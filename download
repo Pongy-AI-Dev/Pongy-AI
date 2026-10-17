@@ -1,0 +1,19 @@
+* text=auto
+*.js text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.png binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.zip binary
+
+*.msi binary
+*.apk binary
+*.exe binary
+
+public/speech-models/*.part* binary
