@@ -1,6 +1,13 @@
 # Журнал изменений Pongy AI
 
 
+## 0.16.3
+
+- Add bounded textbook/GDZ lookup using the configured web-search provider and actual public page reads; use explicit country context, require textbook identification and distinguish matching candidates from verified solutions.
+- Ask for the author/edition or problem text instead of guessing an answer from an ambiguous exercise number; do not infer location from interface language or account data.
+- Preload matching source excerpts before model generation, attach genuine source links, reuse per-response lookup results and retain SSRF/access-control protections.
+- Increase default first-token waiting from 6/8 to 10/14 seconds, stream inactivity from 18 to 24 seconds and the total response budget from 75 to 90 seconds. Keep cancellation, free-only restrictions and terminal provider-quota handling.
+
 ## 0.16.2
 
 - Keep controls for previous messages available during streaming; preserve like-button focus and animate the reaction without replacing the message tree.
