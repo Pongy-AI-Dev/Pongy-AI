@@ -1,5 +1,17 @@
 # Релизы и этапы Pongy AI
 
+
+## 0.18.6
+
+- One complete code file is delivered with a download and its code block. Multiple source files are staged and delivered as one ZIP preserving their paths; source dumps are removed from the final project response.
+- Static syntax, dependency and local-reference findings are exposed honestly. Up to two final-answer repair attempts are allowed before refusing invalid attachments. Generated code, builds and runtime tests are never executed by this server.
+- Project requests use task-aware model routing and a separate bounded 180-second default deadline (`AI_PROJECT_TOTAL_MS`); ordinary chat retains its shorter budget. There are no separate billable availability probes.
+- Concrete unfamiliar app purposes no longer trigger a platform/style questionnaire. Image edits preserve successive requested changes; prompt translation checks named subjects, explicit numeric counts and quoted visible text and briefly caches exact translations.
+- Reminder delivery retains per-channel and per-device results, retries transient failures up to eight times with backoff, and recovers recent missed configuration/verification and legacy retry states. The UI can fetch schedules without waiting for SMTP; allowed push subscriptions are repaired automatically.
+- Streaming Markdown parsing and line measurements are coalesced; unchanged answers and closed journals are not rebuilt needlessly. Low-resource devices use less expensive visual effects without overriding reduced-motion preferences. Frame rate still depends on device load and browser.
+- Delivery on time still requires a running server, persistent schedule/VAPID storage, working mail transport and notification permission/device support. Free hosting sleep, missing credentials or denied OS notifications cannot be fixed by a UI patch. No real provider keys or user data are bundled.
+
+
 ## Current: 0.18.5 — focused answers, homework and image experience
 
 Patch base: **0.18.4**. Restores omitted 0.18.3 conversation, presentation and rich-text changes found in the repository. Application generation asks only for an absent purpose, not optional platform/framework preferences; small unspecified apps default to a browser implementation. Coding has a separate bounded output budget and complex/visual Gemini work uses medium reasoning while simple text keeps minimal reasoning.
