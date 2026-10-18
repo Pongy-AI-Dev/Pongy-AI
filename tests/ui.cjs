@@ -56,7 +56,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.locator('#sendBtn').click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
   if(!calls.at(-1).messages.at(-1).content.includes('A real attached document'))throw Error('attachment text not sent');count++;
   if(!await page.locator('.msg.user .attachment-chip').count())throw Error('message attachment missing');count++;
-  await page.locator('#searchBtn').click();await page.locator('#userInput').fill('Earth');await page.locator('#sendBtn').click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
+  if(!await page.locator('#searchBtn').evaluate(el=>el.classList.contains('active')))throw Error('search not enabled by default');count++;await page.locator('#searchBtn').click();if(await page.locator('#searchBtn').evaluate(el=>el.classList.contains('active')))throw Error('search cannot be disabled');count++;await page.locator('#searchBtn').click();await page.locator('#userInput').fill('Earth');await page.locator('#sendBtn').click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
   if(!await page.locator('.source-list a[href="https://www.nasa.gov/earth/"]').count())throw Error('search sources missing');count++;
   await page.locator('#searchBtn').click();
   await page.locator('.msg.ai [data-act=retry]').last().click();await page.waitForFunction(()=>!document.querySelector('#stopBtn').offsetParent);
