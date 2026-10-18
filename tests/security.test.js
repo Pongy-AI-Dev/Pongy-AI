@@ -16,7 +16,7 @@ async function setup(options={}){
  const fetchImpl=async(url,opts={})=>{
   calls.push({url,opts});
   if(url.includes('resend.com')){const body=JSON.parse(opts.body);sent.push(body);return new Response(JSON.stringify({id:'test-mail'}),{status:options.mailStatus||200});}
-  if(url.endsWith('/models'))return new Response(JSON.stringify({data:[{id:'fixture-a:free',pricing:{prompt:'0',completion:'0'},context_length:10000},{id:'fixture-b:free',pricing:{prompt:'0',completion:'0'},context_length:20000},{id:'paid-model',pricing:{prompt:'0.1',completion:'0.1'}}]}));
+  if(url.endsWith('/models'))return new Response(JSON.stringify({data:[{id:'fixture-a:free',pricing:{prompt:'0',completion:'0'},context_length:32768},{id:'fixture-b:free',pricing:{prompt:'0',completion:'0'},context_length:65536},{id:'paid-model',pricing:{prompt:'0.1',completion:'0.1'}}]}));
   return options.aiFetch?options.aiFetch(url,opts):SSE([delta('Fixture answer'), 'data: [DONE]\n\n']);
  };
  config.localConversation=false;const runtime=createApp({config,fetchImpl,checkMx:async()=>true});
