@@ -1,5 +1,12 @@
 # Журнал изменений Pongy AI
 
+## 0.18.2
+
+- Added a branded bilingual Windows MSI wizard with language selection, progress, maintenance and completion pages.
+- Desktop-shortcut checkbox is checked by default and controls the actual shortcut component.
+- Persisted installation language in HKCU and initialized only empty WebView profiles; saved user preferences are not overwritten.
+- Added per-platform download/update versions; Android APK remains 0.18.1 without re-signing.
+
 ## 0.18.1
 
 - Built actual Windows WebView2 MSI and Android WebView APK; updated public download links, hashes and native version metadata.

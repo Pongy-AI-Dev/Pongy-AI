@@ -1,6 +1,10 @@
 # Релизы и этапы Pongy AI
 
-## Current: 0.18.1
+## Current: 0.18.2
+
+Patch over 0.18.1. Windows-only installer update with logo background, English/Russian selection and optional desktop shortcut. Android remains 0.18.1.
+
+## Previous: 0.18.1
 
 Apply over 0.18.0. New MSI/APK downloads are in `public/downloads/`; see README for runtime requirements, Android certificate change, scoped permissions and image-provider setup. Free Classic image generation is best-effort, not guaranteed capacity.
 

@@ -1,5 +1,14 @@
 # Pongy AI
 
+## 0.18.2 — Windows installer
+
+Patch base: **0.18.1**. Windows MSI now has a branded logo background, an English/Russian language selector and a desktop-shortcut checkbox enabled by default. The selected language is saved in the current user’s registry and used only to initialize an empty application profile; existing saved language preferences are preserved. All authored wizard pages are localized; Windows security prompts remain controlled by Windows.
+
+Android stays at **0.18.1**, with its existing signature. Download/update metadata now tracks the version of each platform separately, so Android users are not offered the Windows-only update. The Android system package installer cannot be given a desktop-style custom wizard.
+
+The MSI remains unsigned; no SmartScreen bypass is included. Silent installation uses `PONGYLANG=ru` or `en` and `PONGYDESKTOP=1` or an empty property. Rebuild: `native/windows/build.sh` now applies the auditable IDT tables through `installer-ui.py` after wixl. This requires Python 3, msibuild and msiinfo in addition to the previous toolchain.
+
+
 ## 0.18.1 — installed applications and free image generation
 
 Patch base: **0.18.0**. Copy all patch files with their original paths and run `npm ci` before restarting the server.
@@ -35,7 +44,7 @@ Sources: https://github.com/pollinations/pollinations/blob/master/APIDOCS.md and
 Rebuild sources: `native/windows/build.sh` (MinGW, official WebView2 SDK and wixl) and `native/android/build.sh` (JDK17, Android SDK35, private signing directory). Microsoft WebView2 redistribution license/notices are included in the MSI. Android signing files remain outside the repository. Rebuilding binaries requires updating `releases.json` checksums and the source manifest.
 
 
-**Версия 0.18.1** · Веб-приложение для компьютеров и телефонов.
+**Версия 0.18.2** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
