@@ -1,6 +1,22 @@
 # Релизы и этапы Pongy AI
 
-## Current: 0.18.2
+## Current: 0.18.4 — Gemini + DeepSeek + Cloudflare
+
+Patch base: **0.18.3**. Gemini's direct API is the primary general/vision route, with Flash-Lite first for short general requests and Flash first for complex/vision work. Explicitly enabled, operator-paid DeepSeek remains first for programming. OpenRouter is an independent zero-priced fallback. Google project billing and quotas still apply; no app flag can change an external provider's billing plan.
+
+- Separate fixed endpoints and credentials; shared-provider quota errors skip other models on that provider, while independent providers remain eligible. No catalogue wait on the direct route.
+- Cloudflare Workers AI FLUX.1 schnell replaces Pollinations when selected. Real returned image bytes are validated and attached; failed generation is never replaced with an unrelated picture or a hidden paid request.
+- Bounded streaming/JSON I/O, cancellation, image-size validation, two concurrent image jobs, persistent UTC daily request reservations and Retry-After cooldown. The request cap does not promise a Neuron allowance shared with other applications.
+- Existing safety, site-action confirmation, file checks and paid-model restrictions remain. No model guarantees perfect answers or perpetual free availability.
+
+Website version is **0.18.4**; native MSI **0.18.2** and APK **0.18.1** are unchanged. No keys, user conversations or databases are included.
+
+
+## Previous: 0.18.3
+
+Patch over 0.18.2. Direct DeepSeek integration and response/document quality improvements. Read DEEPSEEK_SETUP.md before activation: API usage is billed to the operator and requires explicit permission. Existing MSI 0.18.2 and APK 0.18.1 remain unchanged.
+
+## 0.18.2
 
 Patch over 0.18.1. Windows-only installer update with logo background, English/Russian selection and optional desktop shortcut. Android remains 0.18.1.
 

@@ -1,5 +1,31 @@
 # Pongy AI
 
+## 0.18.4 — Gemini + DeepSeek + Cloudflare
+
+Patch base: **0.18.3**. Gemini's direct API is the primary general/vision route, with Flash-Lite first for short general requests and Flash first for complex/vision work. Explicitly enabled, operator-paid DeepSeek remains first for programming. OpenRouter is an independent zero-priced fallback. Google project billing and quotas still apply; no app flag can change an external provider's billing plan.
+
+- Separate fixed endpoints and credentials; shared-provider quota errors skip other models on that provider, while independent providers remain eligible. No catalogue wait on the direct route.
+- Cloudflare Workers AI FLUX.1 schnell replaces Pollinations when selected. Real returned image bytes are validated and attached; failed generation is never replaced with an unrelated picture or a hidden paid request.
+- Bounded streaming/JSON I/O, cancellation, image-size validation, two concurrent image jobs, persistent UTC daily request reservations and Retry-After cooldown. The request cap does not promise a Neuron allowance shared with other applications.
+- Existing safety, site-action confirmation, file checks and paid-model restrictions remain. No model guarantees perfect answers or perpetual free availability.
+
+Website version is **0.18.4**; native MSI **0.18.2** and APK **0.18.1** are unchanged. No keys, user conversations or databases are included.
+
+
+## 0.18.3 — DeepSeek, coding and presentation quality
+
+Patch base: **0.18.2**. Adds an operator-authorized direct DeepSeek provider before the existing zero-priced OpenRouter fallback. A key alone never enables paid API calls. Website code updates are served to existing native clients; Windows MSI stays 0.18.2 and Android APK 0.18.1.
+
+- Fast direct requests use the official API, default `deepseek-flash`, with thinking disabled. No catalogue lookup on the primary path. Vision routing is explicit; text-only legacy models are not sent images.
+- Provider keys are isolated; direct failures can fall back to OpenRouter without removing its zero-price guard. Shared OpenRouter quota does not block DeepSeek. Existing safety checks, daily limits and tool confirmations remain.
+- Programming mode explicitly delivers code/files instead of another promise to enable the mode. Complete fenced code is attached through the existing checked-file pipeline.
+- School abbreviations such as ОБЗР are preserved. Instructions discourage repeating prior answers and unrelated boilerplate; these are guidance improvements, not a claim of retraining or error-free output.
+- Presentations get alternating light/dark layouts, accent markers, legible content cards, meaningful content guidance and up to six attributed pictures. Picture lookups run two at a time within a shared deadline; unavailable images are reported, never fabricated.
+- Adds combined bold/italic and underscore emphasis without changing snake_case identifiers; quiet table/quote styling and removal of the repeated image-mode selection toast.
+- Anonymous Pollinations generation is still best-effort, rate limited and can contain its provider watermark. DeepSeek text/vision does not replace an image-generation provider. No claim of guaranteed free high-quality image generation or watermark removal.
+
+See **DEEPSEEK_SETUP.md** for Render variables, billing and verification.
+
 ## 0.18.2 — Windows installer
 
 Patch base: **0.18.1**. Windows MSI now has a branded logo background, an English/Russian language selector and a desktop-shortcut checkbox enabled by default. The selected language is saved in the current user’s registry and used only to initialize an empty application profile; existing saved language preferences are preserved. All authored wizard pages are localized; Windows security prompts remain controlled by Windows.
@@ -44,7 +70,7 @@ Sources: https://github.com/pollinations/pollinations/blob/master/APIDOCS.md and
 Rebuild sources: `native/windows/build.sh` (MinGW, official WebView2 SDK and wixl) and `native/android/build.sh` (JDK17, Android SDK35, private signing directory). Microsoft WebView2 redistribution license/notices are included in the MSI. Android signing files remain outside the repository. Rebuilding binaries requires updating `releases.json` checksums and the source manifest.
 
 
-**Версия 0.18.2** · Веб-приложение для компьютеров и телефонов.
+**Версия 0.18.3** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
