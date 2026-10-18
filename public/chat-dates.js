@@ -1,0 +1,4 @@
+(function(root){'use strict';
+function group(stamp,now,locale){var ru=locale==='ru',date=new Date(Number(stamp)),today=new Date(now==null?Date.now():now);if(!Number.isFinite(date.getTime())||!stamp)return ru?'Без даты':'Undated';today.setHours(0,0,0,0);var yesterday=new Date(today);yesterday.setDate(today.getDate()-1);var week=new Date(today);week.setDate(week.getDate()-(week.getDay()+6)%7);var lastWeek=new Date(week);lastWeek.setDate(lastWeek.getDate()-7);var month=new Date(today.getFullYear(),today.getMonth(),1);if(date>=today)return ru?'Сегодня':'Today';if(date>=yesterday)return ru?'Вчера':'Yesterday';if(date>=week)return ru?'На этой неделе':'This week';if(date>=lastWeek)return ru?'На прошлой неделе':'Last week';if(date>=month)return ru?'В этом месяце':'This month';return date.toLocaleDateString(ru?'ru-RU':'en-US',{month:'long',year:'numeric'});}
+root.PongyChatDates={group:group};
+})(window);

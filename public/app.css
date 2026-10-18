@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.18.7"}
+:root{--pongy-build:"0.18.8"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -698,7 +698,7 @@ input::-ms-reveal,input::-ms-clear{display:none}
 @media(max-width:1024px){body:has(#appBack) #topbar{padding-left:54px}}
 #deviceAccessBanner{display:flex;align-items:center;gap:12px;margin:8px 0;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;font-size:12px;line-height:1.5}#deviceAccessBanner[hidden],#deviceAccessSettings[hidden]{display:none!important}#deviceAccessBanner span{flex:1;min-width:0}#deviceAccessBanner button,#deviceAccessSettings button{padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--accent);font-weight:600;cursor:pointer}#deviceAccessBanner .device-access-close{display:grid;place-items:center;padding:0;flex:none;width:32px;height:32px;font-size:23px;line-height:1}#deviceAccessSettings{padding:14px;border:1.5px solid var(--border);border-radius:14px;margin:12px 0}#deviceAccessSettings p{font-size:12px;color:var(--fg2);line-height:1.5}@media(max-width:540px){#deviceAccessBanner{gap:8px;flex-wrap:wrap}#deviceAccessBanner span{flex-basis:calc(100% - 44px)}#deviceAccessBanner .device-access-close{order:-1}#deviceAccessBanner button:not(.device-access-close){margin-left:40px}}
 
-/* 0.18.7: restrained reading hierarchy; no geometry changes during streaming. */
+/* 0.18.8: restrained reading hierarchy; no geometry changes during streaming. */
 .answer-body strong{font-weight:700}.answer-body em{font-style:italic}
 .answer-body .answer-heading:first-child{margin-top:.15em}
 .answer-body .answer-table th{letter-spacing:.01em;line-height:1.45}
@@ -719,7 +719,7 @@ input::-ms-reveal,input::-ms-clear{display:none}
 :root[data-motion="reduced"] .image-generation-pending>span,:root[data-motion="reduced"] .generated-image-figure::after{animation:none}:root[data-motion="reduced"] .generated-image-figure img,:root[data-motion="reduced"] .generated-image-toolbar button{transition:none}
 @media(prefers-reduced-motion:reduce){:root:not([data-motion="full"]) .image-generation-pending>span,:root:not([data-motion="full"]) .generated-image-figure::after{animation:none}:root:not([data-motion="full"]) .generated-image-figure img,:root:not([data-motion="full"]) .generated-image-toolbar button{transition:none}}
 
-/* 0.18.7: isolate work surfaces; low-resource rendering keeps transform/opacity motion. */
+/* 0.18.8: isolate work surfaces; low-resource rendering keeps transform/opacity motion. */
 .msg.ai .bubble,.progress-panel,.image-generation-pending{contain:style}
 html[data-render-budget=compact] .overlay{backdrop-filter:none;-webkit-backdrop-filter:none}
 html[data-render-budget=compact] .stream-fragment{animation-duration:.5s!important}
@@ -727,3 +727,19 @@ html[data-render-budget=compact] .generated-image-figure img{filter:none!importa
 html[data-render-budget=compact] .image-generation-pending>span{animation-name:image-dot-light}
 @keyframes image-dot-light{0%,100%{opacity:.18}50%{opacity:.6}}
 html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] .confirm-box{box-shadow:0 6px 22px #0002}
+/* 0.18.8: compact attachment cards and readable public work summaries. */
+.message-file-card{width:min(100%,336px);min-height:62px;padding:7px 8px;border-radius:15px;gap:3px;box-sizing:border-box}
+.message-file-card .attachment-chip{justify-content:flex-start;gap:10px;min-height:44px;padding:0 3px;overflow:hidden}
+.message-file-card .file-visual{flex:0 0 38px;width:38px;height:42px;border-radius:9px;background:var(--bg3,var(--bg));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.message-file-card .file-visual img,.message-file-card .file-visual video{width:100%;height:100%;object-fit:cover}
+.message-file-card .file-visual small{font-size:8px;max-width:36px;overflow:hidden}
+.message-file-label{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px;align-items:center}
+.message-file-name{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;font-size:13px;line-height:1.4;font-weight:700}
+.message-file-details{font-size:10px;line-height:1.3;color:var(--fg3,var(--fg2));white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.message-file-card button{width:30px;height:34px;border-radius:9px}.message-file-card button svg{width:16px;height:16px}
+.answer-expand{width:26px;height:26px;min-width:26px;min-height:26px;border-width:1.5px;margin-top:7px;padding:0}.answer-expand svg{width:19px;height:19px}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.045em;line-height:1.5;padding-top:16px;padding-bottom:6px;color:var(--fg2)}
+.progress-note{font-size:12px;line-height:1.6;margin:0 0 12px;color:var(--fg2)}.progress-body .work-entry{font-size:12px;line-height:1.65;padding:8px 10px;border-inline-start:2px solid var(--border);margin:5px 0;border-radius:0 8px 8px 0;background:color-mix(in srgb,var(--bg2) 70%,transparent)}
+.progress-body .work-plan{border-inline-start-color:var(--accent)}.progress-body .work-checks{overflow-wrap:anywhere}.progress-body>p:not(.progress-note){font-size:12px;line-height:1.7;margin:5px 0;color:var(--fg2)}
+@media(max-width:600px){.message-file-card{width:min(100%,320px)}.message-file-card button{width:34px;height:38px}.message-file-card .file-visual{flex-basis:34px;width:34px;height:38px}}
+@media(pointer:coarse){.answer-expand{position:relative}.answer-expand::after{content:"";position:absolute;inset:-9px;border-radius:50%}}
