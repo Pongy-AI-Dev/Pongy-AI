@@ -1,3 +1,4 @@
+/* Legacy 0.15 browser launcher, kept for source history only. The installer uses launcher.cpp. */
 #ifndef UNICODE
 #define UNICODE
 #endif
