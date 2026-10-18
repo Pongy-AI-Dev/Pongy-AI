@@ -1,10 +1,14 @@
 # Релизы и этапы Pongy AI
 
+## Current: 0.18.1
+
+Apply over 0.18.0. New MSI/APK downloads are in `public/downloads/`; see README for runtime requirements, Android certificate change, scoped permissions and image-provider setup. Free Classic image generation is best-effort, not guaranteed capacity.
+
 Новая подробная нумерация присвоена задним числом фактическим этапам разработки. Часть этапов поставлялась вместе в одном архиве: отдельная запись здесь **не означает отдельный ранее опубликованный GitHub Release или тег**. Даты выпусков не выдумываются. Каждый новый самостоятельный патч далее получает собственную запись.
 
 Файл содержит заметки для GitHub Releases, но не создаёт и не переименовывает релизы автоматически.
 
-## Текущая версия: 0.18.0
+## Предыдущая версия: 0.18.0
 
 Патч поверх 0.17.4: документы PPTX/DOCX/HTML, ИИ-помощники заметок,
 точные напоминания из текста и приоритет их почтовой доставки, бесплатный

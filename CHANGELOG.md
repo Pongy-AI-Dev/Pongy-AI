@@ -1,5 +1,14 @@
 # Журнал изменений Pongy AI
 
+## 0.18.1
+
+- Built actual Windows WebView2 MSI and Android WebView APK; updated public download links, hashes and native version metadata.
+- Added dismissible, account-scoped selected-file permission banner, settings opt-in/revocation, and explicit no-whole-device-access facts.
+- Added expiring code-confirmed browser-to-app sign-in with a secret-bound one-time cookie handoff.
+- Integrated keyless Pollinations Classic generation with shared-IP pacing, bounded queue/downloads, safety checks, retained attribution and no paid fallback.
+- Fixed interface build-version marker and allowed longer image-only streaming deadlines.
+- Android has a new certificate; old signed APKs cannot be updated in place. Windows remains unsigned; SmartScreen is not bypassed.
+
 ## 0.18.0
 
 - Add bounded real PPTX/DOCX/HTML generation with embedded verified Wikimedia images and attribution.

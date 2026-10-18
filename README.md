@@ -1,6 +1,41 @@
 # Pongy AI
 
-**Версия 0.18.0** · Веб-приложение для компьютеров и телефонов.
+## 0.18.1 — installed applications and free image generation
+
+Patch base: **0.18.0**. Copy all patch files with their original paths and run `npm ci` before restarting the server.
+
+### Two application downloads
+- Windows x64: `public/downloads/Pongy-AI-0.18.1-windows-x64.msi`. A Win32 executable hosts Microsoft WebView2 inside its own window; it does not launch Edge app mode. An installed **Microsoft Edge WebView2 Runtime** is required (normally present on current Windows).
+- Android 6+: `public/downloads/Pongy-AI-0.18.1-android.apk`. An Android Activity hosts Android WebView, a system document picker and explicitly requested microphone permission. An up-to-date Android System WebView is required. This is not an iOS package.
+- Both use the live website and cloud AI over HTTPS: they are **hybrid online applications, not offline local models**. The website serves their actual files through `/api/downloads` and `/downloads/...`, with matching SHA-256 hashes and sizes in `public/downloads/releases.json`.
+- Publisher metadata: **Pongy AI Dev**. The MSI is unsigned and can trigger SmartScreen. No bypass, disabling of protection or fake trusted certificate is used.
+- **Android certificate changed:** the previous private signing key was unavailable. Android refuses an in-place upgrade over a different certificate. Save/sync/export local history before removing an old installation; then install this APK. Preserve the current signing identity privately for future builds, never in Git or in the public downloads folder.
+- Native packages are cross-compiled and checked for structure, hashes and APK signature. They have not been run on a physical Windows or Android device in this environment.
+
+### Scoped file permission
+After sign-in, installed apps offer a dismissible banner above the composer and a permanent settings control. Accepting opts into **user-selected files**, opening the system picker; it does not grant silent filesystem reading, terminal execution, administrator rights or whole-device access. The AI receives only uploaded attachments. Revocation clears the opt-in, not already-uploaded files. Each microphone access still goes through the operating system's permission UI.
+
+### Browser-based Google sign-in
+The installed app opens a normal browser rather than placing Google credentials in a prohibited embedded sign-in page. A short-lived device link shows a matching six-digit code; the signed-in browser user must explicitly approve their own request. The waiting app alone receives an HttpOnly session cookie through a secret-bound, single-use poll. No credentials or session tokens are placed in the URL. Requests expire after five minutes; a server restart cancels pending links.
+
+### Real free images, with honest limits
+The default provider is the **Pollinations Classic image API**. A real generation was tested successfully. No API key, wallet, paid subscription, proxy rotation or payment is used. The provider currently offers one image at a time with at least 45 seconds between anonymous requests per shared public IP. The server queues at most three jobs, retains the provider watermark, validates downloaded bytes, applies safety filtering and never calls a paid fallback. Generated images are up to 768×768.
+
+Render variables (the only manual change if old image flags remain):
+```text
+IMAGE_PROVIDER=pollinations
+IMAGE_GENERATION_ENABLED=true
+```
+`IMAGE_MODEL` is ignored for this provider. Existing text-model keys and mail settings are unchanged. Setting `IMAGE_GENERATION_ENABLED=false` explicitly disables generation. A legacy nonempty `IMAGE_MODEL` without an explicit provider keeps the old OpenRouter configuration; it never enables a paid model.
+
+The image mode has a direct server route and does not consume a separate language-model request. Model-invoked generation can also use the same helper. Classic is best-effort, may be busy/refuse a request, and cannot promise professional quality or guaranteed uptime. All users on the same server share its IP quota. Prompts go to Pollinations; generated URLs are cacheable/public to people who know the URL. **Do not include secrets or private documents.**
+
+Sources: https://github.com/pollinations/pollinations/blob/master/APIDOCS.md and https://ai.google.dev/gemini-api/docs/pricing. Gemini text-model free quotas must not be confused with free image-generation quotas.
+
+Rebuild sources: `native/windows/build.sh` (MinGW, official WebView2 SDK and wixl) and `native/android/build.sh` (JDK17, Android SDK35, private signing directory). Microsoft WebView2 redistribution license/notices are included in the MSI. Android signing files remain outside the repository. Rebuilding binaries requires updating `releases.json` checksums and the source manifest.
+
+
+**Версия 0.18.1** · Веб-приложение для компьютеров и телефонов.
 
 Pongy AI — персональный помощник с потоковыми ответами, вложениями и историей диалогов. Простой интерфейс помогает сосредоточиться на вопросе, а не на настройках.
 
