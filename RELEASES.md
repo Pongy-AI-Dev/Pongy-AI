@@ -1,6 +1,17 @@
 # Релизы и этапы Pongy AI
 
-## Current: 0.18.4 — Gemini + DeepSeek + Cloudflare
+## Current: 0.18.5 — focused answers, homework and image experience
+
+Patch base: **0.18.4**. Restores omitted 0.18.3 conversation, presentation and rich-text changes found in the repository. Application generation asks only for an absent purpose, not optional platform/framework preferences; small unspecified apps default to a browser implementation. Coding has a separate bounded output budget and complex/visual Gemini work uses medium reasoning while simple text keeps minimal reasoning.
+
+Homework selects the newest evidenced matching edition among actual read candidates, labels unknown metadata honestly, answers without an author questionnaire, and uses condition/solution/check/answer headings. This is not a guarantee of the latest official school textbook or a substitute for unavailable source text. Media follow-ups retain the relevant visual reference; video sampling provides up to twelve timestamped frames in three compact sheets, not audio or complete video understanding.
+
+Cloudflare image prompts preserve the latest request, use bounded literal translation when Gemini is available and retain named-subject anchors. Requested realism is distinguished from explicitly stylized art. A stable square with slow animated dots is replaced by a large image with open/download controls, without provider-credit prose. No claim of perfect generation quality, exhaustive vocabulary, retraining, live API availability or error-free output is made. Existing provider quotas, billing opt-ins and safety rules remain.
+
+Website **0.18.5**; Windows MSI **0.18.2** and Android APK **0.18.1** unchanged.
+
+
+## Previous: 0.18.4 — Gemini + DeepSeek + Cloudflare
 
 Patch base: **0.18.3**. Gemini's direct API is the primary general/vision route, with Flash-Lite first for short general requests and Flash first for complex/vision work. Explicitly enabled, operator-paid DeepSeek remains first for programming. OpenRouter is an independent zero-priced fallback. Google project billing and quotas still apply; no app flag can change an external provider's billing plan.
 
