@@ -1,6 +1,6 @@
 {
   "name": "pongy-server",
-  "version": "0.17.4",
+  "version": "0.18.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "cheerio": "^1.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "docx": "9.12.0",
     "dompurify": "^3.4.17",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -28,6 +29,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdf-parse": "^2.4.5",
+    "pptxgenjs": "4.0.1",
     "saxes": "^6.0.0",
     "session-file-store": "^1.5.0",
     "sharp": "^0.35.5",
@@ -40,5 +42,8 @@
   },
   "devDependencies": {
     "playwright": "^1.64.0"
+  },
+  "overrides": {
+    "image-size": "2.0.3"
   }
 }

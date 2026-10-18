@@ -1,5 +1,15 @@
 # Журнал изменений Pongy AI
 
+## 0.18.0
+
+- Add bounded real PPTX/DOCX/HTML generation with embedded verified Wikimedia images and attribution.
+- Add note-AI shortcuts with read/propose/confirm flow; improve translation and response style instructions.
+- Parse explicit relative and dated reminder requests, preserve exact seconds, and prevent pending retries from starving due reminder email.
+- Enable search by default with bounded keyless fallback; keep SSRF and safety protections.
+- Add app back navigation, separate Google popup, Edge reveal suppression, round message expansion and accessible icon press feedback.
+- Permit only live-verified zero-price image-output models when owner configured; do not enable paid Plus models.
+- Native installers and unrestricted device access are NOT added. SmartScreen is not bypassed.
+
 ## 0.17.4
 
 - Add authenticated SMTP email delivery with mandatory TLS, certificate verification and bounded connection timeouts.
