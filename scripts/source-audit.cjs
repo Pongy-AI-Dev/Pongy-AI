@@ -33,7 +33,7 @@ function releaseIntegrity(root,files){
 module.exports={references,releaseIntegrity};
 function secretIssues(file,source){
  const errors=[];
- if(/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(source)||/\bsk-or-v1-[a-f0-9]{40,}\b/i.test(source)||/\bgithub_pat_[A-Za-z0-9_]{60,}\b/.test(source)||/\bgh[pousr]_[A-Za-z0-9]{36,}\b/.test(source))errors.push('Possible credential in '+file+' (value withheld)');
+ if(/\bAIza[A-Za-z0-9_-]{35}\b/.test(source)||/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(source)||/\bsk-or-v1-[a-f0-9]{40,}\b/i.test(source)||/\bsk-[a-f0-9]{32,64}\b/i.test(source)||/\bgithub_pat_[A-Za-z0-9_]{60,}\b/.test(source)||/\bgh[pousr]_[A-Za-z0-9]{36,}\b/.test(source))errors.push('Possible credential in '+file+' (value withheld)');
  if(file==='.env.example')for(const line of source.split(/\r?\n/))if(/^\s*[A-Z][A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)\s*=\s*[^\s#]/.test(line))errors.push('Environment template contains a nonempty credential setting (value withheld)');
  return [...new Set(errors)];
 }
