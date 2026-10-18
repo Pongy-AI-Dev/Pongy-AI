@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.17.4"}
+:root{--pongy-build:"0.18.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -511,7 +511,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 :root[data-motion="full"] .icon-btn,:root[data-motion="full"] .site-proposal button,:root[data-motion="full"] .code-card header button,:root[data-motion="full"] .msg-actions button,:root[data-motion="full"] .composer-menu>button{transition:background-color .42s var(--control-ease),color .42s var(--control-ease),border-color .42s var(--control-ease),box-shadow .48s var(--control-ease),opacity .35s ease}
 :root[data-motion="reduced"] .icon-btn,:root[data-motion="reduced"] .site-proposal button,:root[data-motion="reduced"] .code-card header button,:root[data-motion="reduced"] .msg-actions button,:root[data-motion="reduced"] .composer-menu>button{transition:none}
 
-/* 0.17.4: shared, layout-stable motion and synchronous settings commits. */
+/* 0.18.0: shared, layout-stable motion and synchronous settings commits. */
 :root{--motion-ease:cubic-bezier(.22,.7,.25,1);--motion-enter:.42s;--motion-exit:.3s}
 .sb-title{font-family:"Trebuchet MS","Segoe UI",sans-serif;font-weight:700;letter-spacing:-.4px;font-size:16px;overflow:visible}
 .brand-letter{display:inline-block}#logoTop{padding:0;display:block;cursor:pointer}#logoTop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
@@ -594,7 +594,7 @@ html:not([data-motion=reduced]) #downloadAppActions>*:nth-child(2){animation-del
 html:not([data-motion=reduced]) .stream-fragment{animation:answer-fragment-in .85s ease-out both}#messages .stream-fragment{display:inline;transform:none}@keyframes answer-fragment-in{from{opacity:.12}to{opacity:1}}
 html[data-motion=reduced] .upload-ring .ring-value{animation:none}@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) .upload-ring .ring-value{animation:none}}
 
-/* 0.17.4: stable actions, compact file cards and readable answer structure. */
+/* 0.18.0: stable actions, compact file cards and readable answer structure. */
 .msg .msg-actions{opacity:1;visibility:visible;row-gap:3px;column-gap:4px}
 .msg-actions .msg-act{min-height:32px;border-radius:10px;padding:6px 8px;transition:background-color .3s ease,color .3s ease,transform .3s ease}
 .msg-actions .msg-act:disabled{opacity:.4}.msg-actions [data-act="like"] svg{transform-origin:50% 80%;overflow:visible}
@@ -681,3 +681,18 @@ input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)
 /* Smooth must include geometry, not overwrite drawer transforms with color-only transitions. */
 :root[data-motion="full"] #sidebar{transition:transform .55s cubic-bezier(.22,.8,.25,1),width .5s cubic-bezier(.22,.8,.25,1),background-color .45s ease,color .4s ease,border-color .4s ease,box-shadow .4s ease!important}
 :root[data-motion="full"] .auth-box{animation:panelIn .65s cubic-bezier(.22,.8,.25,1) both}
+
+/* 0.18.0: compact consistent controls, respecting all reduced-motion overrides. */
+input::-ms-reveal,input::-ms-clear{display:none}
+.answer-expand{box-sizing:border-box;width:36px;height:36px;min-height:36px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--accent);margin-top:8px;flex-shrink:0;text-decoration:none}
+.answer-expand:hover{background:var(--hover);text-decoration:none}.answer-expand svg{width:21px;height:21px}
+#noteAI{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;background:var(--bg2);border-top:1.5px solid var(--border)}
+#noteAI .note-tool{width:auto;height:34px;gap:7px;padding:0 10px;border:1.5px solid var(--border);font-size:12px}
+@media(max-width:600px){#noteAI{gap:5px;padding:7px 8px}#noteAI .note-tool{font-size:11px;padding:0 7px}}
+@media(prefers-reduced-motion:no-preference){:root:not([data-motion=reduced]) button:active svg,:root:not([data-motion=reduced]) [role=button]:active svg{animation:pongyIconPress .42s cubic-bezier(.22,.7,.3,1)}}
+:root[data-motion=full][data-motion-explicit=true] button:active svg{animation:pongyIconPress .42s cubic-bezier(.22,.7,.3,1)}
+:root[data-motion=reduced] button svg{animation:none!important}
+@keyframes pongyIconPress{0%{scale:1}45%{scale:.82}75%{scale:1.08}100%{scale:1}}
+#appBack{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);color:var(--fg)}
+#appBack{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(9px,env(safe-area-inset-top));z-index:10000;box-shadow:0 2px 10px #0001}body:has(#appBack) .sb-head{padding-left:54px}body:has(#appBack) #topbar{padding-left:54px}
+@media(max-width:1024px){body:has(#appBack) #topbar{padding-left:54px}}
