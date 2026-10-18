@@ -1,5 +1,17 @@
 # Релизы и этапы Pongy AI
 
+## Current: 0.18.7
+
+Патч поверх **0.18.6**.
+
+- Исправлен разбор длинных Markdown-ограждений и блоков с тильдами: вложенные тройные кавычки больше не обрезают код, исходные переводы строк и текст после блока сохраняются. Неполный потоковый блок отображается, но не прикрепляется как готовый файл.
+- Проверки путей проекта унифицированы: запрещены приватные `.env.*` варианты и конфликты файла с одноимённой папкой, в том числе при различии регистра. Разрешён только конечный шаблон `.env.example`.
+- Убрана повторная сборка ZIP при валидации черновиков: архивация выполняется для фактической выдачи, а не для каждой предварительной проверки.
+- Восстановление напоминаний выбирает только доступные для повторной доставки события; недоставляемая старая очередь не блокирует подтверждённые аккаунты. Перед очередной отправкой push повторно проверяется принадлежность устройства.
+- Ошибки асинхронного подключения уведомлений предыдущего аккаунта не показываются после смены аккаунта.
+- Добавлены регрессионные проверки. Нативные установщики, настройки провайдеров, биллинг и лимиты не изменены. Проверки не заменяют аудит безопасности, запуск создаваемых проектов и реальную проверку почты/push на устройстве.
+
+
 
 ## 0.18.6
 
@@ -12,7 +24,7 @@
 - Delivery on time still requires a running server, persistent schedule/VAPID storage, working mail transport and notification permission/device support. Free hosting sleep, missing credentials or denied OS notifications cannot be fixed by a UI patch. No real provider keys or user data are bundled.
 
 
-## Current: 0.18.5 — focused answers, homework and image experience
+## 0.18.5 — focused answers, homework and image experience
 
 Patch base: **0.18.4**. Restores omitted 0.18.3 conversation, presentation and rich-text changes found in the repository. Application generation asks only for an absent purpose, not optional platform/framework preferences; small unspecified apps default to a browser implementation. Coding has a separate bounded output budget and complex/visual Gemini work uses medium reasoning while simple text keeps minimal reasoning.
 
