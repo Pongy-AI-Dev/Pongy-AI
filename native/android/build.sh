@@ -23,7 +23,7 @@ cp ../../public/favicon.png build/res/drawable/app_icon.png
 "$JAVA" -cp "$BT/lib/d8.jar" com.android.tools.r8.D8 --min-api 23 --lib "$PLATFORM" --output build/dex build/classes/dev/pongy/app/*.class
 (cd build/dex && zip -q -j ../unsigned.apk classes.dex)
 "$BT/zipalign" -f -P 16 4 build/unsigned.apk build/aligned.apk
-"$BT/apksigner" sign --v4-signing-enabled false --ks "$SIGNING/release.p12" --ks-key-alias pongy --ks-pass "file:$SIGNING/password" --out ../../public/downloads/Pongy-AI-0.15.0-android.apk build/aligned.apk
-"$BT/apksigner" verify --verbose --print-certs ../../public/downloads/Pongy-AI-0.15.0-android.apk
+"$BT/apksigner" sign --v4-signing-enabled false --ks "$SIGNING/release.p12" --ks-key-alias pongy --ks-pass "file:$SIGNING/password" --out ../../public/downloads/Pongy-AI-0.18.1-android.apk build/aligned.apk
+"$BT/apksigner" verify --verbose --print-certs ../../public/downloads/Pongy-AI-0.18.1-android.apk
 
-chmod 644 ../../public/downloads/Pongy-AI-0.15.0-android.apk
+chmod 644 ../../public/downloads/Pongy-AI-0.18.1-android.apk
