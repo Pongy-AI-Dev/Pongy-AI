@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.18.9"}
+:root{--pongy-build:"0.18.10"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -744,8 +744,15 @@ html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] .co
 @media(max-width:600px){.message-file-card{width:min(100%,320px)}.message-file-card button{width:34px;height:38px}.message-file-card .file-visual{flex-basis:34px;width:34px;height:38px}}
 @media(pointer:coarse){.answer-expand{position:relative}.answer-expand::after{content:"";position:absolute;inset:-9px;border-radius:50%}}
 
-/* 0.18.9: recoverable sidebar and compact dismissible status. */
+/* 0.18.10: recoverable sidebar and compact dismissible status. */
 #toast{display:flex;align-items:center;gap:10px;max-width:min(430px,calc(100vw - 24px));padding:9px 10px 9px 13px;font-size:12px;line-height:1.45;text-align:left;pointer-events:none}
 #toast.visible{pointer-events:auto}#toast>span{min-width:0;overflow-wrap:anywhere}.toast-close{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--fg2);font:22px/1 Arial;cursor:pointer}.toast-close:hover{background:var(--bg3);color:var(--fg)}
 @media(min-width:1025px){body.hidden #menuBtn{display:flex}body.hidden #sidebar{pointer-events:none}body.hidden #sidebar~#main #menuBtn{pointer-events:auto}}
 .msg .code-card{max-width:100%;min-width:0}.msg .code-card pre{overflow:auto;tab-size:2;line-height:1.6}.msg .answer-heading{display:block;margin:18px 0 8px}.msg blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--accent);background:var(--bg2);border-radius:0 8px 8px 0}.msg .answer-table{max-width:100%;overflow-x:auto}
+
+/* Low-cost motion retains transform/opacity, without backdrop repainting. */
+html[data-render-budget="compact"] .overlay,html[data-render-budget="compact"] .modal-overlay,html[data-render-budget="compact"] #overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-render-budget="compact"] .task-indicator .thinking-label,html[data-render-budget="compact"] .progress-live .progress-title{animation:none!important;background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important}
+html[data-render-budget="compact"] .file-visual img,html[data-render-budget="compact"] .file-visual video{filter:none!important;transition:opacity .2s ease!important}
+html[data-render-budget="compact"] .stream-fragment{animation:none!important}
+html[data-render-budget="compact"] button,html[data-render-budget="compact"] a{transition:transform .18s ease,opacity .18s ease,color .18s ease,background-color .18s ease}
