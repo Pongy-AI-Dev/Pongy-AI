@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.19.0"}
+:root{--pongy-build:"0.19.1"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -744,7 +744,7 @@ html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] .co
 @media(max-width:600px){.message-file-card{width:min(100%,320px)}.message-file-card button{width:34px;height:38px}.message-file-card .file-visual{flex-basis:34px;width:34px;height:38px}}
 @media(pointer:coarse){.answer-expand{position:relative}.answer-expand::after{content:"";position:absolute;inset:-9px;border-radius:50%}}
 
-/* 0.19.0: recoverable sidebar and compact dismissible status. */
+/* 0.19.1: recoverable sidebar and compact dismissible status. */
 #toast{display:flex;align-items:center;gap:10px;max-width:min(430px,calc(100vw - 24px));padding:9px 10px 9px 13px;font-size:12px;line-height:1.45;text-align:left;pointer-events:none}
 #toast.visible{pointer-events:auto}#toast>span{min-width:0;overflow-wrap:anywhere}.toast-close{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--fg2);font:22px/1 Arial;cursor:pointer}.toast-close:hover{background:var(--bg3);color:var(--fg)}
 @media(min-width:1025px){body.hidden #menuBtn{display:flex}body.hidden #sidebar{pointer-events:none}body.hidden #sidebar~#main #menuBtn{pointer-events:auto}}
