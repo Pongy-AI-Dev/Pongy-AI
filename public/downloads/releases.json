@@ -1,13 +1,13 @@
 {
-  "version": "0.18.2",
+  "version": "0.19.1",
   "publisher": "Pongy AI Dev",
   "androidCertificate": "dbd1eac0336ea5d588fa7b99a6b38cde14fd76a4142bce30c453c97602084d05",
   "files": {
     "windows": {
-      "name": "Pongy-AI-0.18.2-windows-x64.msi",
-      "sha256": "2188dbe9ae3a43c19402b21cc55c53edaebe39d273fe293bf62a642ab888cf04",
-      "bytes": 1990656,
-      "version": "0.18.2"
+      "name": "Pongy-AI-0.19.1-windows-x64.msi",
+      "sha256": "510f13a1fd90bfbdfe8578d5436ba4339584f01300fc85f1d07ca1a7b01151e6",
+      "bytes": 2084864,
+      "version": "0.19.1"
     },
     "android": {
       "name": "Pongy-AI-0.18.1-android.apk",
