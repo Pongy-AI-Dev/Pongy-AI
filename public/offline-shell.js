@@ -1,0 +1,1 @@
+(function(){'use strict';if(!('serviceWorker'in navigator)||!isSecureContext)return;function install(){navigator.serviceWorker.register('/reminder-sw.js',{scope:'/'}).catch(function(){});}if(document.readyState==='complete')install();else window.addEventListener('load',install,{once:true});})();

@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.18.13"}
+:root{--pongy-build:"0.19.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -694,8 +694,8 @@ input::-ms-reveal,input::-ms-clear{display:none}
 :root[data-motion=reduced] button svg{animation:none!important}
 @keyframes pongyIconPress{0%{scale:1}45%{scale:.82}75%{scale:1.08}100%{scale:1}}
 #appBack{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);color:var(--fg)}
-#appBack{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(9px,env(safe-area-inset-top));z-index:10000;box-shadow:0 2px 10px #0001}body:has(#appBack) .sb-head{padding-left:54px}body:has(#appBack) #topbar{padding-left:54px}
-@media(max-width:1024px){body:has(#appBack) #topbar{padding-left:54px}}
+#appBack{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(9px,env(safe-area-inset-top));z-index:10000;box-shadow:0 2px 10px #0001}body:has(#appBack:not([hidden])) .sb-head{padding-left:54px}body:has(#appBack:not([hidden])) #topbar{padding-left:54px}
+@media(max-width:1024px){body:has(#appBack:not([hidden])) #topbar{padding-left:54px}}
 #deviceAccessBanner{display:flex;align-items:center;gap:12px;margin:8px 0;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;font-size:12px;line-height:1.5}#deviceAccessBanner[hidden],#deviceAccessSettings[hidden]{display:none!important}#deviceAccessBanner span{flex:1;min-width:0}#deviceAccessBanner button,#deviceAccessSettings button{padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--accent);font-weight:600;cursor:pointer}#deviceAccessBanner .device-access-close{display:grid;place-items:center;padding:0;flex:none;width:32px;height:32px;font-size:23px;line-height:1}#deviceAccessSettings{padding:14px;border:1.5px solid var(--border);border-radius:14px;margin:12px 0}#deviceAccessSettings p{font-size:12px;color:var(--fg2);line-height:1.5}@media(max-width:540px){#deviceAccessBanner{gap:8px;flex-wrap:wrap}#deviceAccessBanner span{flex-basis:calc(100% - 44px)}#deviceAccessBanner .device-access-close{order:-1}#deviceAccessBanner button:not(.device-access-close){margin-left:40px}}
 
 /* 0.18.8: restrained reading hierarchy; no geometry changes during streaming. */
@@ -744,7 +744,7 @@ html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] .co
 @media(max-width:600px){.message-file-card{width:min(100%,320px)}.message-file-card button{width:34px;height:38px}.message-file-card .file-visual{flex-basis:34px;width:34px;height:38px}}
 @media(pointer:coarse){.answer-expand{position:relative}.answer-expand::after{content:"";position:absolute;inset:-9px;border-radius:50%}}
 
-/* 0.18.13: recoverable sidebar and compact dismissible status. */
+/* 0.19.0: recoverable sidebar and compact dismissible status. */
 #toast{display:flex;align-items:center;gap:10px;max-width:min(430px,calc(100vw - 24px));padding:9px 10px 9px 13px;font-size:12px;line-height:1.45;text-align:left;pointer-events:none}
 #toast.visible{pointer-events:auto}#toast>span{min-width:0;overflow-wrap:anywhere}.toast-close{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--fg2);font:22px/1 Arial;cursor:pointer}.toast-close:hover{background:var(--bg3);color:var(--fg)}
 @media(min-width:1025px){body.hidden #menuBtn{display:flex}body.hidden #sidebar{pointer-events:none}body.hidden #sidebar~#main #menuBtn{pointer-events:auto}}
@@ -754,3 +754,26 @@ html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] .co
 html[data-render-budget="compact"] .overlay,html[data-render-budget="compact"] .modal-overlay,html[data-render-budget="compact"] #overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 html[data-render-budget="compact"] .file-visual img,html[data-render-budget="compact"] .file-visual video{filter:none!important;transition:opacity .2s ease!important}
 html[data-render-budget="compact"] button,html[data-render-budget="compact"] a{transition:transform .18s ease,opacity .18s ease,color .18s ease,background-color .18s ease}
+/* 0.19: constrained mobile surfaces, readable notifications and restrained controls. */
+#appBack[hidden]{display:none!important}
+#notificationsBtn{position:relative}#notificationsBtn svg{width:20px;height:20px}
+#notificationsBtn.has-unread:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;right:7px;top:6px;background:#4285ff}
+#notificationsModal{z-index:1450}.notifications-box{width:min(460px,100%);padding:20px;max-height:calc(var(--app-height,100dvh) - 40px);overflow-y:auto;overscroll-behavior:contain}
+.notice-head{display:flex;align-items:center;gap:8px;margin-bottom:16px}.notice-head h2{flex:1;margin:0;font-size:21px}.notice-head .icon-btn{width:36px;height:36px;display:grid;place-items:center}.notice-head svg{width:20px;height:20px}
+.notification-row{position:relative;display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:66px;text-align:left;padding:12px 16px 12px 10px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--fg);cursor:pointer}
+.notice-icon svg{width:20px;height:20px}.notice-copy{min-width:0}.notice-copy strong{display:block;font-size:13px;font-weight:600;overflow-wrap:anywhere}.notice-full{display:block;font-size:12px;line-height:1.55;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}.notice-full[hidden]{display:none}.notification-row time{font-size:10px;color:var(--fg2);white-space:nowrap}.notice-unread{position:absolute;right:6px;top:8px;width:6px;height:6px;border-radius:50%;background:#4285ff}
+#notificationFilter{padding:14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;margin-bottom:14px}#notificationFilter h3{margin:0 0 6px;font-size:17px}#notificationFilter p,#notificationPermissionStatus{font-size:12px;color:var(--fg2);line-height:1.5}#notificationFilter h4{font-size:12px;color:var(--fg2);margin:16px 0 7px}#notificationFilter button{display:flex;align-items:center;gap:9px;border:1.5px solid transparent;border-radius:9px;padding:9px;width:100%;background:transparent;color:var(--fg);text-align:left;cursor:pointer}#notificationFilter button[aria-pressed=true]{border-color:var(--accent);background:var(--bg)}#notificationFilter button svg{width:18px;height:18px}.notice-empty{padding:24px 8px;text-align:center;color:var(--fg2);font-size:13px}
+#backgroundAccessBanner{position:relative;display:flex;flex-wrap:wrap;gap:8px;padding:10px 38px 10px 12px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg2);font-size:12px;line-height:1.5;color:var(--fg2)}#backgroundAccessBanner[hidden]{display:none}#backgroundAccessBanner>span{flex:1 1 100%}#backgroundAccessBanner button{background:none;color:var(--accent);border:0;font:inherit;cursor:pointer;padding:4px}#backgroundAccessBanner .device-access-close{position:absolute;right:5px;top:5px;width:28px;height:28px;display:grid;place-items:center}#deviceAccessSettings p{line-height:1.6;font-size:12px;color:var(--fg2)}#deviceAccessSettings button{padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--accent)}
+.upgrade-btn{border:1.5px solid var(--border)!important;background:var(--bg2)!important;color:var(--accent)!important;border-radius:12px!important;font-weight:600;box-shadow:0 2px 6px #00000008}.upgrade-btn:hover{border-color:var(--accent)!important}
+.overlay{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));overscroll-behavior:contain}.overlay .modal-box{min-width:0;max-width:100%;max-height:calc(var(--app-height,100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);overflow-y:auto;overscroll-behavior:contain}.overlay input,.overlay textarea,.overlay select{min-width:0;max-width:100%}
+#downloadAppActions .update-link{background:transparent;color:var(--accent);border:0;font-weight:600}#serviceWarning{flex-shrink:0;border-width:1.5px}
+/* Avoid repainting the whole viewport during theme changes; commit colors together. */
+body,#sidebar,#main,.topbar,.input-area{transition:none}
+:root[data-motion=full] .notification-row,:root[data-motion=full] #notificationFilter button,:root[data-motion=full] #backgroundAccessBanner button{transition:transform .18s ease,background-color .18s ease}:root[data-motion=full] .notification-row:active,:root[data-motion=full] #backgroundAccessBanner button:active{transform:scale(.98)}
+@media(max-width:600px){
+ #main{max-width:100%;min-width:0}#topbar{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right));height:auto;min-height:52px}#topbar .tb-actions{gap:0}#topbar .tb-actions>button{width:34px;min-width:34px;padding:0;flex-shrink:0}
+ #downloadAppTop{font-size:0!important;width:34px!important;min-width:34px!important}#downloadAppTop:before{content:"";width:18px;height:18px;display:block;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' d='M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5'/%3E%3C/svg%3E") center/contain no-repeat}
+ .overlay .modal-box{width:100%;padding:24px 16px 18px;border-width:1.5px;border-radius:18px}.overlay h2{font-size:21px}.overlay input,.overlay textarea,.overlay select{font-size:16px}.report-panel{box-sizing:border-box;max-width:100%;width:100%}.report-panel textarea{width:100%;max-width:100%;font-size:16px}.report-panel>*{min-width:0}
+ #inputArea{padding-bottom:max(5px,env(safe-area-inset-bottom))}.input-area{min-width:0}#sidebar{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}.opt,.input-box,.sb-search-inner,.attachment-chip,.report-panel,.reminder-box input,.reminder-box textarea{border-width:1.5px}
+ .notification-row{gap:7px;grid-template-columns:20px minmax(0,1fr) auto}.notification-row time{font-size:9px}.notification-row strong{font-size:12px}
+}

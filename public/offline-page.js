@@ -1,0 +1,2 @@
+document.getElementById('retry').onclick=function(){location.reload()};
+try{if((localStorage.getItem('pongy_settings_ui')||'').includes('"lang":"en"')){document.documentElement.lang='en';document.getElementById('hint').textContent='An internet connection is required to use Pongy AI.';document.getElementById('warning').textContent='You are offline!';document.getElementById('retry').textContent='Retry connection';document.getElementById('composer').placeholder='Messaging is unavailable offline';}}catch(e){}

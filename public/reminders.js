@@ -16,7 +16,7 @@ async function poll(){if(!ctx?.ready()||busy)return;var account=ctx.account();if
  if('Notification'in root&&Notification.permission==='granted'&&!pushBusy&&Date.now()-pushCheckedAt>300000&&(value.reminders.some(r=>r.enabled)||value.events.length)){
   pushBusy=true;pushCheckedAt=Date.now();push(Notification.permission,account).catch(()=>{}).finally(()=>{pushBusy=false;});
  }
- for(var e of value.events||[]){if(account!==ctx.account()||!ctx.ready())return;if(e.createdAt<=Date.now()-600000)continue;if(!seen.has(e.id)){ctx.notify((e.kind?'':tr('Напоминание: ','Reminder: '))+e.text);seen.add(e.id);}await localNotification(e,account);}
+ for(var e of value.events||[]){if(e.kind&&e.push==='disabled'&&e.email==='disabled')continue;if(account!==ctx.account()||!ctx.ready())return;if(e.createdAt<=Date.now()-600000)continue;if(!seen.has(e.id)){ctx.notify((e.kind?'':tr('Напоминание: ','Reminder: '))+e.text);seen.add(e.id);}await localNotification(e,account);}
  try{localStorage.setItem('pongy_reminders_seen:'+owner,JSON.stringify([...seen].slice(-1000)));}catch(e){}
  }catch(e){if(account===ctx.account()&&ctx.ready()&&$('reminderModal').classList.contains('open'))status(tr('Не удалось загрузить расписание. Повторите попытку.','Could not load schedules. Try again.'),true);}finally{busy=false;}}
 
