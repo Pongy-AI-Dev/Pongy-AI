@@ -10,5 +10,14 @@ function getBrowserConfig(env=process.env){
  }
  return {name,options};
 }
-function launchBrowser(){const {name,options}=getBrowserConfig();return require('playwright')[name].launch(options);}
-module.exports={getBrowserConfig,launchBrowser};
+function contextOptions(options={}){return {serviceWorkers:'block',...options};}
+async function launchBrowser(){const {name,options}=getBrowserConfig(),browser=await require('playwright')[name].launch(options);
+ // Ordinary suites intercept network requests and inject fixtures. A controlling Service Worker
+ // can bypass page.route after reload (especially WebKit), invalidating those checks.
+ // The dedicated offline suite explicitly opts back in and verifies the real worker.
+ const context=browser.newContext.bind(browser),page=browser.newPage.bind(browser);
+ browser.newContext=opts=>context(contextOptions(opts));
+ browser.newPage=opts=>page(contextOptions(opts));
+ return browser;}
+
+module.exports={getBrowserConfig,contextOptions,launchBrowser};
