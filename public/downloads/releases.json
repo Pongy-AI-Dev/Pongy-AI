@@ -1,5 +1,5 @@
 {
-  "version": "0.19.2",
+  "version": "0.19.5",
   "publisher": "Pongy AI Dev",
   "androidCertificate": "597c3a3f47de711fb437eab3c8a92dbb745ffea45f71bc2c241473284c53e3d9",
   "files": {
@@ -10,10 +10,10 @@
       "version": "0.19.1"
     },
     "android": {
-      "name": "Pongy-AI-0.19.2-android.apk",
-      "sha256": "066f4d55fe564b436ad94796990d6b3fc2f0a06a697dfea8a199a4413ee50104",
+      "name": "Pongy-AI-0.19.5-android.apk",
+      "sha256": "420302b5555fa3d5f7aa282156f4103ded0a52aae62320c96f29811acf3dc4a3",
       "bytes": 221741,
-      "version": "0.19.2"
+      "version": "0.19.5"
     }
   },
   "windowsEngine": "WebView2",
