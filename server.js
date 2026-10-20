@@ -1,4 +1,4 @@
-import {mailSettings} from './lib/mail.js';
+import {mailSettings,createMailer} from './lib/mail.js';
 import {DELIVERY_PROMPT} from './lib/code-delivery.js';
 import {DeviceLinks} from './lib/device-link.js';
 import {generateImage} from './lib/artifacts.js';
@@ -60,7 +60,7 @@ const asyncRoute=fn=>(req,res,next)=>Promise.resolve(fn(req,res,next)).catch(nex
 const emailValue=value=>typeof value==='string'&&value.trim().length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())?value.trim().toLowerCase():null;
 const validPassword=value=>typeof value==='string'&&value.length>=8&&Buffer.byteLength(value,'utf8')<=72;
 const publicUser=u=>({id:u.id,email:u.email,nickname:u.nickname||'',avatar:u.avatar||'',subscription_until:u.subscription_until||0,developer:isDeveloper(u)});
-export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=fetch,webReader=readPage,now=Date.now,checkMx=async email=>{try{return (await dns.promises.resolveMx(email.split('@')[1])).length>0;}catch{return false;}}}={}){
+export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=fetch,mailTransportFactory,webReader=readPage,now=Date.now,checkMx=async email=>{try{return (await dns.promises.resolveMx(email.split('@')[1])).length>0;}catch{return false;}}}={}){
  config.imageGenerationEnabled=config.imageGenerationEnabled===true&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||String(config.imageModel||'').endsWith(':free'));config.paidModelsEnabled=false; // Paid Plus entitlements are not active.
  fs.mkdirSync(path.dirname(config.databasePath),{recursive:true,mode:0o700});
  const db=new Database(config.databasePath);db.pragma('journal_mode = WAL');db.pragma('foreign_keys = ON');db.pragma('busy_timeout = 5000');
@@ -78,6 +78,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  db.exec('CREATE TABLE IF NOT EXISTS pending_verifications(id TEXT PRIMARY KEY,uid TEXT NOT NULL,expires_at INTEGER NOT NULL)');
  mountCloudflareBudget(config,db,now);
  const store=new CloudStore(config,fetchImpl);
+ const authMailer=createMailer({config,fetchImpl,transportFactory:mailTransportFactory});
  const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),firebase=new FirebaseAuth(config,fetchImpl),app=express();
  app.disable('x-powered-by');if(config.trustProxy!==false){if(!Number.isInteger(config.trustProxy)||config.trustProxy<1)throw new Error('TRUST_PROXY must be a trusted hop count');app.set('trust proxy',config.trustProxy);}
  app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],workerSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','blob:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],mediaSrc:["'self'",'blob:'],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
@@ -125,10 +126,11 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.post('/api/device-link/approve',authLimit,auth,(req,res)=>{if(!req.user.email_verified)return res.status(403).json({error:'Confirm your email first'});const cookies=res.getHeader('Set-Cookie'),fresh=(Array.isArray(cookies)?cookies:[]).find(c=>c.startsWith('pongy_session='));const token=fresh?decodeURIComponent(fresh.split(';')[0].slice(14)):req.cookies.pongy_session;if(!deviceLinks.approve(req.body?.id,req.body?.code,token))return res.status(400).json({error:'Request expired or code mismatch'});res.json({ok:true});});
  app.post('/api/device-link/poll',(req,res)=>{res.set('Cache-Control','no-store');const result=deviceLinks.poll(req.body?.id,req.body?.secret);if(result.token){res.cookie('pongy_session',result.token,cookieOptions);return res.json({authenticated:true});}res.json(result);});
  async function mail(to,subject,code){
-  if(!config.resendKey||!config.mailFrom)throw Object.assign(new Error('Отправка почты не настроена владельцем сервера.'),{status:503});
-  const response=await fetchImpl('https://api.resend.com/emails',{method:'POST',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+config.resendKey},body:JSON.stringify({from:config.mailFrom,to:[to],subject,html:'<p>Pongy AI</p><p>Ваш код: <strong>'+code+'</strong></p><p>Действует 10 минут. Никому не сообщайте код.</p>'})});
-  if(!response.ok)throw Object.assign(new Error('Не удалось отправить письмо. Попробуйте позже.'),{status:503});
+  if(!authMailer.configured)throw Object.assign(new Error('Отправка почты не настроена владельцем сервера.'),{status:503});
+  try{await authMailer.send({to,subject,text:'Pongy AI\nВаш код: '+code+'\nДействует 10 минут. Никому не сообщайте код.',id:'auth-'+crypto.randomUUID()});}
+  catch{throw Object.assign(new Error('Не удалось отправить письмо. Попробуйте позже.'),{status:503});}
  }
+
  const registrationEmailLimit=new Map();
  function sendCooldown(email){const until=registrationEmailLimit.get(email)||0;if(until>now())return false;if(registrationEmailLimit.size>=10000)for(const [key,time]of registrationEmailLimit)if(time<=now())registrationEmailLimit.delete(key);if(registrationEmailLimit.size>=10000)return false;registrationEmailLimit.set(email,now()+60000);return true;}
  app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:aiConfigured(config),emailConfigured:firebase.enabled||mailSettings(config).configured,authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),paymentsEnabled:false,cloudHistory:store.enabled,appVersion:APP_VERSION,supportEmails:SUPPORT_EMAILS,interfaceLanguages:['en','ru'],searchProvider:config.tavilySearchKey?'tavily':config.braveSearchKey?'brave':null,webSearchConfigured:!!(config.tavilySearchKey||config.braveSearchKey),imageGenerationConfigured:!!(config.imageGenerationEnabled&&config.imageModel&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||config.openrouterKey)),plusPrice:190,currency:'RUB'}));
@@ -158,7 +160,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email);if(!email)return res.status(400).json({error:'Укажите корректную почту'});
   if(db.prepare('SELECT id FROM users WHERE email=?').get(email))return res.status(409).json({error:'Эта почта уже зарегистрирована. Войдите или восстановите пароль.',code:'EMAIL_EXISTS'});
-  if(!config.resendKey||!config.mailFrom)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
+  if(!authMailer.configured)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
   if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой'});
   if(!await checkMx(email))return res.status(400).json({error:'Не удалось проверить почтовый домен'});
   const code=codes.issue('register',email);if(!code)return res.status(429).json({error:'Подождите минуту'});
@@ -189,7 +191,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.post('/api/password/send-code',authLimit,mailLimit,asyncRoute(async(req,res)=>{
   if(firebase.enabled)return res.status(410).json({error:'Обновите страницу: подтверждение Firebase выполняется по ссылке в письме.'});
   const email=emailValue(req.body?.email);if(!email)return res.status(400).json({error:'Укажите корректную почту'});
-  if(!config.resendKey||!config.mailFrom)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
+  if(!authMailer.configured)return res.status(503).json({error:'Отправка почты ещё не настроена.'});
   if(!sendCooldown(email))return res.status(429).json({error:'Подождите минуту перед повторной отправкой'});
   if(db.prepare('SELECT id FROM users WHERE email=?').get(email)){const code=codes.issue('reset',email);if(!code)return res.status(429).json({error:'Подождите минуту'});try{await mail(email,'Pongy AI — восстановление пароля',code);}catch(e){codes.consume('reset',email);throw e;}}
   res.json({ok:true});
@@ -350,7 +352,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){if(p.endsWith('.html')||/\/(?:app\.js|app\.css)$/.test(p))res.setHeader('Cache-Control','no-store');}}));
  app.use((_req,res)=>res.status(404).json({error:'Не найдено'}));
  app.use((err,_req,res,_next)=>{if(res.headersSent){res.end();return;}const status=err instanceof multer.MulterError?413:err.type==='entity.too.large'?413:err instanceof SyntaxError?400:err.status||500;if(status>=500&&publicErrorCode(err.code))console.warn('[service]',err.code);const friendly=/^(FIREBASE_|FIRESTORE_)/.test(err.code||'');res.status(status).json({error:friendly?'Что-то пошло не так. Попробуйте позже.':err.publicMessage?err.message:status>=500?'Сервис временно недоступен. Проверьте настройки сервера.':status===413?'Слишком большой запрос':status===400?'Некорректный запрос':err.message,...(publicErrorCode(err.code)?{code:err.code}:{})});});
- return {app,db,ai,codes,reminders,close(){reminders.close();db.close();}};
+ return {app,db,ai,codes,reminders,close(){authMailer.close();reminders.close();db.close();}};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const config=loadConfig(process.env,moduleRoot),runtime=createApp({config});const server=runtime.app.listen(config.port,()=>{console.log('Pongy server listening on port '+config.port);console.log('AI: '+(aiConfigured(config)?'configured (provider availability not guaranteed)':'not configured — configure an AI provider on the server'));console.log('SBP payments: not configured');if(config.openrouterKey){const controller=new AbortController();runtime.ai.models(controller.signal).catch(()=>{});}});
