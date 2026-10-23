@@ -9,14 +9,6 @@ import {loadConfig} from '../lib/config.js';
 import Database from 'better-sqlite3';
 import {createUserApi} from '../lib/user-api.js';
 import {userCompletion} from '../lib/user-api-request.js';
-test('MCP uses a rotatable secret token and exposes Pongy ask_pongy over stateless HTTP',async()=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-mcp-')),aiCalls=[],runtime=createApp({
-  config:loadConfig({DATA_DIR:dir,PUBLIC_API_ORIGIN:'https://api.example.test',GEMINI_ENABLED:'true',GEMINI_API_KEY:'fixture-google-private',JWT_SECRET:'fixture-mcp-jwt-'.repeat(3),SESSION_SECRET:'fixture-mcp-session-'.repeat(3)},dir),
-  fetchImpl:async(url,options)=>{
-   aiCalls.push({url,options});
-   return new Response('data: '+JSON.stringify({choices:[{delta:{content:'Pongy MCP response.'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');
-  }
- });
  test('Inception is listed in provider-name order and its returned models sort by ID',async()=>{
   const db=new Database(':memory:'),calls=[],api=createUserApi({db,config:{jwtSecret:'catalog-test-secret'},fetchImpl:async(url,options)=>{calls.push({url,options});return Response.json({data:[{id:'mercury-3'},{id:'mercury-1'}]});}});
   try{
@@ -46,7 +38,15 @@ test('MCP uses a rotatable secret token and exposes Pongy ask_pongy over statele
    assert.equal((await req('/api/api-key',undefined,{...auth,method:'DELETE'})).status,200);assert.equal((await req('/v1/chat/completions',body,{headers:{Authorization:'Bearer '+second.token}})).status,401);
   }finally{await new Promise(resolve=>server.close(resolve));await runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
  });
- runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('mcp-user@example.test',bcrypt.hashSync('fixture-password',4));
+test('MCP uses a rotatable secret token and exposes Pongy ask_pongy over stateless HTTP',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-mcp-')),aiCalls=[],runtime=createApp({
+   config:loadConfig({DATA_DIR:dir,PUBLIC_API_ORIGIN:'https://api.example.test',GEMINI_ENABLED:'true',GEMINI_API_KEY:'fixture-google-private',JWT_SECRET:'fixture-mcp-jwt-'.repeat(3),SESSION_SECRET:'fixture-mcp-session-'.repeat(3)},dir),
+   fetchImpl:async(url,options)=>{
+    aiCalls.push({url,options});
+    return new Response('data: '+JSON.stringify({choices:[{delta:{content:'Pongy MCP response.'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');
+   }
+  });
+  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('mcp-user@example.test',bcrypt.hashSync('fixture-password',4));
  const server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));const base='http://127.0.0.1:'+server.address().port;
  async function request(url,body,cookie,method='POST',headers={}){return fetch(base+url,{method,headers:{Origin:base,'Content-Type':'application/json',Cookie:cookie||'',...headers},body:body?JSON.stringify(body):undefined});}
  try{
