@@ -10,8 +10,9 @@ function references(root,files,pkg){
  }
  for(const file of files.filter(f=>f==='server.js'||/^lib\/.*\.(?:js|mjs|cjs)$/.test(f))){
   const source=fs.readFileSync(path.join(root,file),'utf8');
-  for(const m of source.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"](\.{1,2}\/[^'"?#]+)['"]/g))check(path.resolve(root,path.dirname(file),m[1]),file);
-  for(const m of source.matchAll(/\bnew\s+URL\(\s*['"](\.{1,2}\/[^'"]+)['"]\s*,\s*import\.meta\.url\s*\)/g))check(path.resolve(root,path.dirname(file),m[1]),file);
+  const base=file==='lib/server.js'&&pkg.main==='server.js'?'':path.dirname(file);
+  for(const m of source.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"](\.{1,2}\/[^'"?#]+)['"]/g))check(path.resolve(root,base,m[1]),file);
+  for(const m of source.matchAll(/\bnew\s+URL\(\s*['"](\.{1,2}\/[^'"]+)['"]\s*,\s*import\.meta\.url\s*\)/g))check(path.resolve(root,base,m[1]),file);
  }
  return [...new Set(errors)];
 }
