@@ -55,6 +55,13 @@ const path=require('node:path');
     check(!(await page.locator('#settings-panel-usage').innerText()).includes('150'),'internal per-chat limit shown to user');
 
     await page.locator('#settings-tab-tools').click();
+    await page.locator('#apiKeyStatus').waitFor();
+    await page.locator('#apiKeyCreate').click();
+    await page.waitForFunction(()=>document.querySelector('#apiKeyStatus').textContent.includes('Ключ создан'));
+    check((await page.locator('#apiKeyValue').textContent()).startsWith('pongy_api_'),'personal API Key was not shown');
+    check((await page.locator('#apiKeyEndpoint').textContent()).endsWith('/v1/chat/completions'),'OpenAI-compatible API endpoint was not shown');
+    await page.locator('#apiKeyRevoke').click();
+    await page.waitForFunction(()=>document.querySelector('#apiKeyStatus').textContent==='API Key отозван.');
     await page.locator('#mcpTokenStatus').waitFor();
     await page.locator('#mcpCreateToken').click();
     await page.waitForFunction(()=>document.querySelector('#mcpTokenStatus').textContent.includes('Токен создан'));

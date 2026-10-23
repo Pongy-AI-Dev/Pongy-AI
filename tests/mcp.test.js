@@ -25,6 +25,27 @@ test('MCP uses a rotatable secret token and exposes Pongy ask_pongy over statele
    const request=userCompletion({userApi:{provider:'inception',key:'inception-private-key',model:'mercury-3'},maxOutputTokens:500},[],[],'chat');assert.equal(request.url,'https://api.inceptionlabs.ai/v1/chat/completions');assert.equal(request.options.headers.Authorization,'Bearer inception-private-key');
   }finally{db.close();}
  });
+ test('Pongy API keys authenticate OpenAI-compatible completions and revoke immediately',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-api-key-')),calls=[],runtime=createApp({
+   config:loadConfig({DATA_DIR:dir,GEMINI_ENABLED:'true',GEMINI_API_KEY:'fixture-google-private',JWT_SECRET:'fixture-api-key-jwt-'.repeat(3),SESSION_SECRET:'fixture-api-key-session-'.repeat(3)},dir),
+   fetchImpl:async(url,options)=>{calls.push({url,options});return new Response('data: '+JSON.stringify({choices:[{delta:{content:'Answer from the Pongy API.'},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');}
+  });
+  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('api-key-user@example.test',bcrypt.hashSync('fixture-password',4));
+  const server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));const base='http://127.0.0.1:'+server.address().port;
+  const req=(url,body,options={})=>fetch(base+url,{method:options.method|| (body?'POST':'GET'),headers:{Origin:base,'Content-Type':'application/json',...(options.headers||{})},body:body?JSON.stringify(body):undefined});
+  try{
+   const login=await req('/api/login',{email:'api-key-user@example.test',password:'fixture-password'});assert.equal(login.status,200);const cookie=login.headers.get('set-cookie').split(';')[0],auth={headers:{Cookie:cookie}};
+   assert.equal((await req('/api/api-key',undefined,auth)).status,200);
+   const created=await req('/api/api-key',{},auth),first=await created.json();assert.equal(created.status,200);assert.match(first.token,/^pongy_api_[A-Za-z0-9_-]{43}$/);assert.equal(first.endpoint,'http://localhost:3000/v1/chat/completions');
+   const saved=runtime.db.prepare('SELECT token_hash FROM api_keys WHERE user_id=(SELECT id FROM users WHERE email=?)').get('api-key-user@example.test');assert.notEqual(saved.token_hash,first.token);assert.equal(saved.token_hash.length,64);
+   const body={model:'pongy-ai',messages:[{role:'user',content:'Give one benefit of a short walk.'}]};
+   assert.equal((await req('/v1/chat/completions',body,{headers:{Authorization:'Bearer invalid'}})).status,401);
+   const completed=await req('/v1/chat/completions',body,{headers:{Authorization:'Bearer '+first.token}});assert.equal(completed.status,200);const response=await completed.json();assert.equal(response.object,'chat.completion');assert.equal(response.choices[0].message.content,'Answer from the Pongy API.');assert.equal(calls[0].url,'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+   const rotated=await req('/api/api-key',{},auth),second=await rotated.json();assert.notEqual(first.token,second.token);assert.equal((await req('/v1/chat/completions',body,{headers:{Authorization:'Bearer '+first.token}})).status,401);
+   const streamed=await req('/v1/chat/completions',{...body,stream:true},{headers:{Authorization:'Bearer '+second.token}});assert.equal(streamed.status,200);assert.match(await streamed.text(),/data: \[DONE\]/);
+   assert.equal((await req('/api/api-key',undefined,{...auth,method:'DELETE'})).status,200);assert.equal((await req('/v1/chat/completions',body,{headers:{Authorization:'Bearer '+second.token}})).status,401);
+  }finally{await new Promise(resolve=>server.close(resolve));await runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
+ });
  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('mcp-user@example.test',bcrypt.hashSync('fixture-password',4));
  const server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));const base='http://127.0.0.1:'+server.address().port;
  async function request(url,body,cookie,method='POST',headers={}){return fetch(base+url,{method,headers:{Origin:base,'Content-Type':'application/json',Cookie:cookie||'',...headers},body:body?JSON.stringify(body):undefined});}
