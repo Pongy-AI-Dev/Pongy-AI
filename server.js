@@ -73,10 +73,12 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='created_at'))db.exec('ALTER TABLE users ADD COLUMN created_at INTEGER');
  if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='firebase_created_at'))db.exec('ALTER TABLE users ADD COLUMN firebase_created_at INTEGER');
  if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='firebase_uid'))db.exec('ALTER TABLE users ADD COLUMN firebase_uid TEXT');
+ for(const column of ['yandex_id','github_id'])if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name===column))db.exec('ALTER TABLE users ADD COLUMN '+column+' TEXT');
  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid) WHERE firebase_uid IS NOT NULL');
+ db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_yandex_id ON users(yandex_id) WHERE yandex_id IS NOT NULL AND yandex_id<>''; CREATE UNIQUE INDEX IF NOT EXISTS idx_users_github_id ON users(github_id) WHERE github_id IS NOT NULL AND github_id<>''");
  db.exec("CREATE TRIGGER IF NOT EXISTS users_record_created_at AFTER INSERT ON users WHEN NEW.created_at IS NULL BEGIN UPDATE users SET created_at=strftime('%s','now')*1000 WHERE id=NEW.id; END;");
  db.exec('DROP TABLE IF EXISTS reset_codes; DROP TABLE IF EXISTS verify_codes;');
- db.exec(`CREATE TABLE IF NOT EXISTS preferences(user_id INTEGER PRIMARY KEY,json TEXT NOT NULL); CREATE TABLE IF NOT EXISTS files(id TEXT PRIMARY KEY,user_id INTEGER NOT NULL,json TEXT NOT NULL);`);
+ db.exec(`CREATE TABLE IF NOT EXISTS preferences(user_id INTEGER PRIMARY KEY,json TEXT NOT NULL); CREATE TABLE IF NOT EXISTS files(id TEXT PRIMARY KEY,user_id INTEGER NOT NULL,json TEXT NOT NULL); CREATE TABLE IF NOT EXISTS oauth_states(state_hash TEXT PRIMARY KEY,provider TEXT NOT NULL,expires_at INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS idx_oauth_states_expiry ON oauth_states(expires_at);`);
  db.exec('CREATE TABLE IF NOT EXISTS pending_verifications(id TEXT PRIMARY KEY,uid TEXT NOT NULL,expires_at INTEGER NOT NULL)');
  mountCloudflareBudget(config,db,now);
  const control=createSiteControl({db,now});
@@ -88,7 +90,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const ownOrigin=req=>req.protocol+'://'+req.get('host');
  const allowed=(origin,req)=>!origin||config.allowedOrigins.has(origin)||origin===ownOrigin(req);
  app.use((req,res,next)=>{const origin=req.get('origin');if(!allowed(origin,req))return res.status(403).json({error:'Недопустимый источник запроса'});next();});
- app.use(cors((req,cb)=>cb(null,{origin:allowed(req.get('origin'),req),credentials:true,exposedHeaders:['Retry-After','X-Pongy-Daily-Remaining']})));
+ app.use(cors((req,cb)=>cb(null,{origin:allowed(req.get('origin'),req),credentials:true,exposedHeaders:['Retry-After']})));
  const dynamicLimit=rateLimit({windowMs:60000,max:200,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много запросов. Попробуйте позже.'}}),assetLimit=rateLimit({windowMs:60000,max:2000,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много загрузок. Попробуйте позже.'}});
  // Public interface assets must not consume the authentication/API budget.
  app.use((req,res,next)=>(!['GET','HEAD'].includes(req.method)||/^\/(?:api|auth|downloads)(?:\/|$)/i.test(req.path)?dynamicLimit:assetLimit)(req,res,next));
@@ -100,7 +102,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const authLimit=rateLimit({windowMs:15*60000,max:30,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много попыток. Попробуйте позже.'}});
  const mailLimit=rateLimit({windowMs:3600000,max:8,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Лимит отправки писем. Попробуйте позже.'}});
  const chatLimit=rateLimit({windowMs:60000,max:20,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Лимит запросов к ИИ. Попробуйте позже.'}});
- function issueSession(res,user,options={}){control.assertUser(user);const claims={id:user.id,v:user.token_version||0};if(options.refreshToken){claims.fuid=user.firebase_uid;claims.fr=firebase.seal(options.refreshToken,user.firebase_uid);if(user.cloudSession){claims.sid=user.cloudSession;claims.email=user.email;}}else if(options.google)claims.google=user.google_id;const token=jwt.sign(claims,config.jwtSecret,{algorithm:'HS256',issuer:'pongy-server',audience:'pongy-web',expiresIn:'30d'});res.cookie('pongy_session',token,cookieOptions);}
+ function issueSession(res,user,options={}){control.assertUser(user);const claims={id:user.id,v:user.token_version||0};if(options.refreshToken){claims.fuid=user.firebase_uid;claims.fr=firebase.seal(options.refreshToken,user.firebase_uid);if(user.cloudSession){claims.sid=user.cloudSession;claims.email=user.email;}}else if(options.google)claims.google=user.google_id;else if(options.oauth){claims.oauth=options.oauth;claims.oid=options.providerId;}const token=jwt.sign(claims,config.jwtSecret,{algorithm:'HS256',issuer:'pongy-server',audience:'pongy-web',expiresIn:'30d'});res.cookie('pongy_session',token,cookieOptions);}
  async function cloudSession(user,session){if(!store.enabled)return;const migrated=await store.get(user.firebase_uid,session.idToken,'preferences','migration');if(!migrated){for(const row of db.prepare('SELECT id,json FROM files WHERE user_id=?').all(user.id)){if(!await store.get(user.firebase_uid,session.idToken,'files',row.id))await store.set(user.firebase_uid,session.idToken,'files',row.id,JSON.parse(row.json));}const pref=db.prepare('SELECT json FROM preferences WHERE user_id=?').get(user.id);if(pref&&!await store.get(user.firebase_uid,session.idToken,'preferences','main'))await store.set(user.firebase_uid,session.idToken,'preferences','main',{...JSON.parse(pref.json),updated_at:now()});const old=db.prepare('SELECT * FROM chats WHERE user_id=? LIMIT 500').all(user.id);for(const row of old){if(!await store.get(user.firebase_uid,session.idToken,'chats',row.id))await store.set(user.firebase_uid,session.idToken,'chats',row.id,{id:row.id,title:row.title,messages:JSON.parse(row.messages),pinned:!!row.pinned,updated_at:row.updated_at||now()});}await store.set(user.firebase_uid,session.idToken,'preferences','migration',{updated_at:now(),complete:true});}const sid=crypto.randomUUID();await store.set(user.firebase_uid,session.idToken,'sessions',sid,{email:user.email,expires_at:now()+30*86400000,updated_at:now()});user.cloudSession=sid;}
  const auth=asyncRoute(async(req,res,next)=>{
   const header=req.get('authorization'),token=header?(header.startsWith('Bearer ')?header.slice(7):''):req.cookies.pongy_session;
@@ -116,7 +118,8 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
    if(checked.refreshToken!==checked.previous){const renewed=jwt.sign({...claim,id:user.id,fr:firebase.seal(checked.refreshToken,claim.fuid)},config.jwtSecret,{algorithm:'HS256'});res.cookie('pongy_session',renewed,{...cookieOptions,maxAge:Math.max(0,claim.exp*1000-Date.now())});}
   }else{
    user=db.prepare('SELECT * FROM users WHERE id=?').get(claim.id);
-   if(!user||claim.v!==user.token_version||user.firebase_uid&&!(claim.google&&claim.google===user.google_id)&&(!claim.fr||claim.fuid!==user.firebase_uid))return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});
+   const providerClaim=claim.google&&claim.google===user?.google_id||['yandex','github'].includes(claim.oauth)&&claim.oid===user?.[claim.oauth+'_id'];
+   if(!user||claim.v!==user.token_version||user.firebase_uid&&!providerClaim&&(!claim.fr||claim.fuid!==user.firebase_uid))return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});
    if(claim.fr){if(!firebase.enabled)return res.status(503).json({error:'Настройки Firebase временно недоступны.'});try{const checked=await firebase.checkSession(claim.fr,user.firebase_uid,user.email);req.firebaseIdToken=checked.idToken;req.accountCreatedAt=checked.createdAt;req.firebaseEmailVerified=checked.emailVerified===true;if(checked.refreshToken!==checked.previous){const renewed=jwt.sign({...claim,fr:firebase.seal(checked.refreshToken,user.firebase_uid)},config.jwtSecret,{algorithm:'HS256'});res.cookie('pongy_session',renewed,{...cookieOptions,maxAge:Math.max(0,claim.exp*1000-Date.now())});}}catch(error){if(error.status===401)res.clearCookie('pongy_session',{...cookieOptions,maxAge:undefined});throw error;}}
    if(db.prepare('SELECT token_version FROM users WHERE id=?').get(user.id)?.token_version!==claim.v)return res.status(401).json({error:'Сеанс завершён. Войдите снова.'});
   }
@@ -136,7 +139,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
 
  const registrationEmailLimit=new Map();
  function sendCooldown(email){const until=registrationEmailLimit.get(email)||0;if(until>now())return false;if(registrationEmailLimit.size>=10000)for(const [key,time]of registrationEmailLimit)if(time<=now())registrationEmailLimit.delete(key);if(registrationEmailLimit.size>=10000)return false;registrationEmailLimit.set(email,now()+60000);return true;}
- app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:aiConfigured(config),emailConfigured:firebase.enabled||mailSettings(config).configured,authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),paymentsEnabled:false,cloudHistory:store.enabled,appVersion:APP_VERSION,supportEmails:SUPPORT_EMAILS,interfaceLanguages:['en','ru'],searchProvider:config.tavilySearchKey?'tavily':config.braveSearchKey?'brave':null,webSearchConfigured:!!(config.tavilySearchKey||config.braveSearchKey),imageGenerationConfigured:!!(config.imageGenerationEnabled&&config.imageModel&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||config.openrouterKey)),plusPrice:190,currency:'RUB'}));
+ app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:aiConfigured(config),emailConfigured:firebase.enabled||mailSettings(config).configured,authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),yandexEnabled:!!(config.yandexId&&config.yandexSecret),githubEnabled:!!(config.githubId&&config.githubSecret),paymentsEnabled:false,cloudHistory:store.enabled,appVersion:APP_VERSION,supportEmails:SUPPORT_EMAILS,interfaceLanguages:['en','ru'],searchProvider:config.tavilySearchKey?'tavily':config.braveSearchKey?'brave':null,webSearchConfigured:!!(config.tavilySearchKey||config.braveSearchKey),imageGenerationConfigured:!!(config.imageGenerationEnabled&&config.imageModel&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||config.openrouterKey)),plusPrice:190,currency:'RUB'}));
  app.get('/api/site-state',(_req,res)=>res.set('Cache-Control','no-store').json(control.state()));
  app.get('/healthz',(_req,res)=>res.json({status:'ok'}));
  const pendingCookie={...cookieOptions,maxAge:30*60000};
@@ -215,7 +218,11 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const validId=id=>typeof id==='string'&&/^[\w-]{1,64}$/.test(id);
  async function projectFiles(req){const chat=validId(req.body?.chatId)?await getRecord(req,'chats',req.body.chatId):null;const ids=new Set([...(req.body.attachments||[]),...(chat?.messages||[]).flatMap(m=>(m.attachments||[]).map(f=>f.id))].filter(validId));const wanted=[...ids],where=wanted.length?' OR id IN ('+wanted.map(()=>'?').join(',')+')':'';const records=store.enabled?await store.list(req.user.firebase_uid,req.firebaseIdToken,'files'):db.prepare("SELECT json_remove(json,'$.base64') AS json FROM files WHERE user_id=? AND (json_extract(json,'$.chatId')=?"+where+")").all(req.user.id,validId(req.body?.chatId)?req.body.chatId:'',...wanted).map(r=>JSON.parse(r.json));return records.filter(f=>validId(req.body?.chatId)&&f.chatId===req.body.chatId||ids.has(f.id));}
  app.get('/api/preferences',auth,asyncRoute(async(req,res)=>res.json(await getRecord(req,'preferences','main')||{})));
- app.put('/api/preferences',auth,asyncRoute(async(req,res)=>{const previous=await getRecord(req,'preferences','main')||{},input=req.body||{},merged={...previous,...input},notificationChange=typeof input.notifications==='boolean',data={theme:merged.theme==='dark'?'dark':'light',lang:['en','ru'].includes(merged.lang)?merged.lang:'en',nickname:String(merged.nickname||'').slice(0,32),memory:merged.memory===true,betaFunctions:merged.betaFunctions===true,notifications:notificationChange?input.notifications:previous.notifications===true,notificationsUpdatedAt:notificationChange?(Number.isFinite(input.notificationsUpdatedAt)&&input.notificationsUpdatedAt>0?Math.min(input.notificationsUpdatedAt,now()):now()):Number(previous.notificationsUpdatedAt||previous.updated_at||0),updated_at:now()};if(store.enabled)await store.set(req.user.firebase_uid,req.firebaseIdToken,'preferences','main',data);else db.prepare('INSERT INTO preferences VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET json=excluded.json').run(req.user.id,JSON.stringify(data));res.json({ok:true});}));
+ app.put('/api/preferences',auth,asyncRoute(async(req,res)=>{
+  const previous=await getRecord(req,'preferences','main')||{},input=req.body||{},merged={...previous,...input},notificationChange=typeof input.notifications==='boolean';
+  const data={theme:merged.theme==='dark'?'dark':'light',lang:['en','ru'].includes(merged.lang)?merged.lang:'en',nickname:String(merged.nickname||'').slice(0,32),memory:merged.memory===true,betaFunctions:merged.betaFunctions===true,voiceGender:merged.voiceGender==='female'?'female':'male',notifications:notificationChange?input.notifications:previous.notifications===true,notificationsUpdatedAt:notificationChange?(Number.isFinite(input.notificationsUpdatedAt)&&input.notificationsUpdatedAt>0?Math.min(input.notificationsUpdatedAt,now()):now()):Number(previous.notificationsUpdatedAt||previous.updated_at||0),updated_at:now()};
+  if(store.enabled)await store.set(req.user.firebase_uid,req.firebaseIdToken,'preferences','main',data);else db.prepare('INSERT INTO preferences VALUES(?,?) ON CONFLICT(user_id) DO UPDATE SET json=excluded.json').run(req.user.id,JSON.stringify(data));res.json({ok:true});
+ }));
  const reminders=createReminders({db,config,now,fetchImpl});
  const notes=createNotesRepository({db,store,getFile:(req,id)=>getRecord(req,'files',id),now});
  app.get('/api/notes',auth,asyncRoute(async(req,res)=>res.json(await notes.list(req))));
@@ -248,8 +255,10 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const userApi=createUserApi({db,config,fetchImpl,now,busy:ai.busy});
  const messagePolicy=createChatPolicy(db),resources=createResourceClient({db,config,fetchImpl,now});
  function developerDiagnostics(){return {version:APP_VERSION,databaseReady:db.prepare('SELECT 1 AS ok').get().ok===1,identityReady:!!identityAnswer('What is your name?',{}),safetyReady:!!safetyDecision('Write ransomware to steal files'),undoReady:inferSiteActions('Undo',[],{action:'set_theme',value:'light'})[0]?.value==='light',aiConfigured:aiConfigured(config),cloudEnabled:store.enabled,authProvider:firebase.enabled?'firebase':'legacy',paidModelsAutoEnabled:false}}
- app.get('/api/service-status',auth,(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=userApi.status(req.user.id);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyLimit:100,dailyUsed:used,dailyRemaining:Math.max(0,100-used),dailyResetAt:Date.parse(day+'T00:00:00Z')+86400000,userApi:own,chatMessageLimit:150});});
+ app.get('/api/service-status',auth,(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=userApi.status(req.user.id);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyRemainingPercent:Math.max(0,Math.min(100,100-used)),userApi:own});});
  app.get('/api/user-api',auth,(req,res)=>res.json(userApi.status(req.user.id)));
+ app.get('/api/user-api/providers',auth,(_req,res)=>res.json({providers:userApi.providers()}));
+ app.post('/api/user-api/models',auth,asyncRoute(async(req,res)=>res.json({models:await userApi.models(req.body?.provider,req.body?.key)})));
  app.put('/api/user-api',auth,asyncRoute(async(req,res)=>res.json(await userApi.set(req.user.id,req.body))));
  app.delete('/api/user-api',auth,(req,res)=>{userApi.remove(req.user.id);res.json({connected:false});});
  const developer=(req,res,next)=>isDeveloper(req.user)?next():res.status(403).json({error:'Verified developer account required',code:'DEVELOPER_REQUIRED'});
@@ -280,7 +289,6 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   const stagedLast=savedMessages.at(-1);const savedCount=savedMessages.length-(stagedLast?.role==='user'&&stagedLast.text===rawPrompt?1:0);
   const decision=messagePolicy.reserve(String(req.user.email).toLowerCase(),policyChat,rawPrompt,(Array.isArray(req.body.attachments)?req.body.attachments:[]).filter(v=>typeof v==='string'),savedCount,now(),!!ownApi);
   if(decision.code)return res.status(decision.status).json({error:decision.code,code:decision.code});
-  if(decision.remaining!==null)res.setHeader('X-Pongy-Daily-Remaining',String(decision.remaining));
   // Count a duplicate only after a successful, completed SSE response. Neither client flags nor saved error text can forge success.
   let outcomeDone=false,outcomeError=false,outcomeSettled=false,outcomeTail='',outcomeBuffer='',outcomeAnswer='';const originalWrite=res.write,originalEnd=res.end;
   const observeOutcome=chunk=>{if(chunk===undefined||chunk===null)return;const value=Buffer.isBuffer(chunk)?chunk.toString('utf8'):String(chunk),text=outcomeTail+value;if(/^event: error\r?$/m.test(text))outcomeError=true;if(/^data: \[DONE\]\r?$/m.test(text))outcomeDone=true;outcomeTail=text.slice(-128);outcomeBuffer+=value;let end;while((end=outcomeBuffer.indexOf('\n\n'))>=0){const frame=outcomeBuffer.slice(0,end);outcomeBuffer=outcomeBuffer.slice(end+2);if(/^event: reset$/m.test(frame))outcomeAnswer='';for(const line of frame.split('\n'))if(line.startsWith('data: ')){try{const event=JSON.parse(line.slice(6)),content=event.choices?.[0]?.delta?.content;if(typeof content==='string'&&outcomeAnswer.length<=262144)outcomeAnswer+=content;}catch(_){}}}if(outcomeBuffer.length>1048576)outcomeBuffer='';};
@@ -368,6 +376,82 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   app.get('/auth/google',passport.authenticate('google',{scope:['profile','email'],session:false}));
   app.get('/auth/google/callback',(req,res,next)=>passport.authenticate('google',{session:false},(err,user,info)=>{if(err||!user){const code=googleFailureCode(err,info);console.warn('[auth/google] failed:',code);return res.redirect(config.frontendUrl+'/?google_error='+encodeURIComponent(code));}issueSession(res,user,user.sessionRefresh?{refreshToken:user.sessionRefresh}:{google:true});req.session.destroy(()=>res.redirect(config.frontendUrl+'/?google_login=success'));})(req,res,next));
  }else app.get(['/auth/google','/auth/google/callback'],(_req,res)=>res.status(503).json({error:'Вход через Google ещё не настроен.'}));
+ function oauthRedirect(res,provider,code){res.clearCookie('pongy_oauth_state',{...cookieOptions,maxAge:undefined});res.set('Cache-Control','no-store').redirect(config.frontendUrl+'/?oauth_provider='+provider+'&oauth_error='+encodeURIComponent(code));}
+ function oauthStateMatches(req,provider){
+  const supplied=typeof req.query.state==='string'?req.query.state:'',browserState=req.cookies.pongy_oauth_state||'';
+  if(supplied.length!==43||browserState.length!==supplied.length||!crypto.timingSafeEqual(Buffer.from(browserState),Buffer.from(supplied)))return false;
+  const hash=crypto.createHash('sha256').update(supplied).digest('hex');
+  return db.transaction(()=>{const record=db.prepare('SELECT provider,expires_at FROM oauth_states WHERE state_hash=?').get(hash);if(!record||record.provider!==provider||record.expires_at<now())return false;return db.prepare('DELETE FROM oauth_states WHERE state_hash=?').run(hash).changes===1;})();
+ }
+ async function oauthJson(url,options){
+  const response=await fetchImpl(url,{...options,redirect:'error',signal:AbortSignal.timeout(12000)});
+  let data;try{data=await response.json()}catch{throw Object.assign(new Error('Invalid OAuth response'),{code:'OAUTH_PROVIDER_ERROR'});}
+  if(!response.ok)throw Object.assign(new Error('OAuth provider rejected the request'),{code:'OAUTH_PROVIDER_ERROR'});
+  return data;
+ }
+ async function saveSocialUser(provider,providerId,email,nickname,avatar,credentials){
+  const column=provider+'_id';
+  let externalSession=null;
+  if(firebase.enabled){
+   if(provider==='yandex'&&!credentials.idToken)throw Object.assign(new Error('Yandex ID token is unavailable'),{code:'FIREBASE_CONFIGURATION'});
+   externalSession=await firebase.identityProvider({providerId:provider==='github'?'github.com':'oidc.yandex',accessToken:credentials.accessToken,idToken:credentials.idToken});
+   if(externalSession.user.email.toLowerCase()!==email||externalSession.user.emailVerified!==true)throw Object.assign(new Error('OAuth account mismatch'),{code:'ACCOUNT_LINK_CONFLICT'});
+  }
+  const linked=db.prepare('SELECT * FROM users WHERE '+column+'=?').get(providerId);
+  const byEmail=db.prepare('SELECT * FROM users WHERE email=?').get(email);
+  if(linked&&byEmail&&linked.id!==byEmail.id)throw Object.assign(new Error('OAuth account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
+  let user=linked||byEmail;
+  if(user&&user[column]&&user[column]!==providerId)throw Object.assign(new Error('OAuth account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
+  if(user&&user.email!==email)throw Object.assign(new Error('OAuth email changed'),{code:'ACCOUNT_LINK_CONFLICT'});
+  if(externalSession&&user?.firebase_uid&&user.firebase_uid!==externalSession.user.localId)throw Object.assign(new Error('Firebase account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
+  const saved=db.transaction(()=>{
+   if(!user){
+    const info=db.prepare('INSERT INTO users(email,nickname,avatar,email_verified,'+column+',firebase_uid) VALUES(?,?,?,1,?,?)').run(email,nickname.slice(0,80),avatar,providerId,externalSession?.user.localId||null);
+    user=db.prepare('SELECT * FROM users WHERE id=?').get(info.lastInsertRowid);
+   }else{
+    db.prepare('UPDATE users SET '+column+'=?,email_verified=1,firebase_uid=COALESCE(firebase_uid,?) WHERE id=?').run(providerId,externalSession?.user.localId||null,user.id);
+    user=db.prepare('SELECT * FROM users WHERE id=?').get(user.id);
+   }
+   return user;
+  })();
+  if(externalSession){await cloudSession(saved,externalSession);saved.sessionRefresh=externalSession.refreshToken;}
+  return saved;
+ }
+ function beginSocial(provider,configValues){
+  app.get('/auth/'+provider,(_req,res)=>{
+   if(!configValues.id||!configValues.secret)return res.status(503).json({error:'OAuth provider is not configured.'});
+   const state=crypto.randomBytes(32).toString('base64url');db.prepare('DELETE FROM oauth_states WHERE expires_at<?').run(now());db.prepare('INSERT INTO oauth_states(state_hash,provider,expires_at) VALUES(?,?,?)').run(crypto.createHash('sha256').update(state).digest('hex'),provider,now()+600000);res.cookie('pongy_oauth_state',state,{...cookieOptions,maxAge:600000});
+   const query=new URLSearchParams({response_type:'code',client_id:configValues.id,redirect_uri:configValues.callback,state,scope:provider==='github'?'read:user user:email':'login:email login:info openid'});
+   res.set('Cache-Control','no-store').redirect((provider==='github'?'https://github.com/login/oauth/authorize':'https://oauth.yandex.com/authorize')+'?'+query);
+  });
+  app.get('/auth/'+provider+'/callback',asyncRoute(async(req,res)=>{
+   const fail=code=>{console.warn('[auth/'+provider+'] failed:',code);oauthRedirect(res,provider,code);};
+   if(!oauthStateMatches(req,provider))return fail('OAUTH_STATE_INVALID');
+   if(req.query.error||typeof req.query.code!=='string'||req.query.code.length>2048)return fail(provider.toUpperCase()+'_PROVIDER_ERROR');
+   try{
+    let token,profile,email,providerId,nickname='',avatar='';
+    if(provider==='github'){
+     token=await oauthJson('https://github.com/login/oauth/access_token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:config.githubId,client_secret:config.githubSecret,code:req.query.code,redirect_uri:config.githubCallback})});
+     if(typeof token.access_token!=='string'||token.access_token.length>8192)throw Object.assign(new Error('Invalid token'),{code:'OAUTH_PROVIDER_ERROR'});
+     const headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+token.access_token,'User-Agent':'Pongy-AI'};
+     [profile,token.emails]=await Promise.all([oauthJson('https://api.github.com/user',{headers}),oauthJson('https://api.github.com/user/emails',{headers})]);
+     const primary=Array.isArray(token.emails)?token.emails.find(item=>item?.primary===true&&item?.verified===true):null;
+     email=emailValue(primary?.email);providerId=String(profile.id||'');nickname=String(profile.name||profile.login||'');avatar=typeof profile.avatar_url==='string'&&profile.avatar_url.startsWith('https://')?profile.avatar_url:'';
+    }else{
+     token=await oauthJson('https://oauth.yandex.com/token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code:req.query.code,client_id:config.yandexId,client_secret:config.yandexSecret,redirect_uri:config.yandexCallback}).toString()});
+     if(typeof token.access_token!=='string'||token.access_token.length>8192)throw Object.assign(new Error('Invalid token'),{code:'OAUTH_PROVIDER_ERROR'});
+     profile=await oauthJson('https://login.yandex.ru/info?format=json',{headers:{Authorization:'OAuth '+token.access_token,Accept:'application/json'}});
+     email=emailValue(profile.default_email);if(!email||!Array.isArray(profile.emails)||!profile.emails.some(value=>emailValue(value)===email))throw Object.assign(new Error('Yandex email is not verified'),{code:'OAUTH_PROVIDER_ERROR'});providerId=String(profile.id||'');nickname=String(profile.display_name||profile.real_name||profile.login||'');avatar=typeof profile.default_avatar_id==='string'&&/^[a-zA-Z0-9_-]{1,128}$/.test(profile.default_avatar_id)?'https://avatars.yandex.net/get-yapic/'+profile.default_avatar_id+'/islands-200':'';
+    }
+    if(!email||!/^[0-9]{1,32}$/.test(providerId))throw Object.assign(new Error('OAuth profile is incomplete'),{code:'OAUTH_PROVIDER_ERROR'});
+    const user=await saveSocialUser(provider,providerId,email,nickname,avatar,{accessToken:token.access_token,idToken:token.id_token});
+    issueSession(res,user,user.sessionRefresh?{refreshToken:user.sessionRefresh}:{oauth:provider,providerId});
+    res.clearCookie('pongy_oauth_state',{...cookieOptions,maxAge:undefined});res.redirect(config.frontendUrl+'/?oauth_login='+provider);
+   }catch(error){fail(error.code==='ACCOUNT_LINK_CONFLICT'||error.code==='FIREBASE_CONFIGURATION'?error.code:provider.toUpperCase()+'_PROVIDER_ERROR');}
+  }));
+ }
+ beginSocial('yandex',{id:config.yandexId,secret:config.yandexSecret,callback:config.yandexCallback});
+ beginSocial('github',{id:config.githubId,secret:config.githubSecret,callback:config.githubCallback});
  app.get('/preview-runner',(_req,res)=>res.set({'Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; sandbox allow-scripts",'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}).type('html').send(`<!doctype html><meta charset="utf-8"><script>addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='pongy-preview'||typeof e.data.html!=='string'||e.data.html.length>900000)return;document.open();document.write(e.data.html);document.close()},{once:true});parent.postMessage({type:'pongy-preview-ready'},'*');</script>`));
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:''}).replace(/</g,'\\u003c')+';'));
  mountSpeechModels(app,moduleRoot);
