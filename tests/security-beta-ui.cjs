@@ -26,7 +26,6 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   if(await page.locator('#settings-tab-beta').isVisible())throw Error('beta section visible while beta mode is off');
   await page.locator('#settings-tab-interface').click();
   await page.locator('#langGrid button').filter({hasText:'Русский'}).click();
-  await page.locator('#settings-tab-main').click();
   await page.locator('#betaFunctions').check();
   await page.locator('#settings-tab-beta').waitFor({state:'visible'});
   await page.waitForFunction(async()=>!!(await(await fetch('/api/preferences')).json()).betaFunctions);
