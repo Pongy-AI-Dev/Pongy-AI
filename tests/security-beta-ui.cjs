@@ -35,6 +35,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   const style=await page.evaluate(element=>({align:getComputedStyle(element).textAlign,color:getComputedStyle(element).color,bodyColor:getComputedStyle(document.body).color}),await message.elementHandle());
   if(style.align!=='center'||style.color===style.bodyColor)throw Error('beta placeholder is not centered and gray');
   if(await page.locator('.security-beta-scene, #betaScenarioButton').count())throw Error('legacy simulation controls remain');
+  await page.locator('#settings-tab-interface').click();
   await page.locator('#betaFunctions').uncheck();
   await page.locator('#settings-tab-beta').waitFor({state:'hidden'});
   if(await page.locator('#settings-tab-main').getAttribute('aria-selected')!=='true')throw Error('turning beta mode off did not return to main settings');
