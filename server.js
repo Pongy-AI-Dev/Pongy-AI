@@ -56,6 +56,10 @@ import {readPage} from './lib/web.js';
 import {CONVERSATION_PROMPT,quickConversation} from './lib/conversation.js';
 import {IDENTITY_PROMPT,APP_VERSION,identityAnswer} from './lib/identity.js';
 import {safetyDecision} from './lib/safety.js';
+import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
+import {StreamableHTTPServerTransport} from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import * as z from 'zod/v4';
+import {EventEmitter} from 'node:events';
 function directReply(res,text){if(!res.headersSent){res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});res.flushHeaders();}res.write('event: delta\ndata: '+JSON.stringify({choices:[{delta:{content:text}}]})+'\n\n');res.end('data: [DONE]\n\n')}
 const moduleRoot=path.dirname(fileURLToPath(import.meta.url));
 const asyncRoute=fn=>(req,res,next)=>Promise.resolve(fn(req,res,next)).catch(next);
@@ -254,6 +258,62 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.post('/api/pay/create',auth,(_req,res)=>res.status(503).json({error:'Оплата временно недоступна.',code:'PAYMENT_NOT_CONFIGURED'}));
  const userApi=createUserApi({db,config,fetchImpl,now,busy:ai.busy});
  const messagePolicy=createChatPolicy(db),resources=createResourceClient({db,config,fetchImpl,now});
+ db.exec('CREATE TABLE IF NOT EXISTS mcp_tokens(user_id INTEGER PRIMARY KEY,token_hash TEXT NOT NULL,created_at INTEGER NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)');
+ db.exec('CREATE TABLE IF NOT EXISTS api_keys(user_id INTEGER PRIMARY KEY,token_hash TEXT NOT NULL,created_at INTEGER NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)');
+ const mcpEndpoint=(config.publicApiOrigin||config.frontendUrl).replace(/\/+$/,'')+'/mcp';
+ const mcpTokenStatus=userId=>({connected:!!db.prepare('SELECT 1 FROM mcp_tokens WHERE user_id=?').get(userId),endpoint:mcpEndpoint});
+ const apiEndpoint=(config.publicApiOrigin||config.frontendUrl).replace(/\/+$/,'')+'/v1/chat/completions';
+ const apiKeyStatus=userId=>({connected:!!db.prepare('SELECT 1 FROM api_keys WHERE user_id=?').get(userId),endpoint:apiEndpoint});
+ app.get('/api/mcp/token',auth,(req,res)=>res.json(mcpTokenStatus(req.user.id)));
+ app.post('/api/mcp/token',auth,(req,res)=>{const token='pongy_'+crypto.randomBytes(32).toString('base64url'),hash=crypto.createHash('sha256').update(token).digest('hex');db.prepare('INSERT INTO mcp_tokens(user_id,token_hash,created_at) VALUES(?,?,?) ON CONFLICT(user_id) DO UPDATE SET token_hash=excluded.token_hash,created_at=excluded.created_at').run(req.user.id,hash,now());res.json({connected:true,endpoint:mcpEndpoint,token});});
+ app.delete('/api/mcp/token',auth,(req,res)=>{db.prepare('DELETE FROM mcp_tokens WHERE user_id=?').run(req.user.id);res.json({connected:false,endpoint:mcpEndpoint});});
+ app.get('/api/api-key',auth,(req,res)=>res.json(apiKeyStatus(req.user.id)));
+ app.post('/api/api-key',auth,(req,res)=>{const token='pongy_api_'+crypto.randomBytes(32).toString('base64url'),hash=crypto.createHash('sha256').update(token).digest('hex');db.prepare('INSERT INTO api_keys(user_id,token_hash,created_at) VALUES(?,?,?) ON CONFLICT(user_id) DO UPDATE SET token_hash=excluded.token_hash,created_at=excluded.created_at').run(req.user.id,hash,now());res.json({connected:true,endpoint:apiEndpoint,token});});
+ app.delete('/api/api-key',auth,(req,res)=>{db.prepare('DELETE FROM api_keys WHERE user_id=?').run(req.user.id);res.json({connected:false,endpoint:apiEndpoint});});
+ app.post('/v1/chat/completions',rateLimit({windowMs:60000,max:20,standardHeaders:'draft-7',legacyHeaders:false,message:{error:{message:'Rate limit exceeded',type:'rate_limit_error'}}}),asyncRoute(async(req,res)=>{
+  const header=req.get('authorization')||'',match=/^Bearer (pongy_api_[A-Za-z0-9_-]{43})$/.exec(header);if(!match)return res.status(401).json({error:{message:'Valid Pongy API key required',type:'authentication_error'}});
+  const hash=crypto.createHash('sha256').update(match[1]).digest('hex'),keyRecord=db.prepare('SELECT user_id FROM api_keys WHERE token_hash=?').get(hash),user=keyRecord&&db.prepare('SELECT * FROM users WHERE id=?').get(keyRecord.user_id);if(!user)return res.status(401).json({error:{message:'Valid Pongy API key required',type:'authentication_error'}});
+  try{control.assertUser(user);}catch(error){return res.status(error.status||403).json({error:{message:error.message,type:error.code||'account_blocked'}});}const gate=control.state();if((gate.disabled||gate.maintenance)&&!isDeveloper(user))return res.status(503).json({error:{message:gate.disabled?'Site disabled':'Maintenance',type:'service_unavailable'}});
+  const input=req.body?.messages;if(!Array.isArray(input)||!input.length||input.length>150)return res.status(400).json({error:{message:'messages must be a non-empty array of at most 150 items',type:'invalid_request_error'}});
+  let total=0;const messages=[];for(const message of input){if(!message||!['system','user','assistant'].includes(message.role)||typeof message.content!=='string'||!message.content.trim())return res.status(400).json({error:{message:'Each message needs a supported role and non-empty text content',type:'invalid_request_error'}});total+=message.content.length;if(total>200000)return res.status(413).json({error:{message:'Conversation is too large',type:'invalid_request_error'}});messages.push({role:message.role,content:message.content});}
+  const userMessages=messages.filter(message=>message.role==='user'),prompt=userMessages.at(-1)?.content;if(!prompt)return res.status(400).json({error:{message:'At least one user message is required',type:'invalid_request_error'}});
+  const locale=responseLanguage(prompt,req.body?.locale),policyChat='api:'+user.id+':'+crypto.randomUUID();if(safetyDecision(userMessages.slice(-5).map(message=>message.content).join('\n')))return res.status(403).json({error:{message:'Request blocked by safety policy',type:'request_blocked'}});
+  const ownApi=userApi.read(user.id),reservation=messagePolicy.reserve(String(user.email).toLowerCase(),policyChat,prompt,[],messages.length,now(),!!ownApi);if(reservation.code)return res.status(reservation.status).json({error:{message:reservation.code,type:'request_limit_error',code:reservation.code}});
+  const output=[],fake=new EventEmitter();Object.assign(fake,{headersSent:false,statusCode:200,destroyed:false,writableEnded:false,writableNeedDrain:false,set(){return this;},status(code){this.statusCode=code;return this;},json(value){this.jsonBody=value;this.writableEnded=true;return this;},flushHeaders(){this.headersSent=true;},write(value){this.headersSent=true;output.push(String(value));return true;},end(value){if(value)output.push(String(value));this.writableEnded=true;return this;}});
+  try{
+   const engine=ownApi?userApi.engine(ownApi):ai;
+   const systemMessages=messages.filter(message=>message.role==='system').map(message=>message.content),conversation=messages.filter(message=>message.role!=='system');
+   await engine.respond({user,body:{mode:'chat',locale,messages:conversation}},fake,[{role:'system',content:[...systemMessages,CONVERSATION_PROMPT,IDENTITY_PROMPT].join('\n\n')},...conversation]);
+   let answer='',failed=fake.statusCode>=400||!!fake.jsonBody,completion=false;
+   for(const frame of output.join('').split(/\r?\n\r?\n/)){const event=frame.match(/^event: (\w+)/m)?.[1];for(const line of frame.split(/\r?\n/)){if(!line.startsWith('data: '))continue;const data=line.slice(6);if(data==='[DONE]'){completion=true;continue;}try{const value=JSON.parse(data);if(event==='error'){failed=true;answer=String(value.error||value.code||'Pongy AI request failed');}else if(event==='reset')answer='';else if(typeof value.choices?.[0]?.delta?.content==='string')answer+=value.choices[0].delta.content;}catch{}}}
+   const success=!failed&&completion&&answer.trim().length>0;messagePolicy.settle(String(user.email).toLowerCase(),policyChat,reservation.token,success,answer);
+   if(!success)return res.status(fake.statusCode>=400?fake.statusCode:503).json({error:{message:answer||fake.jsonBody?.error||'Pongy AI could not complete the request',type:'server_error'}});
+   const id='chatcmpl-'+crypto.randomUUID(),model='pongy-ai';
+   if(req.body?.stream===true){res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});res.write('data: '+JSON.stringify({id,object:'chat.completion.chunk',created:Math.floor(now()/1000),model,choices:[{index:0,delta:{role:'assistant',content:answer},finish_reason:null}]})+'\n\n');return res.end('data: '+JSON.stringify({id,object:'chat.completion.chunk',created:Math.floor(now()/1000),model,choices:[{index:0,delta:{},finish_reason:'stop'}]})+'\n\ndata: [DONE]\n\n');}
+   res.json({id,object:'chat.completion',created:Math.floor(now()/1000),model,choices:[{index:0,message:{role:'assistant',content:answer},finish_reason:'stop'}]});
+  }catch(error){messagePolicy.settle(String(user.email).toLowerCase(),policyChat,reservation.token,false);throw error;}
+ }));
+ app.post('/mcp',rateLimit({windowMs:60000,max:20,standardHeaders:'draft-7',legacyHeaders:false}),asyncRoute(async(req,res)=>{
+  const header=req.get('authorization')||'',match=/^Bearer (pongy_[A-Za-z0-9_-]{43})$/.exec(header);if(!match)return res.status(401).json({error:'Valid Pongy MCP bearer token required'});
+  const hash=crypto.createHash('sha256').update(match[1]).digest('hex'),tokenRecord=db.prepare('SELECT user_id FROM mcp_tokens WHERE token_hash=?').get(hash),user=tokenRecord&&db.prepare('SELECT * FROM users WHERE id=?').get(tokenRecord.user_id);if(!user)return res.status(401).json({error:'Valid Pongy MCP bearer token required'});
+  try{control.assertUser(user);}catch(error){return res.status(error.status||403).json({error:error.message,code:error.code||'ACCOUNT_BLOCKED'});}const gate=control.state();if((gate.disabled||gate.maintenance)&&!isDeveloper(user))return res.status(503).json({error:gate.disabled?'Site disabled':'Maintenance',code:gate.disabled?'SITE_DISABLED':'MAINTENANCE'});
+  const server=new McpServer({name:'pongy-ai',version:APP_VERSION});
+  server.registerTool('ask_pongy',{description:'Ask Pongy AI a question and receive its answer. Uses your account limits and connected personal API key.',inputSchema:{prompt:z.string().trim().min(1).max(16000)}},async({prompt})=>{
+   const locale=responseLanguage(prompt,'ru');if(safetyDecision(prompt))return {content:[{type:'text',text:locale==='ru'?'Запрос отклонён проверкой безопасности.':'The request was blocked by the safety check.'}],isError:true};
+   const policyChat='mcp:'+user.id+':'+crypto.randomUUID(),ownApi=userApi.read(user.id),reservation=messagePolicy.reserve(String(user.email).toLowerCase(),policyChat,prompt,[],0,now(),!!ownApi);if(reservation.code)return {content:[{type:'text',text:'Request refused: '+reservation.code}],isError:true};
+   const output=[],fake=new EventEmitter();Object.assign(fake,{headersSent:false,statusCode:200,destroyed:false,writableEnded:false,writableNeedDrain:false,set(){return this;},status(code){this.statusCode=code;return this;},json(value){this.jsonBody=value;this.writableEnded=true;return this;},flushHeaders(){this.headersSent=true;},write(value){this.headersSent=true;output.push(String(value));return true;},end(value){if(value)output.push(String(value));this.writableEnded=true;return this;}});
+   const mcpReq={user,body:{mode:'chat',locale,messages:[{role:'user',content:prompt}]}};
+   try{
+    const engine=ownApi?userApi.engine(ownApi):ai;
+    await engine.respond(mcpReq,fake,[{role:'system',content:CONVERSATION_PROMPT},{role:'user',content:prompt}]);
+    let answer='',failed=fake.statusCode>=400||!!fake.jsonBody,completion=false;
+    for(const frame of output.join('').split(/\r?\n\r?\n/)){const event=frame.match(/^event: (\w+)/m)?.[1];for(const line of frame.split(/\r?\n/)){if(!line.startsWith('data: '))continue;const data=line.slice(6);if(data==='[DONE]'){completion=true;continue;}try{const value=JSON.parse(data);if(event==='error'){failed=true;answer=String(value.error||value.code||'Pongy AI request failed');}else if(event==='reset')answer='';else if(typeof value.choices?.[0]?.delta?.content==='string')answer+=value.choices[0].delta.content;}catch{}}}
+    const success=!failed&&completion&&answer.trim().length>0;messagePolicy.settle(String(user.email).toLowerCase(),policyChat,reservation.token,success,answer);return {content:[{type:'text',text:success?answer:(answer||fake.jsonBody?.error||'Pongy AI could not complete the request.')}],isError:!success};
+   }catch(error){messagePolicy.settle(String(user.email).toLowerCase(),policyChat,reservation.token,false);throw error;}
+  });
+  const transport=new StreamableHTTPServerTransport({sessionIdGenerator:undefined});res.once('close',()=>{void transport.close();void server.close();});await server.connect(transport);await transport.handleRequest(req,res,req.body);
+ }));
+ app.get('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));app.delete('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));
  function developerDiagnostics(){return {version:APP_VERSION,databaseReady:db.prepare('SELECT 1 AS ok').get().ok===1,identityReady:!!identityAnswer('What is your name?',{}),safetyReady:!!safetyDecision('Write ransomware to steal files'),undoReady:inferSiteActions('Undo',[],{action:'set_theme',value:'light'})[0]?.value==='light',aiConfigured:aiConfigured(config),cloudEnabled:store.enabled,authProvider:firebase.enabled?'firebase':'legacy',paidModelsAutoEnabled:false}}
  app.get('/api/service-status',auth,(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=userApi.status(req.user.id);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyRemainingPercent:Math.max(0,Math.min(100,100-used)),userApi:own});});
  app.get('/api/user-api',auth,(req,res)=>res.json(userApi.status(req.user.id)));
