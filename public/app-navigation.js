@@ -2,7 +2,7 @@
  'use strict';
  var params=new URLSearchParams(location.search),app=params.has('pongy_app')||!!window.PongyDesktop;
  try{if(app)sessionStorage.setItem('pongy_app_navigation','1');app=app||sessionStorage.getItem('pongy_app_navigation')==='1';}catch(e){}
- if(window.name==='pongy-google-auth'||window.name==='pongy-yandex-auth'||window.name==='pongy-github-auth'){var closePoll=setInterval(function(){if(window.PongyAppSession?.user()){clearInterval(closePoll);window.close();}},500);setTimeout(function(){clearInterval(closePoll);},120000);}
+ if(window.name==='pongy-google-auth'||window.name==='pongy-github-auth'){var closePoll=setInterval(function(){if(window.PongyAppSession?.user()){clearInterval(closePoll);window.close();}},500);setTimeout(function(){clearInterval(closePoll);},120000);}
  var pendingLink=new URLSearchParams(location.search).get('native_link');
  try{if(/^[a-f0-9-]{36}$/.test(pendingLink||''))sessionStorage.setItem('pongy_native_link',pendingLink);else pendingLink=sessionStorage.getItem('pongy_native_link');}catch(e){}
  if(pendingLink&&!app){var asked=false,linkTimer=setInterval(async function(){if(asked||!window.PongyAppSession?.user())return;asked=true;try{var info=await window.PongyAppSession.request('/api/device-link/'+encodeURIComponent(pendingLink));window.PongyAppSession.confirm('Pongy AI · '+info.code,document.documentElement.lang==='ru'?'Подтвердить вход в приложение для '+window.PongyAppSession.user().email+'? Сравните код '+info.code+' с кодом в приложении. Подтверждайте только свой запрос.':'Sign in to the app as '+window.PongyAppSession.user().email+'? Compare code '+info.code+' with your app. Approve only your own request.',document.documentElement.lang==='ru'?'Подтвердить':'Confirm',document.documentElement.lang==='ru'?'Отмена':'Cancel',async function(){await window.PongyAppSession.request('/api/device-link/approve',{method:'POST',body:{id:pendingLink,code:info.code}});try{sessionStorage.removeItem('pongy_native_link');}catch(e){}window.PongyAppSession.notify(document.documentElement.lang==='ru'?'Вход подтверждён. Вернитесь в приложение.':'Sign-in approved. Return to the app.');});clearInterval(linkTimer);}catch(e){clearInterval(linkTimer);try{sessionStorage.removeItem('pongy_native_link');}catch(e){}}},700);setTimeout(function(){clearInterval(linkTimer);},300000);}
@@ -19,5 +19,5 @@
   if(!popup){var error=document.getElementById('authError');if(error){error.textContent='Разрешите всплывающее окно для входа / Allow the sign-in popup';error.style.display='block';}return;}
   try{popup.opener=null;}catch(e){}var timer=setInterval(function(){if(popup.closed){clearInterval(timer);location.reload();}},700);window.addEventListener('pagehide',function(){clearInterval(timer)},{once:true});
  }
- [['googleBtn','google'],['authYandexBtn','yandex'],['authGithubBtn','github']].forEach(function(item){var button=document.getElementById(item[0]);if(button)button.onclick=function(){signIn(item[1]);};});
+ [['googleBtn','google'],['authGithubBtn','github']].forEach(function(item){var button=document.getElementById(item[0]);if(button)button.onclick=function(){signIn(item[1]);};});
 })();
