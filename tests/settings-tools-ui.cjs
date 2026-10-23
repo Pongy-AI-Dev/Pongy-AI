@@ -55,7 +55,7 @@ const path=require('node:path');
     check(!(await page.locator('#settings-panel-usage').innerText()).includes('150'),'internal per-chat limit shown to user');
 
     await page.locator('#settings-tab-tools').click();
-    await page.locator('#apiKeyStatus').waitFor();
+    await page.waitForFunction(()=>!!document.querySelector('#apiKeyStatus').textContent.trim());
     await page.locator('#apiKeyCreate').click();
     await page.waitForFunction(()=>document.querySelector('#apiKeyStatus').textContent.includes('Ключ создан'));
     check((await page.locator('#apiKeyValue').textContent()).startsWith('pongy_api_'),'personal API Key was not shown');
