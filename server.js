@@ -139,7 +139,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
 
  const registrationEmailLimit=new Map();
  function sendCooldown(email){const until=registrationEmailLimit.get(email)||0;if(until>now())return false;if(registrationEmailLimit.size>=10000)for(const [key,time]of registrationEmailLimit)if(time<=now())registrationEmailLimit.delete(key);if(registrationEmailLimit.size>=10000)return false;registrationEmailLimit.set(email,now()+60000);return true;}
- app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:aiConfigured(config),emailConfigured:firebase.enabled||mailSettings(config).configured,authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),yandexEnabled:!!(config.yandexId&&config.yandexSecret),githubEnabled:!!(config.githubId&&config.githubSecret),paymentsEnabled:false,cloudHistory:store.enabled,appVersion:APP_VERSION,supportEmails:SUPPORT_EMAILS,interfaceLanguages:['en','ru'],searchProvider:config.tavilySearchKey?'tavily':config.braveSearchKey?'brave':null,webSearchConfigured:!!(config.tavilySearchKey||config.braveSearchKey),imageGenerationConfigured:!!(config.imageGenerationEnabled&&config.imageModel&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||config.openrouterKey)),plusPrice:190,currency:'RUB'}));
+ app.get('/api/config',(_req,res)=>res.set('Cache-Control','no-store').json({aiConfigured:aiConfigured(config),emailConfigured:firebase.enabled||mailSettings(config).configured,authProvider:firebase.enabled?'firebase':'legacy',googleEnabled:!!(config.googleId&&config.googleSecret),githubEnabled:!!(config.githubId&&config.githubSecret),paymentsEnabled:false,cloudHistory:store.enabled,appVersion:APP_VERSION,supportEmails:SUPPORT_EMAILS,interfaceLanguages:['en','ru'],searchProvider:config.tavilySearchKey?'tavily':config.braveSearchKey?'brave':null,webSearchConfigured:!!(config.tavilySearchKey||config.braveSearchKey),imageGenerationConfigured:!!(config.imageGenerationEnabled&&config.imageModel&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||config.openrouterKey)),plusPrice:190,currency:'RUB'}));
  app.get('/api/site-state',(_req,res)=>res.set('Cache-Control','no-store').json(control.state()));
  app.get('/healthz',(_req,res)=>res.json({status:'ok'}));
  const pendingCookie={...cookieOptions,maxAge:30*60000};
@@ -391,18 +391,17 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }
  async function saveSocialUser(provider,providerId,email,nickname,avatar,credentials){
   const column=provider+'_id';
-  let externalSession=null;
-  if(firebase.enabled){
-   if(provider==='yandex'&&!credentials.idToken)throw Object.assign(new Error('Yandex ID token is unavailable'),{code:'FIREBASE_CONFIGURATION'});
-   externalSession=await firebase.identityProvider({providerId:provider==='github'?'github.com':'oidc.yandex',accessToken:credentials.accessToken,idToken:credentials.idToken});
-   if(externalSession.user.email.toLowerCase()!==email||externalSession.user.emailVerified!==true)throw Object.assign(new Error('OAuth account mismatch'),{code:'ACCOUNT_LINK_CONFLICT'});
-  }
   const linked=db.prepare('SELECT * FROM users WHERE '+column+'=?').get(providerId);
   const byEmail=db.prepare('SELECT * FROM users WHERE email=?').get(email);
   if(linked&&byEmail&&linked.id!==byEmail.id)throw Object.assign(new Error('OAuth account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
   let user=linked||byEmail;
   if(user&&user[column]&&user[column]!==providerId)throw Object.assign(new Error('OAuth account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
   if(user&&user.email!==email)throw Object.assign(new Error('OAuth email changed'),{code:'ACCOUNT_LINK_CONFLICT'});
+  let externalSession=null;
+  if(firebase.enabled){
+   externalSession=await firebase.identityProvider({providerId:'github.com',accessToken:credentials.accessToken});
+   if(externalSession.user.email.toLowerCase()!==email||externalSession.user.emailVerified!==true)throw Object.assign(new Error('OAuth account mismatch'),{code:'ACCOUNT_LINK_CONFLICT'});
+  }
   if(externalSession&&user?.firebase_uid&&user.firebase_uid!==externalSession.user.localId)throw Object.assign(new Error('Firebase account conflict'),{code:'ACCOUNT_LINK_CONFLICT'});
   const saved=db.transaction(()=>{
    if(!user){
@@ -421,8 +420,8 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   app.get('/auth/'+provider,(_req,res)=>{
    if(!configValues.id||!configValues.secret)return res.status(503).json({error:'OAuth provider is not configured.'});
    const state=crypto.randomBytes(32).toString('base64url');db.prepare('DELETE FROM oauth_states WHERE expires_at<?').run(now());db.prepare('INSERT INTO oauth_states(state_hash,provider,expires_at) VALUES(?,?,?)').run(crypto.createHash('sha256').update(state).digest('hex'),provider,now()+600000);res.cookie('pongy_oauth_state',state,{...cookieOptions,maxAge:600000});
-   const query=new URLSearchParams({response_type:'code',client_id:configValues.id,redirect_uri:configValues.callback,state,scope:provider==='github'?'read:user user:email':'login:email login:info openid'});
-   res.set('Cache-Control','no-store').redirect((provider==='github'?'https://github.com/login/oauth/authorize':'https://oauth.yandex.com/authorize')+'?'+query);
+   const query=new URLSearchParams({response_type:'code',client_id:configValues.id,redirect_uri:configValues.callback,state,scope:'read:user user:email'});
+   res.set('Cache-Control','no-store').redirect('https://github.com/login/oauth/authorize?'+query);
   });
   app.get('/auth/'+provider+'/callback',asyncRoute(async(req,res)=>{
    const fail=code=>{console.warn('[auth/'+provider+'] failed:',code);oauthRedirect(res,provider,code);};
@@ -430,19 +429,12 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
    if(req.query.error||typeof req.query.code!=='string'||req.query.code.length>2048)return fail(provider.toUpperCase()+'_PROVIDER_ERROR');
    try{
     let token,profile,email,providerId,nickname='',avatar='';
-    if(provider==='github'){
-     token=await oauthJson('https://github.com/login/oauth/access_token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:config.githubId,client_secret:config.githubSecret,code:req.query.code,redirect_uri:config.githubCallback})});
-     if(typeof token.access_token!=='string'||token.access_token.length>8192)throw Object.assign(new Error('Invalid token'),{code:'OAUTH_PROVIDER_ERROR'});
-     const headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+token.access_token,'User-Agent':'Pongy-AI'};
-     [profile,token.emails]=await Promise.all([oauthJson('https://api.github.com/user',{headers}),oauthJson('https://api.github.com/user/emails',{headers})]);
-     const primary=Array.isArray(token.emails)?token.emails.find(item=>item?.primary===true&&item?.verified===true):null;
-     email=emailValue(primary?.email);providerId=String(profile.id||'');nickname=String(profile.name||profile.login||'');avatar=typeof profile.avatar_url==='string'&&profile.avatar_url.startsWith('https://')?profile.avatar_url:'';
-    }else{
-     token=await oauthJson('https://oauth.yandex.com/token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code:req.query.code,client_id:config.yandexId,client_secret:config.yandexSecret,redirect_uri:config.yandexCallback}).toString()});
-     if(typeof token.access_token!=='string'||token.access_token.length>8192)throw Object.assign(new Error('Invalid token'),{code:'OAUTH_PROVIDER_ERROR'});
-     profile=await oauthJson('https://login.yandex.ru/info?format=json',{headers:{Authorization:'OAuth '+token.access_token,Accept:'application/json'}});
-     email=emailValue(profile.default_email);if(!email||!Array.isArray(profile.emails)||!profile.emails.some(value=>emailValue(value)===email))throw Object.assign(new Error('Yandex email is not verified'),{code:'OAUTH_PROVIDER_ERROR'});providerId=String(profile.id||'');nickname=String(profile.display_name||profile.real_name||profile.login||'');avatar=typeof profile.default_avatar_id==='string'&&/^[a-zA-Z0-9_-]{1,128}$/.test(profile.default_avatar_id)?'https://avatars.yandex.net/get-yapic/'+profile.default_avatar_id+'/islands-200':'';
-    }
+    token=await oauthJson('https://github.com/login/oauth/access_token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:config.githubId,client_secret:config.githubSecret,code:req.query.code,redirect_uri:config.githubCallback})});
+    if(typeof token.access_token!=='string'||token.access_token.length>8192)throw Object.assign(new Error('Invalid token'),{code:'OAUTH_PROVIDER_ERROR'});
+    const headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+token.access_token,'User-Agent':'Pongy-AI'};
+    [profile,token.emails]=await Promise.all([oauthJson('https://api.github.com/user',{headers}),oauthJson('https://api.github.com/user/emails',{headers})]);
+    const primary=Array.isArray(token.emails)?token.emails.find(item=>item?.primary===true&&item?.verified===true):null;
+    email=emailValue(primary?.email);providerId=String(profile.id||'');nickname=String(profile.name||profile.login||'');avatar=typeof profile.avatar_url==='string'&&profile.avatar_url.startsWith('https://')?profile.avatar_url:'';
     if(!email||!/^[0-9]{1,32}$/.test(providerId))throw Object.assign(new Error('OAuth profile is incomplete'),{code:'OAUTH_PROVIDER_ERROR'});
     const user=await saveSocialUser(provider,providerId,email,nickname,avatar,{accessToken:token.access_token,idToken:token.id_token});
     issueSession(res,user,user.sessionRefresh?{refreshToken:user.sessionRefresh}:{oauth:provider,providerId});
@@ -450,7 +442,6 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
    }catch(error){fail(error.code==='ACCOUNT_LINK_CONFLICT'||error.code==='FIREBASE_CONFIGURATION'?error.code:provider.toUpperCase()+'_PROVIDER_ERROR');}
   }));
  }
- beginSocial('yandex',{id:config.yandexId,secret:config.yandexSecret,callback:config.yandexCallback});
  beginSocial('github',{id:config.githubId,secret:config.githubSecret,callback:config.githubCallback});
  app.get('/preview-runner',(_req,res)=>res.set({'Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; sandbox allow-scripts",'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}).type('html').send(`<!doctype html><meta charset="utf-8"><script>addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='pongy-preview'||typeof e.data.html!=='string'||e.data.html.length>900000)return;document.open();document.write(e.data.html);document.close()},{once:true});parent.postMessage({type:'pongy-preview-ready'},'*');</script>`));
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:''}).replace(/</g,'\\u003c')+';'));
