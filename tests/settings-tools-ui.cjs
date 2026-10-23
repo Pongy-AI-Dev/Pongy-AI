@@ -83,7 +83,9 @@ const path=require('node:path');
     await page.locator('#settings-tab-main').click();
     await page.locator('#betaFunctions').check();
     await page.waitForFunction(async()=>!!(await(await fetch('/api/preferences')).json()).betaFunctions);
-    check(await page.locator('#betaScenarioButton').isVisible(),'simulation entry missing when beta enabled');
+    check(await page.locator('#settings-tab-beta').isVisible(),'beta section did not appear when beta mode was enabled');
+    check((await page.locator('#settings-panel-beta').innerText()).trim()==='Здесь появятся новые функции для тестирования','beta section placeholder text is incorrect');
+    check(await page.locator('#settings-tab-beta').getAttribute('aria-selected')==='true','beta section did not open after enabling beta mode');
 
     await page.locator('#settings-tab-developer').click();
     await page.locator('#settings-panel-developer button').filter({hasText:'Standard test'}).click();
