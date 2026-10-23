@@ -1,19 +1,19 @@
 {
-  "version": "0.19.5",
+  "version": "0.20.0",
   "publisher": "Pongy AI Dev",
-  "androidCertificate": "597c3a3f47de711fb437eab3c8a92dbb745ffea45f71bc2c241473284c53e3d9",
+  "androidCertificate": "fb65962bf41adde6e07bfba8915216d391c1d787861fd1341e589cd525b28167",
   "files": {
     "windows": {
-      "name": "Pongy-AI-0.19.1-windows-x64.msi",
-      "sha256": "510f13a1fd90bfbdfe8578d5436ba4339584f01300fc85f1d07ca1a7b01151e6",
-      "bytes": 2084864,
-      "version": "0.19.1"
+      "name": "Pongy-AI-0.20.0-windows-x64.msi",
+      "sha256": "1d1aa61f1c03808f1daeafc3fc263d53b0137a45701f6fc4cd691b731e79267a",
+      "bytes": 1114112,
+      "version": "0.20.0"
     },
     "android": {
-      "name": "Pongy-AI-0.19.5-android.apk",
-      "sha256": "420302b5555fa3d5f7aa282156f4103ded0a52aae62320c96f29811acf3dc4a3",
-      "bytes": 221741,
-      "version": "0.19.5"
+      "name": "Pongy-AI-0.20.0-android.apk",
+      "sha256": "1e1dc8736b6f8856f3cda82d20a0f815883fa86271944880ef30c5ec7b5e4c79",
+      "bytes": 225813,
+      "version": "0.20.0"
     }
   },
   "windowsEngine": "WebView2",
