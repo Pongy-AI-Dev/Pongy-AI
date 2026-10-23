@@ -38,7 +38,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   await page.locator('#settings-tab-interface').click();
   await page.locator('#betaFunctions').uncheck();
   await page.locator('#settings-tab-beta').waitFor({state:'hidden'});
-  if(await page.locator('#settings-tab-main').getAttribute('aria-selected')!=='true')throw Error('turning beta mode off did not return to main settings');
+  if(await page.locator('#settings-tab-interface').getAttribute('aria-selected')!=='true')throw Error('turning beta mode off changed the selected settings section');
   await page.waitForFunction(async()=>!(await(await fetch('/api/preferences')).json()).betaFunctions);
   if(errors.length)throw Error('browser errors: '+errors.join(';'));
   console.log('Beta features settings UI assertions passed: 6');
