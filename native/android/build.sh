@@ -8,6 +8,11 @@ JAVA="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 JAVAC="${JAVA_HOME:+$JAVA_HOME/bin/}javac"
 KEYTOOL="${JAVA_HOME:+$JAVA_HOME/bin/}keytool"
 SIGNING="${PONGY_SIGNING_DIR:-$HOME/.local/share/pongy-ai-signing}"
+SIGNING_NATIVE="$SIGNING"
+if command -v cygpath >/dev/null 2>&1; then SIGNING_NATIVE=$(cygpath -m "$SIGNING"); fi
+run_apksigner() {
+ if [[ -f "$BT/lib/apksigner.jar" ]]; then "$JAVA" -jar "$BT/lib/apksigner.jar" "$@"; else "$BT/apksigner" "$@"; fi
+}
 umask 077
 mkdir -p "$SIGNING" build/classes build/dex build/res/drawable build/assets ../../public/downloads
 # Never regenerate or publish an existing signing identity.
@@ -28,15 +33,15 @@ from pathlib import Path
 import base64
 html=Path('../../public/offline.html').read_text()
 logo='data:image/png;base64,'+base64.b64encode(Path('../../public/welcome-logo.png').read_bytes()).decode()
-html=html.replace('/welcome-logo.png',logo).replace('<script src="/offline-page.js"></script>','<script>document.getElementById("retry").onclick=function(){location.assign("https://pongy-ai.devs.surf/?pongy_app=android&client_version=0.19.5")};window.addEventListener("online",function(){location.assign("https://pongy-ai.devs.surf/?pongy_app=android&client_version=0.19.5")});</script>')
+html=html.replace('/welcome-logo.png',logo).replace('<script src="/offline-page.js"></script>','<script>document.getElementById("retry").onclick=function(){location.assign("https://pongy-ai.devs.surf/?pongy_app=android&client_version=0.20.0")};window.addEventListener("online",function(){location.assign("https://pongy-ai.devs.surf/?pongy_app=android&client_version=0.20.0")});</script>')
 Path('build/assets/offline.html').write_text(html)
 PYASSET
 "$BT/aapt2" link -A build/assets -o build/unsigned.apk -I "$PLATFORM" --manifest AndroidManifest.xml build/resources.zip
 "$JAVAC" --release 8 -encoding UTF-8 -classpath "$PLATFORM" -d build/classes dev/pongy/app/MainActivity.java
 "$JAVA" -cp "$BT/lib/d8.jar" com.android.tools.r8.D8 --min-api 23 --lib "$PLATFORM" --output build/dex build/classes/dev/pongy/app/*.class
-(cd build/dex && zip -q -j ../unsigned.apk classes.dex)
+(cd build/dex && python3 -c 'import sys,zipfile; archive=zipfile.ZipFile(sys.argv[1], "a", zipfile.ZIP_DEFLATED); archive.write(sys.argv[2], "classes.dex"); archive.close()' ../unsigned.apk classes.dex)
 "$BT/zipalign" -f -P 16 4 build/unsigned.apk build/aligned.apk
-"$BT/apksigner" sign --v4-signing-enabled false --ks "$SIGNING/release.p12" --ks-key-alias pongy --ks-pass "file:$SIGNING/password" --out ../../public/downloads/Pongy-AI-0.19.5-android.apk build/aligned.apk
-"$BT/apksigner" verify --verbose --print-certs ../../public/downloads/Pongy-AI-0.19.5-android.apk
+run_apksigner sign --v4-signing-enabled false --ks "$SIGNING_NATIVE/release.p12" --ks-key-alias pongy --ks-pass "file:$SIGNING_NATIVE/password" --out ../../public/downloads/Pongy-AI-0.20.0-android.apk build/aligned.apk
+run_apksigner verify --verbose --print-certs ../../public/downloads/Pongy-AI-0.20.0-android.apk
 
-chmod 644 ../../public/downloads/Pongy-AI-0.19.5-android.apk
+chmod 644 ../../public/downloads/Pongy-AI-0.20.0-android.apk
