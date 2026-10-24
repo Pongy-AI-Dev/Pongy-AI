@@ -1011,3 +1011,4 @@ body.workspace-changing #chatViewport,body.workspace-changing #notesEditor{anima
 @keyframes note-status-pop{from{opacity:.35;transform:translateY(2px)}to{opacity:1;transform:none}}
 #noteStatus.note-status-pop{animation:note-status-pop .28s ease both}
 @media(prefers-reduced-motion:reduce){#noteStatus.note-status-pop{animation:none!important}}
+.answer-body.answer-animating{pointer-events:none}
