@@ -507,7 +507,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.get('/app-config.js',(_req,res)=>res.type('application/javascript').set('Cache-Control','no-store').send('window.PONGY_CONFIG='+JSON.stringify({apiUrl:''}).replace(/</g,'\\u003c')+';'));
  mountSpeechModels(app,moduleRoot);
  mountAppDownloads(app,moduleRoot);
- app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){if(p.endsWith('.html')||/\/(?:app\.js|app\.css)$/.test(p))res.setHeader('Cache-Control','no-store');}}));
+ app.use(express.static(path.join(moduleRoot,'public'),{dotfiles:'deny',index:'index.html',fallthrough:true,setHeaders(res,p){const name=path.basename(p);if(name.endsWith('.html')||name==='app.js'||name==='app.css')res.setHeader('Cache-Control','no-store');}}));
  app.use((_req,res)=>res.status(404).json({error:'Не найдено'}));
  app.use((err,_req,res,_next)=>{if(res.headersSent){res.end();return;}const status=err instanceof multer.MulterError?413:err.type==='entity.too.large'?413:err instanceof SyntaxError?400:err.status||500;if(status>=500&&publicErrorCode(err.code))console.warn('[service]',err.code);const friendly=/^(FIREBASE_|FIRESTORE_)/.test(err.code||'');res.status(status).json({error:friendly?'Что-то пошло не так. Попробуйте позже.':err.publicMessage?err.message:status>=500?'Сервис временно недоступен. Проверьте настройки сервера.':status===413?'Слишком большой запрос':status===400?'Некорректный запрос':err.message,...(publicErrorCode(err.code)?{code:err.code}:{})});});
  return {app,db,ai,codes,reminders,close(){authMailer.close();reminders.close();db.close();}};
