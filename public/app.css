@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.20.0"}
+:root{--pongy-build:"0.21.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -888,3 +888,51 @@ html[data-motion=reduced] .settings-section,html[data-motion=reduced] .notificat
 @keyframes update-spin{0%{transform:rotate(0)}60%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}@keyframes update-dots{0%,20%{content:""}40%{content:"."}60%{content:".."}80%,100%{content:"..."}}
 .service-warning-close{margin-left:auto;flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:inherit;cursor:pointer}.service-warning-close:hover{background:color-mix(in srgb,var(--fg) 9%,transparent)}.service-warning-close:focus-visible{outline:2px solid var(--accent)}
 .beta-setting-option{margin:0 0 18px;padding:10px 12px;border:1px solid var(--border);border-radius:12px}.beta-setting-option .display-option{margin:0;padding:0;border:0}.beta-empty-state{display:grid;place-items:center;min-height:220px;margin:0;padding:24px 12px;text-align:center;color:var(--fg2)}
+
+/* --- Personal API key field: masked value with a 3-second eye reveal --- */
+.api-key-field{position:relative;display:block}
+.api-key-field .inp{width:100%;padding-right:46px;font-family:Consolas,monospace;letter-spacing:.06em}
+.api-key-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:var(--fg2);cursor:pointer}
+.api-key-eye:hover,.api-key-eye:focus-visible{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);outline:none}
+.api-key-eye.revealed{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.api-key-eye svg{width:18px;height:18px}
+
+/* --- Usage bar: thicker, wider, taller; no hover feedback --- */
+#settings-panel-usage{padding:16px 18px;border:1px solid var(--border);border-radius:16px;background:var(--bg2)}
+#settings-panel-usage>p:first-of-type{margin-top:0}
+#settings-panel-usage progress{display:block;width:100%;min-width:100%;height:34px;margin:14px 0 12px;border:0;border-radius:999px;background:color-mix(in srgb,var(--fg) 9%,transparent);accent-color:var(--accent);appearance:none;-webkit-appearance:none;overflow:hidden;pointer-events:none;cursor:default;box-shadow:none;outline:none;filter:none;transform:none;transition:none}
+#settings-panel-usage progress::-webkit-progress-bar{background:color-mix(in srgb,var(--fg) 9%,transparent);border:0;border-radius:999px;box-shadow:none}
+#settings-panel-usage progress::-webkit-progress-value{background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#38bdf8));border-radius:999px;box-shadow:none}
+#settings-panel-usage progress::-moz-progress-bar{background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#38bdf8));border-radius:999px;box-shadow:none}
+#settings-panel-usage progress:hover,#settings-panel-usage progress:active,#settings-panel-usage progress:focus,#settings-panel-usage progress:focus-visible{border:0;outline:none;box-shadow:none;filter:none;transform:none;cursor:default}
+#settings-panel-usage[data-state=own] progress::-webkit-progress-value{background:linear-gradient(90deg,#22c55e,#10b981)}
+#settings-panel-usage[data-state=own] progress::-moz-progress-bar{background:linear-gradient(90deg,#22c55e,#10b981)}
+#settings-panel-usage[data-state=own]{opacity:1}
+#settings-panel-usage[data-state=exhausted] progress::-webkit-progress-value{background:linear-gradient(90deg,#ef5363,#f97316)}
+#settings-panel-usage[data-state=unavailable] progress::-webkit-progress-value{background:linear-gradient(90deg,#e5a144,#f59e0b)}
+#usagePercent{font-size:16px;margin:6px 0 2px}
+#usageHint{margin-bottom:0}
+@media(max-width:600px){#settings-panel-usage{padding:12px 12px}#settings-panel-usage progress{height:26px}}
+
+/* --- Notifications: five rows before expanding --- */
+.notice-expand{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:8px 0 2px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--fg2);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.notice-expand:hover{color:var(--fg);border-color:var(--accent)}
+.notice-expand[aria-expanded="true"] svg{transform:rotate(180deg)}
+.notice-expand svg{transition:transform .25s ease}
+
+/* --- Plus checkout window --- */
+#subModal .modal-box{max-width:520px}
+.sub-note{margin:0 0 10px;color:var(--fg2);font-size:13px;line-height:1.55}
+#subBody h3{margin:0 0 6px;font-size:19px;font-weight:800}
+.pay-amount{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:14px 0 12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg3);font-size:13px;color:var(--fg2)}
+.pay-amount strong{font-size:20px;font-weight:800;color:var(--fg)}
+.pay-stage{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.pay-stage-head{display:flex;align-items:center;gap:10px;font-size:14px}
+.pay-method-back{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--fg2);cursor:pointer}
+.pay-method-back:hover{color:var(--accent);border-color:var(--accent)}
+.pay-field{display:grid;gap:6px;font-size:12px;font-weight:600;color:var(--fg2)}
+.pay-field .inp{width:100%}
+.qr-placeholder{background:#fff}
+.pay-submit{width:100%;padding:13px;border-radius:12px;font-weight:700;font-size:14px}
+.pay-submit.unavailable{opacity:.7;cursor:default}
+#subBody .pay-methods{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:520px){#subBody .pay-methods{grid-template-columns:1fr}}
