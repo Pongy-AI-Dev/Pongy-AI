@@ -173,6 +173,8 @@ const path=require('node:path');
       }),'settings overflow '+width);
     }
     await page.locator('#settings-tab-interface').click();
+    await page.locator('#voiceGender').selectOption('female');
+    await page.waitForFunction(async()=>{const p=await(await fetch('/api/preferences')).json();return p.voiceGender==='female'});
     await page.locator('#motionPreference').selectOption('reduced');
     await page.waitForFunction(async()=>{const p=await(await fetch('/api/preferences')).json();return p.motion==='reduced'});
     await page.locator('#closeSettings').click();
@@ -181,6 +183,7 @@ const path=require('node:path');
     await openSettings();
     check(await page.locator('#betaFunctions').isChecked(),'beta setting lost on reload');
     await page.locator('#settings-tab-interface').click();
+    check(await page.locator('#voiceGender').inputValue()==='female','voice preference lost on reload');
     check(await page.locator('#motionPreference').inputValue()==='reduced','smooth animations preference lost on reload');
     check(await page.locator('html').getAttribute('data-motion')==='reduced','restored motion preference was not applied');
     check(errors.length===0,'browser errors: '+errors.join(';'));

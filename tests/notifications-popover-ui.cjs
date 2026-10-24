@@ -22,6 +22,11 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   await page.locator('#notificationsFilterBtn').click();await page.locator('#noticeSort-important').click();
   if((await page.locator('.notification-row strong').first().textContent())!=='Response failed')throw Error('importance sort did not place the error first');
   await page.locator('#notificationsBtn').click();await page.waitForFunction(()=>!document.querySelector('#notificationsModal').classList.contains('open'));
+  await page.route('**/api/notifications',route=>route.abort());
+  await page.reload();await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
+  await page.locator('#notificationsBtn').click();await page.locator('#notificationsModal.open').waitFor();
+  if(await page.locator('.notification-row').count()!==5)throw Error('saved notifications were not restored after reload');
+  await page.locator('#notificationsBtn').click();await page.waitForFunction(()=>!document.querySelector('#notificationsModal').classList.contains('open'));
   if(errors.length)throw Error('browser errors: '+errors.join('; '));
   console.log('Notification popover toggle, dismissal and importance ordering passed.');
  }catch(error){fs.writeSync(2,String(error?.stack||error)+'\n');throw error}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
