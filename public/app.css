@@ -892,7 +892,7 @@ html[data-motion=reduced] .settings-section,html[data-motion=reduced] .notificat
 /* --- Personal API key field: masked value with a 3-second eye reveal --- */
 .api-key-field{position:relative;display:block}
 .api-key-field .inp{width:100%;padding-right:46px;font-family:Consolas,monospace;letter-spacing:.06em}
-.api-key-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:var(--fg2);cursor:pointer}
+.api-key-eye{position:absolute;top:0;bottom:0;right:8px;margin-block:auto;z-index:3;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:var(--fg2);cursor:pointer}
 .api-key-eye:hover,.api-key-eye:focus-visible{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);outline:none}
 .api-key-eye.revealed{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .api-key-eye svg{width:18px;height:18px}
