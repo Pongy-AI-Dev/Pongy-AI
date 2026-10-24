@@ -805,10 +805,10 @@ document.addEventListener('click',function(e){if(!$('agentPopup').contains(e.tar
 function updateAgentLabel(){var a=AGENTS.find(function(x){return x.id===state.agent});$('agentLabel').textContent=t().agent+': '+agentName(a||{id:'low'})}
 
 function isSubActive(){return currentUser&&currentUser.subscription_until&&currentUser.subscription_until>Date.now()}
-function updateUpgradeBtn(){var button=$('upgradeBtn');if(!button)return;if(isSubActive()){button.classList.add('active');$('upgradeLabel').textContent=t().plusActive}else{button.classList.remove('active');$('upgradeLabel').textContent=t().upgrade}}
+function updateUpgradeBtn(){var active=isSubActive(),side=$('plusSidebar');if(side){side.classList.toggle('active',active);var small=side.querySelector('small');if(small)small.textContent=active?authText('Тариф активен','Plan active'):authText('Больше возможностей','More capabilities');var label=active?authText('Pongy Plus активен','Pongy Plus is active'):authText('Подключить Pongy Plus','Get Pongy Plus');side.setAttribute('aria-label',label);side.title=label;}var button=$('upgradeBtn');if(!button)return;if(active){button.classList.add('active');$('upgradeLabel').textContent=t().plusActive}else{button.classList.remove('active');$('upgradeLabel').textContent=t().upgrade}}
 function openSubscription(){payState={method:null,step:'card'};renderSub();openPanel($('subModal'))}
 function closeSubscription(){closePanel($('subModal'))}
-$('closeSub').onclick=closeSubscription;
+$('closeSub').onclick=closeSubscription;var plusSidebarButton=$('plusSidebar');if(plusSidebarButton)plusSidebarButton.onclick=openSubscription;
 $('subModal').onclick=function(e){if(e.target===this)closeSubscription()};
 
 function renderSub(){
