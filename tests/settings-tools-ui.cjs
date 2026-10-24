@@ -55,6 +55,7 @@ const path=require('node:path');
     check(!(await page.locator('#settings-panel-usage').innerText()).includes('150'),'internal per-chat limit shown to user');
 
     await page.locator('#settings-tab-tools').click();
+    check(await page.locator('#settings-panel-tools').evaluate(el=>el.getAnimations().length>0),'settings section switch is not animated');
     await page.waitForFunction(()=>!!document.querySelector('#apiKeyStatus').textContent.trim());
     const apiKeyInitialStatus=await page.locator('#apiKeyStatus').textContent();
     const apiKeyCreateResponse=page.waitForResponse(response=>response.url().endsWith('/api/api-key')&&response.request().method()==='POST');
