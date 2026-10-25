@@ -1,2 +1,0 @@
-public\security-beta.js
-public\elber.png

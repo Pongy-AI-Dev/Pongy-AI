@@ -315,12 +315,18 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  }));
  app.get('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));app.delete('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));
  function developerDiagnostics(){return {version:APP_VERSION,databaseReady:db.prepare('SELECT 1 AS ok').get().ok===1,identityReady:!!identityAnswer('What is your name?',{}),safetyReady:!!safetyDecision('Write ransomware to steal files'),undoReady:inferSiteActions('Undo',[],{action:'set_theme',value:'light'})[0]?.value==='light',aiConfigured:aiConfigured(config),cloudEnabled:store.enabled,authProvider:firebase.enabled?'firebase':'legacy',paidModelsAutoEnabled:false}}
- app.get('/api/service-status',auth,(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=userApi.status(req.user.id);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyRemainingPercent:Math.max(0,Math.min(100,100-used)),userApi:own});});
- app.get('/api/user-api',auth,(req,res)=>res.json(userApi.status(req.user.id)));
+ // Personal API activation survives server data loss: the sealed record is mirrored to the
+ // user's cloud storage and restored automatically after a re-login, database reset or secret loss.
+ function personalApiStatus(req){let own;try{own=userApi.status(req.user.id);}catch(error){userApi.forget(req.user.id);own={connected:false};}
+  if(!own.connected&&store.enabled)return store.get(req.user.firebase_uid,req.firebaseIdToken,'userApi','main').then(saved=>{if(saved&&typeof saved.sealed==='string'&&userApi.restore(req.user.id,saved.sealed))return userApi.status(req.user.id);return own;}).catch(()=>own);
+  return Promise.resolve(own);}
+ function mirrorUserApi(req){if(!store.enabled)return;const sealed=userApi.exportSealed(req.user.id);if(!sealed)return;store.set(req.user.firebase_uid,req.firebaseIdToken,'userApi','main',{sealed,updated_at:now()}).catch(()=>{});}
+ app.get('/api/service-status',auth,asyncRoute(async(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=await personalApiStatus(req);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyRemainingPercent:Math.max(0,Math.min(100,100-used)),userApi:own});}));
+ app.get('/api/user-api',auth,asyncRoute(async(req,res)=>res.json(await personalApiStatus(req))));
  app.get('/api/user-api/providers',auth,(_req,res)=>res.json({providers:userApi.providers()}));
  app.post('/api/user-api/models',auth,asyncRoute(async(req,res)=>res.json({models:await userApi.models(req.body?.provider,req.body?.key)})));
- app.put('/api/user-api',auth,asyncRoute(async(req,res)=>res.json(await userApi.set(req.user.id,req.body))));
- app.delete('/api/user-api',auth,(req,res)=>{userApi.remove(req.user.id);res.json({connected:false});});
+ app.put('/api/user-api',auth,asyncRoute(async(req,res)=>{const value=await userApi.set(req.user.id,req.body);mirrorUserApi(req);res.json(value);}));
+ app.delete('/api/user-api',auth,asyncRoute(async(req,res)=>{userApi.remove(req.user.id);if(store.enabled)await Promise.allSettled([store.del(req.user.firebase_uid,req.firebaseIdToken,'userApi','main')]);res.json({connected:false});}));
  const developer=(req,res,next)=>isDeveloper(req.user)?next():res.status(403).json({error:'Verified developer account required',code:'DEVELOPER_REQUIRED'});
  app.get('/api/admin/control',auth,developer,(req,res)=>res.json({...control.state(),blocked:control.list(),scans:control.scans()}));
  app.put('/api/admin/control',auth,developer,(req,res,next)=>{try{res.json(control.update(req.body));}catch(e){next(e);}});
