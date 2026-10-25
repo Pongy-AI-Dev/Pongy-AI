@@ -2,7 +2,7 @@
 
 <html lang="ru">
 <head>
-<meta name="pongy-version" content="0.21.0"/>
+<meta name="pongy-version" content="0.22.0"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover" name="viewport"/>
 <meta content="no-referrer" name="referrer"/>
@@ -26,9 +26,9 @@
 <link href="/favicon.ico" rel="icon" sizes="16x16 32x32 48x48 64x64 128x128 256x256" type="image/x-icon"/>
 <link href="/favicon.png" rel="icon" sizes="512x512" type="image/png"/>
 <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
-<script src="/motion.js?v=0.21.0"></script>
-<script src="/display.js?v=0.21.0"></script>
-<link href="/app.css?v=0.21.0" rel="stylesheet"/>
+<script src="/motion.js?v=0.22.0"></script>
+<script src="/display.js?v=0.22.0"></script>
+<link href="/app.css?v=0.22.0" rel="stylesheet"/>
 <link rel="stylesheet" href="/vendor/katex/katex.min.css"/></head>
 <body class="booting">
 <div id="sessionGate" role="status" aria-live="polite">
@@ -97,7 +97,6 @@
 <button class="sb-btn" id="guideBtn"><svg fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><path d="M14 2v6h6"></path></svg><span>Guide</span></button>
 <button class="sb-btn" id="settingsBtn"><svg fill="none" height="17" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="17"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"></path></svg><span>Settings</span></button>
 </div>
-<button class="plus-sidebar" id="plusSidebar" type="button"><span class="plus-sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.1 5.4 5.4 2.1-5.4 2.1L12 18l-2.1-5.4L4.5 10.5l5.4-2.1L12 3Z"/><path d="m18.4 15.2.9 2.5 2.5.9-2.5.9-.9 2.5-.9-2.5-2.5-.9 2.5-.9.9-2.5Z"/></svg></span><span class="plus-sidebar-copy"><strong>Pongy Plus</strong><small></small></span><span class="plus-sidebar-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></button>
 </div>
 <button id="collapseBtn"><svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="14"><path d="M15 18l-6-6 6-6"></path></svg></button>
 </aside>
@@ -151,7 +150,7 @@
 <div style="margin-bottom:18px"><div class="field-label" id="langLabel">Language</div><div class="grid2" id="langGrid"></div></div>
 <div style="margin-bottom:18px"><div class="field-label" id="themeLabel">Theme</div><div class="grid2" id="themeGrid"></div></div>
 <div class="motion-setting"><label class="field-label" id="motionLabel" for="motionPreference">Animations</label><select class="inp" id="motionPreference"><option value="system">System default</option><option value="full">Smooth animations</option><option value="reduced">Reduce motion</option></select><p id="motionHint" role="status"></p></div><div id="voicePreferenceSetting" class="motion-setting"><label class="field-label" id="voiceGenderLabel" for="voiceGender">Voice for spoken replies</label><select class="inp" id="voiceGender"><option value="male">Мужской / Male</option><option value="female">Женский / Female</option></select><p id="voiceGenderHint" class="settings-hint"></p></div><div id="displayPreferences" class="display-preferences"><label class="display-option" for="mobileMode"><span id="mobileModeLabel">Мобильный режим</span><input id="mobileMode" type="checkbox" role="switch" class="display-switch"/></label><label class="display-option" for="largeIcons"><span id="largeIconsLabel">Крупные значки</span><input id="largeIcons" type="checkbox" role="switch" class="display-switch"/></label></div><label class="memory-setting"><input type="checkbox" id="answerNotifications"/> <span id="answerNotificationsLabel">Уведомления об ответах и ошибках</span></label><p id="notificationChannels" class="notification-channels" role="status"></p><label class="memory-setting"><input type="checkbox" id="memoryToggle"/> <span>Контекст из других чатов / Cross-chat context</span></label>
-<div style="margin-bottom:18px"><div class="field-label" id="nickLabel">Nickname</div><div class="field-save-row"><input class="inp" id="nickInput" maxlength="32"/><button class="field-save" id="nickSave" type="button" aria-label="Сохранить имя"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button></div></div>
+<div style="margin-bottom:18px"><div class="field-label" id="nickLabel">Nickname</div><div class="field-save-row"><input class="inp" id="nickInput" maxlength="32"/><button class="field-save" id="nickSave" type="button" aria-label="Сохранить имя"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"/></svg></button></div></div>
 <div><div class="field-label" id="subscriptionLabel">Subscription</div><div id="subStatusBox"></div></div>
 <details class="local-history-card"><summary id="localHistoryTitle">History on this device</summary><p id="localHistoryNote"></p><div class="grid2"><button class="local-history-action" id="exportHistory">Export backup</button><button class="local-history-action" id="importHistory">Import backup</button></div><button class="local-history-action" id="persistHistory">Request persistent storage</button><p id="localHistoryStatus" role="status"></p><input id="historyFile" type="file" accept=".json,application/json" hidden/></details>
 <a class="support-link" href="mailto:support@pongy.ai"><div class="support-icon"><svg fill="none" height="18" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><path d="M22 6l-10 7L2 6"></path></svg></div><div><div class="support-title">Support</div><div class="support-email">support@pongy.ai</div></div></a>
@@ -193,6 +192,6 @@
 <div class="overlay" id="downloadAppModal" role="dialog" aria-modal="true" aria-labelledby="downloadAppTitle"><div class="modal-box"><div class="modal-head"><h2 id="downloadAppTitle">Pongy AI</h2><button id="downloadAppX" type="button" class="icon-btn" aria-label="Close">×</button></div><div class="modal-body"><p id="downloadAppDescription"></p><div id="downloadAppActions"></div><details class="download-details"><summary id="downloadAppDetailsLabel">Installation details</summary><p id="downloadAppTrust" class="download-trust"></p></details><p id="downloadAppStatus" role="status"></p></div></div></div>
 <aside id="workspacePreview" hidden aria-label="Preview"><header><strong id="previewTitle"></strong><div><button id="previewRun" type="button">Run</button><button id="previewCopy" type="button">Copy</button><button id="previewDownload" type="button">Download</button><button id="previewClose" type="button" aria-label="Close preview">×</button></div></header><p id="previewNote"></p><div id="previewBody"></div></aside><script src="/vendor/purify.min.js"></script><script src="/app-config.js"></script><script src="/persistence.js"></script><script src="/local-history.js"></script>
 <script src="/vendor/katex/katex.min.js"></script><script src="/video-frames.js"></script>
-<script src="/chat-dates.js?v=0.21.0"></script><script src="/service-warnings.js?v=0.21.0"></script><script src="/reminders.js?v=0.21.0"></script><script src="/notes.js?v=0.21.0"></script><script src="/rich-text.js?v=0.21.0"></script><script src="/offline-speech.js?v=0.21.0"></script><script src="/notifications.js?v=0.21.0"></script><script src="/offline-shell.js?v=0.21.0"></script><script src="/settings-panel.js?v=0.21.0"></script>
-<script src="/app.js?v=0.21.0"></script><script src="/downloads.js?v=0.21.0"></script><script src="/device-access.js?v=0.21.0"></script><script src="/app-navigation.js?v=0.21.0"></script></body>
+<script src="/chat-dates.js?v=0.22.0"></script><script src="/service-warnings.js?v=0.22.0"></script><script src="/reminders.js?v=0.22.0"></script><script src="/notes.js?v=0.22.0"></script><script src="/rich-text.js?v=0.22.0"></script><script src="/offline-speech.js?v=0.22.0"></script><script src="/notifications.js?v=0.22.0"></script><script src="/offline-shell.js?v=0.22.0"></script><script src="/settings-panel.js?v=0.22.0"></script>
+<script src="/app.js?v=0.22.0"></script><script src="/downloads.js?v=0.22.0"></script><script src="/device-access.js?v=0.22.0"></script><script src="/app-navigation.js?v=0.22.0"></script></body>
 </html>
