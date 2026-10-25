@@ -1030,7 +1030,9 @@ html[data-layout=mobile] #workspaceSwitch,html[data-layout=mobile] .settings-tab
 .overlay.open .modal-box{animation:glass-panel-in .34s cubic-bezier(.22,.8,.2,1) both}
 .confirm-modal.open .confirm-box{animation:glass-panel-in .34s cubic-bezier(.22,.8,.2,1) both}
 #authScreen.show{animation:overlayIn .3s ease both}
-#authScreen.show .auth-box{animation:glass-panel-in .4s cubic-bezier(.22,.8,.2,1) both}
+/* The sign-in box fades in without scaling: system text rendering must stay neutral during the entrance. */
+@keyframes glass-fade-in{from{opacity:0}to{opacity:1}}
+#authScreen.show .auth-box{animation:glass-fade-in .4s ease both}
 #agentPopup{animation:glass-panel-in .22s cubic-bezier(.22,.8,.2,1) both}
 body.workspace-changing #chatViewport,body.workspace-changing #notesEditor{animation:panel-switch-in .32s cubic-bezier(.22,.8,.2,1) both}
 
