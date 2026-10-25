@@ -84,10 +84,22 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  db.exec('DROP TABLE IF EXISTS reset_codes; DROP TABLE IF EXISTS verify_codes;');
  db.exec(`CREATE TABLE IF NOT EXISTS preferences(user_id INTEGER PRIMARY KEY,json TEXT NOT NULL); CREATE TABLE IF NOT EXISTS files(id TEXT PRIMARY KEY,user_id INTEGER NOT NULL,json TEXT NOT NULL); CREATE TABLE IF NOT EXISTS oauth_states(state_hash TEXT PRIMARY KEY,provider TEXT NOT NULL,expires_at INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS idx_oauth_states_expiry ON oauth_states(expires_at);`);
  db.exec('CREATE TABLE IF NOT EXISTS pending_verifications(id TEXT PRIMARY KEY,uid TEXT NOT NULL,expires_at INTEGER NOT NULL)');
+ db.exec('CREATE TABLE IF NOT EXISTS feedback(id TEXT PRIMARY KEY,user_id INTEGER,user_email TEXT DEFAULT \'\',rating INTEGER NOT NULL,created_at INTEGER NOT NULL,sent_at INTEGER)');
  mountCloudflareBudget(config,db,now);
  const control=createSiteControl({db,now});
  const store=new CloudStore(config,fetchImpl);
  const authMailer=createMailer({config,fetchImpl,transportFactory:mailTransportFactory});
+ // In-app service reviews (star rating dialog) are stored locally and forwarded to support mail;
+ // unsent rows are retried on startup and after every new review so nothing is lost without SMTP.
+ const FEEDBACK_EMAIL='pongy.support@gmail.com';
+ async function deliverFeedback(){
+  if(!authMailer.configured)return;
+  for(const row of db.prepare('SELECT * FROM feedback WHERE sent_at IS NULL ORDER BY created_at').all()){
+   try{await authMailer.send({to:FEEDBACK_EMAIL,subject:'Отзыв о Pongy AI: '+row.rating+'/5',text:'Новый отзыв о сервисе Pongy AI.\nОценка: '+row.rating+' из 5\nАккаунт: '+(row.user_email||'не указан')+'\nДата: '+new Date(row.created_at).toISOString()+'\n',id:'fb-'+row.id});db.prepare('UPDATE feedback SET sent_at=? WHERE id=?').run(now(),row.id);}
+   catch(error){return;}
+  }
+ }
+ setTimeout(()=>{deliverFeedback().catch(()=>{});},15000).unref?.();
  const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),firebase=new FirebaseAuth(config,fetchImpl),app=express();
  app.disable('x-powered-by');if(config.trustProxy!==false){if(!Number.isInteger(config.trustProxy)||config.trustProxy<1)throw new Error('TRUST_PROXY must be a trusted hop count');app.set('trust proxy',config.trustProxy);}
  app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],workerSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','blob:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],mediaSrc:["'self'",'blob:'],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
@@ -323,6 +335,14 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  function mirrorUserApi(req){if(!store.enabled)return;const sealed=userApi.exportSealed(req.user.id);if(!sealed)return;store.set(req.user.firebase_uid,req.firebaseIdToken,'userApi','main',{sealed,updated_at:now()}).catch(()=>{});}
  app.get('/api/service-status',auth,asyncRoute(async(req,res)=>{const day=new Date(now()).toISOString().slice(0,10),used=db.prepare('SELECT n FROM message_daily WHERE account=? AND day=?').get(String(req.user.email).toLowerCase(),day)?.n||0,own=await personalApiStatus(req);res.json({...control.state(),maintenance:config.maintenanceMode===true||control.state().maintenance,aiUnavailable:own.connected?false:ai.temporarilyUnavailable(),dailyRemainingPercent:Math.max(0,Math.min(100,100-used)),userApi:own});}));
  app.get('/api/user-api',auth,asyncRoute(async(req,res)=>res.json(await personalApiStatus(req))));
+ const feedbackLimit=rateLimit({windowMs:3600000,max:10,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Слишком много отзывов. Попробуйте позже.'}});
+ app.post('/api/feedback',auth,feedbackLimit,asyncRoute(async(req,res)=>{
+  const rating=Number(req.body&&req.body.rating);
+  if(!Number.isInteger(rating)||rating<1||rating>5)return res.status(400).json({error:'Оценка должна быть целым числом от 1 до 5.'});
+  db.prepare('INSERT INTO feedback(id,user_id,user_email,rating,created_at) VALUES(?,?,?,?,?)').run(crypto.randomUUID(),req.user.id,String(req.user.email||'').toLowerCase(),rating,now());
+  void deliverFeedback();
+  res.json({ok:true});
+ }));
  app.get('/api/user-api/providers',auth,(_req,res)=>res.json({providers:userApi.providers()}));
  app.post('/api/user-api/models',auth,asyncRoute(async(req,res)=>res.json({models:await userApi.models(req.body?.provider,req.body?.key)})));
  app.put('/api/user-api',auth,asyncRoute(async(req,res)=>{const value=await userApi.set(req.user.id,req.body);mirrorUserApi(req);res.json(value);}));
