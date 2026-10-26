@@ -447,7 +447,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.22.1"}
+:root{--pongy-build:"0.22.2"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -1104,3 +1104,39 @@ html[data-motion=reduced] .rating-stars button,html[data-motion=reduced] .rating
 html[data-motion=reduced] #sidebar .sb-row .sb-btn,html[data-motion=reduced] #sidebar .sb-row .sb-btn::after{transition:none!important}
 html[data-motion=reduced] #sidebar .sb-row .sb-btn:active{transform:none}
 @media(prefers-reduced-motion:reduce){#sidebar .sb-row .sb-btn,#sidebar .sb-row .sb-btn::after{transition:none!important}#sidebar .sb-row .sb-btn:active{transform:none}}
+
+/* --- 0.22.2: top-bar icons share one optical size --- */
+#topbar .tb-actions :is(.icon-btn,.tb-btn) svg{width:18px;height:18px}
+
+/* --- 0.22.2: toast is a fixed-width block; the close cross lives on its right edge --- */
+
+/* --- 0.22.2: "История" card with the standard chevron instead of the OS marker --- */
+.local-history-card{margin-top:16px;padding:2px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
+.local-history-card summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;min-height:46px;line-height:1.35;padding:0 2px;border-radius:8px;user-select:none}
+.local-history-card summary::-webkit-details-marker{display:none}
+.local-history-card summary::after{content:"";width:16px;height:16px;flex-shrink:0;color:var(--fg2);background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .32s cubic-bezier(.22,.8,.2,1)}
+.local-history-card[open] summary::after{transform:rotate(180deg)}
+.local-history-card summary:hover::after{color:var(--fg)}
+html[data-motion=reduced] .local-history-card summary::after{transition:none}
+@media(prefers-reduced-motion:reduce){.local-history-card summary::after{transition:none}}
+
+/* --- 0.22.2: notes empty state --- */
+.note-empty{padding:72px 28px;text-align:center;font-size:17px;line-height:1.65;font-weight:500;color:var(--fg2)}
+
+/* --- 0.22.2: "Умный редактор" bar spanning the bottom of the notes editor --- */
+#smartEditor{border-top:1px solid var(--border);background:color-mix(in srgb,var(--bg2) 55%,transparent)}
+#smartEditorBar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:5px 8px 5px 14px}
+#smartEditorTitle{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg2)}
+#smartEditorToggle{width:32px;height:32px;border:0;border-radius:9px;display:grid;place-items:center;background:transparent;color:var(--fg2);cursor:pointer;transition:background .18s ease,color .18s ease}
+#smartEditorToggle:hover{background:var(--hover);color:var(--fg)}
+#smartEditorToggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#smartEditorToggle svg{transition:transform .32s cubic-bezier(.22,.8,.2,1)}
+#smartEditorToggle[aria-expanded="false"] svg{transform:rotate(180deg)}
+#smartEditorBody{padding:0 0 4px}
+#smartEditorBody[hidden]{display:none}
+html[data-motion=reduced] #smartEditorToggle svg{transition:none}
+@media(prefers-reduced-motion:reduce){#smartEditorToggle svg{transition:none}}
+
+/* --- 0.22.2: smoother workspace crossfade (fixes the 360ms cut-off) --- */
+body.workspace-changing.notes-active #notesEditor{animation:workspace-in-right .42s cubic-bezier(.25,.75,.2,1) both}
+body.workspace-changing:not(.notes-active) #chatViewport{animation:workspace-in-left .42s cubic-bezier(.25,.75,.2,1) both}
