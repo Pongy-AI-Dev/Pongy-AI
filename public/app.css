@@ -15,6 +15,22 @@
   html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after {
     animation:none!important;transition:none!important;scroll-behavior:auto!important;
   }
+  /* Owner request: the feature-switch animation and surface transitions are core
+     feedback, so they survive the OS "reduce motion" default (an explicit
+     "Reduce motion" choice in settings still disables everything above). */
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-motion="full"][data-motion-explicit="true"]) input.display-switch[type=checkbox],
+    html:not([data-motion="full"][data-motion-explicit="true"]) input.display-switch[type=checkbox]::before {
+      transition:background-color .24s ease,border-color .24s ease,box-shadow .24s ease,width .18s ease,transform .32s cubic-bezier(.34,1.56,.64,1)!important;
+      animation:none!important;
+    }
+    html:not([data-motion="full"][data-motion-explicit="true"]) .overlay {animation:overlayIn .18s ease both!important}
+    html:not([data-motion="full"][data-motion-explicit="true"]) .overlay .modal-box {animation:panelIn .2s cubic-bezier(.2,.8,.2,1) both!important}
+    html:not([data-motion="full"][data-motion-explicit="true"]) .notification-popover.open,
+    html:not([data-motion="full"][data-motion-explicit="true"]) #notificationFilter {animation:popover-slide .22s ease-out both!important}
+    html:not([data-motion="full"][data-motion-explicit="true"]) #agentPopup {animation:panelIn .18s ease both!important}
+    html:not([data-motion="full"][data-motion-explicit="true"]) #noteAIPanel {animation:panel-switch-in .2s cubic-bezier(.22,.8,.2,1) both!important}
+  }
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -1123,16 +1139,17 @@ html[data-motion=reduced] .local-history-card summary::after{transition:none}
 /* --- 0.22.2: notes empty state --- */
 .note-empty{padding:72px 28px;text-align:center;font-size:17px;line-height:1.65;font-weight:500;color:var(--fg2)}
 
-/* --- 0.22.2: "Умный редактор" bar spanning the bottom of the notes editor --- */
-#smartEditor{border-top:1px solid var(--border);background:color-mix(in srgb,var(--bg2) 55%,transparent)}
+/* --- 0.22.2: "Умный редактор" — AI strip under the editing tools --- */
+#smartEditor{border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg2) 55%,transparent)}
 #smartEditorBar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:5px 8px 5px 14px}
-#smartEditorTitle{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--fg2)}
+#smartEditorTitle{font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--fg)}
 #smartEditorToggle{width:32px;height:32px;border:0;border-radius:9px;display:grid;place-items:center;background:transparent;color:var(--fg2);cursor:pointer;transition:background .18s ease,color .18s ease}
 #smartEditorToggle:hover{background:var(--hover);color:var(--fg)}
 #smartEditorToggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #smartEditorToggle svg{transition:transform .32s cubic-bezier(.22,.8,.2,1)}
 #smartEditorToggle[aria-expanded="false"] svg{transform:rotate(180deg)}
 #smartEditorBody{padding:0 0 4px}
+#smartEditorBody #noteAI{border-top:0;background:transparent;padding:2px 12px 10px}
 #smartEditorBody[hidden]{display:none}
 html[data-motion=reduced] #smartEditorToggle svg{transition:none}
 @media(prefers-reduced-motion:reduce){#smartEditorToggle svg{transition:none}}
@@ -1140,3 +1157,56 @@ html[data-motion=reduced] #smartEditorToggle svg{transition:none}
 /* --- 0.22.2: smoother workspace crossfade (fixes the 360ms cut-off) --- */
 body.workspace-changing.notes-active #notesEditor{animation:workspace-in-right .42s cubic-bezier(.25,.75,.2,1) both}
 body.workspace-changing:not(.notes-active) #chatViewport{animation:workspace-in-left .42s cubic-bezier(.25,.75,.2,1) both}
+
+/* --- 0.22.3: notes empty state — before the first note only the centered label stays --- */
+#notesEditor.no-note #noteTitle,#notesEditor.no-note #noteBody,#notesEditor.no-note .note-files,
+#notesEditor.no-note #noteFileActions,#notesEditor.no-note #noteToolbar,#notesEditor.no-note #smartEditor,
+#notesEditor.no-note .note-save-row,#notesEditor.no-note #noteAIPanel{display:none!important}
+#notesEditor.no-note .note-scroll{display:flex;overflow:hidden;padding:0}
+#notesEditor.no-note #noteEmpty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+ padding:32px;font-size:17px;font-weight:600;color:var(--fg2);position:relative;z-index:6;pointer-events:none}
+#notesEditor.no-note #noteEmpty[hidden]{display:none}
+
+/* --- 0.22.3: feature switches — smooth springy on/off --- */
+input.display-switch[type=checkbox]{transition:background-color .24s ease,border-color .24s ease,box-shadow .24s ease}
+input.display-switch[type=checkbox]::before{width:17px;height:17px;
+ transition:transform .32s cubic-bezier(.34,1.56,.64,1),background-color .24s ease,width .18s ease,height .18s ease}
+input.display-switch[type=checkbox]:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+input.display-switch[type=checkbox]:active::before{width:21px}
+input.display-switch[type=checkbox]:checked{box-shadow:0 0 0 3.5px color-mix(in srgb,var(--accent) 20%,transparent)}
+input.display-switch[type=checkbox]:checked:active::before{transform:translateX(13px)}
+input.display-switch[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* --- 0.22.3: liquid glass — ambient depth + frosted floating surfaces --- */
+body{background:
+ radial-gradient(1100px 760px at 82% -12%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 62%),
+ radial-gradient(900px 680px at -12% 112%,color-mix(in srgb,var(--accent) 6%,transparent),transparent 58%),
+ var(--bg)}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .overlay{background:rgba(8,8,14,.38);-webkit-backdrop-filter:blur(9px) saturate(1.35);backdrop-filter:blur(9px) saturate(1.35)}
+ .modal-box{background:color-mix(in srgb,var(--bg) 74%,transparent);
+  -webkit-backdrop-filter:blur(26px) saturate(1.65);backdrop-filter:blur(26px) saturate(1.65);
+  border:1px solid color-mix(in srgb,var(--border) 65%,transparent);
+  box-shadow:0 24px 70px rgba(6,8,20,.30),inset 0 1px 0 color-mix(in srgb,#fff 26%,transparent)}
+ body.dark .modal-box{box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)}
+ #noteAIPanel{background:color-mix(in srgb,var(--bg) 78%,transparent);
+  -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5)}
+ .notification-popover,#notificationFilter,#agentPopup,#voiceHelp,.confirm-box,.auth-box{
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  -webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5)}
+ #smartEditor{background:color-mix(in srgb,var(--bg2) 42%,transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4)}
+ #noteToolbar{background:color-mix(in srgb,var(--bg2) 55%,transparent);
+  -webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3)}
+ #sidebar,#topbar{background:color-mix(in srgb,var(--bg2) 72%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
+ html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] #noteAIPanel,
+ html[data-render-budget=compact] .notification-popover,html[data-render-budget=compact] #notificationFilter,
+ html[data-render-budget=compact] #agentPopup,html[data-render-budget=compact] #voiceHelp,
+ html[data-render-budget=compact] .confirm-box,html[data-render-budget=compact] .auth-box,
+ html[data-render-budget=compact] #smartEditor,html[data-render-budget=compact] #noteToolbar,
+ html[data-render-budget=compact] #sidebar,html[data-render-budget=compact] #topbar{
+  -webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg)}
+ html[data-render-budget=compact] #sidebar,html[data-render-budget=compact] #topbar{background:var(--bg2)}
+ html[data-render-budget=compact] #smartEditor,html[data-render-budget=compact] #noteToolbar{background:var(--bg2)}
+}
