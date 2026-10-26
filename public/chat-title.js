@@ -1,0 +1,1 @@
+(function(root){'use strict';function chatTitle(value){var s=String(value||'').replace(/\s+/g,' ').trim(),chars=Array.from(s);if(chars.length<=30)return s;var head=chars.slice(0,29).join(''),cut=head.lastIndexOf(' ');if(cut>=12)head=head.slice(0,cut);return head.trimEnd()+'…';}root.PongyChatTitle=chatTitle;})(globalThis);
