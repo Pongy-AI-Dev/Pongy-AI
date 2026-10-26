@@ -58,7 +58,9 @@ jobs:
           include-hidden-files: true
   browsers:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # The Playwright install plus the apt steps can push a slow runner past a
+    # shorter budget; a cancelled leg shows up as "The operation was canceled".
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -72,8 +74,16 @@ jobs:
       - run: npm ci
       - run: node node_modules/playwright/cli.js install --with-deps ${{ matrix.engine }}
       - name: Prepare virtual audio for real speech tests
+        timeout-minutes: 15
+        shell: bash
         run: |
-          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y pulseaudio pulseaudio-utils
+          ok=0
+          for attempt in 1 2 3; do
+            if sudo -o Acquire::Retries=5 -o Acquire::http::Timeout=60 -o Acquire::https::Timeout=60 apt-get install -y pulseaudio pulseaudio-utils; then ok=1; break; fi
+            echo "apt-get attempt $attempt failed; retrying after backoff" >&2
+            sleep $((attempt*20))
+          done
+          [ "$ok" = 1 ] || { echo "pulseaudio could not be installed" >&2; exit 1; }
           pulseaudio --start --exit-idle-time=-1
           pactl load-module module-null-sink sink_name=pongy_test_sink
           pactl set-default-sink pongy_test_sink
