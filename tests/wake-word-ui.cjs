@@ -37,7 +37,7 @@ const VOSK_STUB=`(function(){
   await page.locator('#authEmail').fill('wake@example.test');await page.locator('#authPassword').fill('fixture-password');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
   await page.locator('#settingsBtn').click();await page.locator('#settingsModal.open').waitFor();
   check(await page.locator('#wakeWordSetting').isVisible(),'wake word setting row absent');
-  check((await page.locator('#wakeWordLabel').textContent()).includes('Pongy'),'wake word label missing');
+  check(/Активация голосом|Voice activation/.test(await page.locator('#wakeWordLabel').textContent()),'wake word label missing');
   check(!(await page.locator('#wakeWordToggle').isChecked()),'wake word enabled by default');
   await page.locator('#wakeWordToggle').click();
   await page.waitForFunction(()=>/Слушаю в фоне|Listening in the background/.test(document.getElementById('wakeWordHint').textContent),null,{timeout:20000});
