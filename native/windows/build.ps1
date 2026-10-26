@@ -8,7 +8,7 @@ $nativeDir = $PSScriptRoot
 $repoRoot = (Resolve-Path (Join-Path $nativeDir '..\..')).Path
 $buildDir = Join-Path $nativeDir 'build'
 $downloadsDir = Join-Path $repoRoot 'public\downloads'
-$output = Join-Path $downloadsDir 'Pongy-AI-0.22.2-windows-x64.msi'
+$output = Join-Path $downloadsDir 'Pongy-AI-0.23.0-windows-x64.msi'
 
 if (-not $WebView2SdkPath -or -not (Test-Path (Join-Path $WebView2SdkPath 'build\native\x64\WebView2LoaderStatic.lib'))) {
   throw 'Set WEBVIEW2_SDK to the extracted Microsoft.Web.WebView2 1.0.3537.50 NuGet package.'
@@ -38,7 +38,7 @@ $logo = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $repoRoot '
 $offline = $offline.Replace('/welcome-logo.png',"data:image/png;base64,$logo")
 $offlineScript = [IO.File]::ReadAllText((Join-Path $repoRoot 'public\offline-page.js')).Replace(
   'location.reload()',
-  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.22.2")'
+  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.23.0")'
 )
 $offline = $offline.Replace(
   '<script src="/offline-page.js"></script>',
@@ -46,7 +46,7 @@ $offline = $offline.Replace(
 )
 [IO.File]::WriteAllText((Join-Path $buildDir 'offline.html'),$offline,[Text.UTF8Encoding]::new($false))
 
-$compile = 'call "'+$vcvars+'" >nul && cd /d "'+$nativeDir+'" && rc /nologo /fo build\resources.res launcher.rc && cl /nologo /std:c++17 /O2 /EHsc /I"'+$buildDir+'" /I"'+(Join-Path $WebView2SdkPath 'build\native\include')+'" /Fo:build\PongyAI.obj /c launcher.cpp && link /nologo /SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup /OUT:build\PongyAI.exe build\PongyAI.obj build\resources.res /LIBPATH:"'+(Join-Path $WebView2SdkPath 'build\native\x64')+'" WebView2LoaderStatic.lib ole32.lib shell32.lib uuid.lib advapi32.lib user32.lib'
+$compile = 'call "'+$vcvars+'" >nul && cd /d "'+$nativeDir+'" && rc /nologo /fo build\resources.res launcher.rc && cl /nologo /utf-8 /std:c++17 /O2 /EHsc /I"'+$buildDir+'" /I"'+(Join-Path $WebView2SdkPath 'build\native\include')+'" /Fo:build\PongyAI.obj /c launcher.cpp && link /nologo /SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup /OUT:build\PongyAI.exe build\PongyAI.obj build\resources.res /LIBPATH:"'+(Join-Path $WebView2SdkPath 'build\native\x64')+'" WebView2LoaderStatic.lib ole32.lib shell32.lib uuid.lib advapi32.lib user32.lib'
 & $env:ComSpec /d /c $compile
 if ($LASTEXITCODE -ne 0) { throw "Native Windows application build failed with exit code $LASTEXITCODE." }
 
