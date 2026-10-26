@@ -6,6 +6,9 @@ function getBrowserConfig(env=process.env){
  const options={headless:true};
  if(name==='chromium'){
   options.args=['--no-sandbox','--disable-dev-shm-usage'];
+  // Suites that exercise microphone flows run without real audio hardware; the
+  // opt-in fake media stack provides a silent device and auto-grants permission.
+  if(env.PONGY_FAKE_MEDIA==='1')options.args.push('--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream');
   if(!env.CI&&env.CHROMIUM_PATH)options.executablePath=env.CHROMIUM_PATH;
  }
  return {name,options};
