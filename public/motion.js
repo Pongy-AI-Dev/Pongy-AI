@@ -5,7 +5,7 @@ var nav=root.navigator||{};var compact=(nav.deviceMemory&&nav.deviceMemory<=4)||
 })(window);
 // Delegated feedback also covers icons added later by chat/note renderers.
 (function(){'use strict';if(typeof document.addEventListener!=='function')return;var running=new Map();
-function allowed(){var d=document.documentElement.dataset;return d.motion!=='reduced'&&!(window.matchMedia('(prefers-reduced-motion: reduce)').matches&&d.motionExplicit!=='true');}
+function allowed(){var d=document.documentElement.dataset;return d.motion!=='reduced';}
 function stop(){running.forEach(function(a){a.cancel()});running.clear()}
 function press(e){if(!allowed()||(e.type==='pointerdown'&&e.button!==0)||(e.type==='keydown'&&!['Enter',' '].includes(e.key))||e.repeat)return;var button=e.target.closest?.('button,a,[role="button"]');if(!button||button.disabled||button.getAttribute('aria-disabled')==='true'||button.closest('[inert]')||(button.dataset.action==='like'||button.dataset.act==='like'))return;var svg=button.querySelector('svg');if(!svg||!svg.animate)return;running.get(svg)?.cancel();var id=button.id||'',name=button.dataset.act||button.dataset.action||'',frames=[{transform:'scale(1)'},{transform:'scale(.9)',offset:.35},{transform:'scale(1)'}],duration=320;
 if(/notification|reminder/i.test(id)||button.classList.contains('note-reminder')){frames=[0,-18,15,-10,6,0].map(function(n){return {transform:'rotate('+n+'deg)'}});duration=620;}

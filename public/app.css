@@ -2,34 +2,61 @@
    legacy ID-specific full-motion declarations even before matchMedia fires. */
 @layer pongy-accessibility {
   @media (prefers-reduced-motion: reduce) {
-    html:not([data-motion="full"][data-motion-explicit="true"]) *,
-    html:not([data-motion="full"][data-motion-explicit="true"]) *::before,
-    html:not([data-motion="full"][data-motion-explicit="true"]) *::after {
+    html:not([data-motion-explicit="true"]) *,
+    html:not([data-motion-explicit="true"]) *::before,
+    html:not([data-motion-explicit="true"]) *::after {
       animation:none!important;transition:none!important;scroll-behavior:auto!important;
     }
-    html:not([data-motion="full"][data-motion-explicit="true"]) .thinking-label,
-    html:not([data-motion="full"][data-motion-explicit="true"]) .progress-title {
+    html:not([data-motion-explicit="true"]) .thinking-label,
+    html:not([data-motion-explicit="true"]) .progress-title {
       background:none!important;color:var(--fg2)!important;-webkit-text-fill-color:currentColor!important;
     }
   }
   html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after {
     animation:none!important;transition:none!important;scroll-behavior:auto!important;
   }
-  /* Owner request: the feature-switch animation and surface transitions are core
-     feedback, so they survive the OS "reduce motion" default (an explicit
-     "Reduce motion" choice in settings still disables everything above). */
+  /* Owner request (0.22.3): core interactive feedback — switches, checkboxes,
+     windows, the workspace switch, section changes and press states — must stay
+     animated even when the OS asks for reduced motion. An explicit
+     "Reduce motion" choice in settings still disables everything above. */
   @media (prefers-reduced-motion: reduce) {
-    html:not([data-motion="full"][data-motion-explicit="true"]) input.display-switch[type=checkbox],
-    html:not([data-motion="full"][data-motion-explicit="true"]) input.display-switch[type=checkbox]::before {
+    html:not([data-motion-explicit="true"]) input.display-switch[type=checkbox],
+    html:not([data-motion-explicit="true"]) input.display-switch[type=checkbox]::before {
       transition:background-color .24s ease,border-color .24s ease,box-shadow .24s ease,width .18s ease,transform .32s cubic-bezier(.34,1.56,.64,1)!important;
       animation:none!important;
     }
-    html:not([data-motion="full"][data-motion-explicit="true"]) .overlay {animation:overlayIn .18s ease both!important}
-    html:not([data-motion="full"][data-motion-explicit="true"]) .overlay .modal-box {animation:panelIn .2s cubic-bezier(.2,.8,.2,1) both!important}
-    html:not([data-motion="full"][data-motion-explicit="true"]) .notification-popover.open,
-    html:not([data-motion="full"][data-motion-explicit="true"]) #notificationFilter {animation:popover-slide .22s ease-out both!important}
-    html:not([data-motion="full"][data-motion-explicit="true"]) #agentPopup {animation:panelIn .18s ease both!important}
-    html:not([data-motion="full"][data-motion-explicit="true"]) #noteAIPanel {animation:panel-switch-in .2s cubic-bezier(.22,.8,.2,1) both!important}
+    html:not([data-motion-explicit="true"]) input[type=checkbox]:not(.display-switch),
+    html:not([data-motion-explicit="true"]) input[type=checkbox]:not(.display-switch)::before {
+      transition:background-color .22s ease,border-color .22s ease,clip-path .25s cubic-bezier(.2,.8,.2,1),transform .3s cubic-bezier(.2,.9,.3,1.3)!important;
+      animation:none!important;
+    }
+    html:not([data-motion-explicit="true"]) input[type=checkbox]:not(.display-switch):checked::before{animation:check-draw .3s cubic-bezier(.2,.8,.2,1)!important}
+    html:not([data-motion-explicit="true"]) button:not(:disabled),
+    html:not([data-motion-explicit="true"]) a {
+      transition:background-color .25s ease,color .25s ease,border-color .25s ease,box-shadow .3s ease,opacity .3s ease,transform .18s ease!important;
+    }
+    html:not([data-motion-explicit="true"]) .overlay {animation:overlayIn .18s ease both!important}
+    html:not([data-motion-explicit="true"]) .overlay .modal-box {animation:panelIn .23s cubic-bezier(.2,.8,.2,1) both!important}
+    html:not([data-motion-explicit="true"]) .confirm-modal.open .confirm-box {animation:panelIn .23s cubic-bezier(.2,.8,.2,1) both!important}
+    html:not([data-motion-explicit="true"]) .notification-popover.open,
+    html:not([data-motion-explicit="true"]) #notificationFilter {animation:popover-slide .22s ease-out both!important}
+    html:not([data-motion-explicit="true"]) #agentPopup {animation:panelIn .18s ease both!important}
+    html:not([data-motion-explicit="true"]) .composer-menu,
+    html:not([data-motion-explicit="true"]) #authLanguageMenu {animation:quiet-surface-in .3s var(--motion-ease) both!important}
+    html:not([data-motion-explicit="true"]) #noteAIPanel {animation:panel-switch-in .2s cubic-bezier(.22,.8,.2,1) both!important}
+    html:not([data-motion-explicit="true"]) body.workspace-changing #chatViewport,
+    html:not([data-motion-explicit="true"]) body.workspace-changing #notesEditor {animation:panel-switch-in .32s cubic-bezier(.22,.8,.2,1) both!important}
+    html:not([data-motion-explicit="true"]) #workspaceSwitch button {transition:color .3s ease,transform .4s cubic-bezier(.22,.8,.2,1)!important}
+    html:not([data-motion-explicit="true"]) .workspace-slider {transition:transform .55s cubic-bezier(.22,.85,.25,1.08)!important}
+    html:not([data-motion-explicit="true"]) #workspaceSwitch[data-section=chats] .workspace-slider::after {animation:slider-sheen-a .62s cubic-bezier(.35,.55,.3,1)!important}
+    html:not([data-motion-explicit="true"]) #workspaceSwitch[data-section=notes] .workspace-slider::after {animation:slider-sheen-b .62s cubic-bezier(.35,.55,.3,1)!important}
+    html:not([data-motion-explicit="true"]) #workspaceSwitch[data-section=chats] {animation:switch-bounce-a .5s cubic-bezier(.22,.8,.2,1)!important}
+    html:not([data-motion-explicit="true"]) #workspaceSwitch[data-section=notes] {animation:switch-bounce-b .5s cubic-bezier(.22,.8,.2,1)!important}
+    html:not([data-motion-explicit="true"]) .settings-tab-indicator {transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s cubic-bezier(.2,.8,.2,1)!important}
+    html:not([data-motion-explicit="true"]) .settings-section:not([hidden]) {animation:settings-enter .22s ease-out!important}
+    html:not([data-motion-explicit="true"]) .api-key-eye .api-eye-slash,
+    html:not([data-motion-explicit="true"]) .api-key-eye .api-eye-pupil,
+    html:not([data-motion-explicit="true"]) .api-key-eye svg {transition:stroke-dashoffset .28s cubic-bezier(.2,.8,.2,1),opacity .22s ease,transform .28s cubic-bezier(.2,.8,.2,1)!important}
   }
 }
 
@@ -80,6 +107,8 @@ body.collapsed .chat-item{padding:9px;justify-content:center}
 .chat-act.danger:hover{background:transparent;color:var(--danger)}
 .rename-input{width:100%;background:var(--bg);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;font-size:13px;color:var(--fg)}
 .chat-empty{text-align:center;padding:20px;font-size:12.5px;color:var(--fg2)}
+/* Owner request (0.22.3): the notes-empty hint must not sit inside the icon-only rail. */
+body.collapsed .chat-empty{display:none}
 .sb-bottom{padding:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
 .sb-row{display:flex;gap:6px}
 .sb-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;color:var(--fg2);font-size:13px;min-width:0}
@@ -215,6 +244,8 @@ body.collapsed .chat-item{padding:9px;justify-content:center}
 :where(html[data-layout="mobile"]) body.collapsed .chat-actions{display:flex}
 :where(html[data-layout="mobile"]) body.collapsed .chat-body{display:flex}
 :where(html[data-layout="mobile"]) body.collapsed .sb-title,:where(html[data-layout="mobile"]) body.collapsed .sb-search,:where(html[data-layout="mobile"]) body.collapsed .sb-label,:where(html[data-layout="mobile"]) body.collapsed .sb-btn span,:where(html[data-layout="mobile"]) body.collapsed .upgrade-btn span{display:initial}
+/* Mobile collapse only slides the drawer away — keep the hint inside it. */
+:where(html[data-layout="mobile"]) body.collapsed .chat-empty{display:block}
 :where(html[data-layout="mobile"]) .chat-act{width:28px;height:32px}
 :where(html[data-layout="mobile"]) .grid2{grid-template-columns:1fr}
 
@@ -913,19 +944,22 @@ html[data-motion=reduced] .settings-section,html[data-motion=reduced] .notificat
 .api-key-eye.revealed{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .api-key-eye svg{width:18px;height:18px}
 
-/* --- Usage bar: compact, blue, fills up as the allowance is used --- */
+/* --- Usage bar (0.22.3): slim scale in a row with an inline percent --- */
 #settings-panel-usage{padding:0;border:0;background:transparent}
 #settings-panel-usage>p:first-of-type{margin-top:0}
-#settings-panel-usage progress{display:block;width:100%;min-width:100%;height:20px;margin:12px 0 10px;border:0;border-radius:999px;background:color-mix(in srgb,var(--fg) 8%,transparent);accent-color:var(--accent);appearance:none;-webkit-appearance:none;overflow:hidden;pointer-events:none;cursor:default;box-shadow:none;outline:none;filter:none;transform:none;transition:none}
-#settings-panel-usage progress::-webkit-progress-bar{background:color-mix(in srgb,var(--fg) 8%,transparent);border:0;border-radius:999px;box-shadow:none}
-#settings-panel-usage progress::-webkit-progress-value{background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 62%,#60a5fa));border-radius:999px;box-shadow:none;transition:width .5s cubic-bezier(.22,.75,.2,1)}
+.usage-row{display:flex;align-items:center;gap:10px;margin:10px 0 8px}
+#settings-panel-usage progress{display:block;flex:1 1 auto;width:auto;min-width:0;height:8px;margin:0;border:0;border-radius:999px;background:color-mix(in srgb,var(--fg) 9%,transparent);accent-color:var(--accent);appearance:none;-webkit-appearance:none;overflow:hidden;pointer-events:none;cursor:default;box-shadow:inset 0 1px 2px rgba(0,0,0,.07);outline:none;filter:none;transform:none;transition:none}
+#settings-panel-usage progress::-webkit-progress-bar{background:transparent;border:0;border-radius:999px;box-shadow:none}
+#settings-panel-usage progress::-webkit-progress-value{background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 62%,#60a5fa));border-radius:999px;box-shadow:0 0 8px color-mix(in srgb,var(--accent) 28%,transparent);transition:width .5s cubic-bezier(.22,.75,.2,1)}
 #settings-panel-usage progress::-moz-progress-bar{background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 62%,#60a5fa));border-radius:999px;box-shadow:none}
-#settings-panel-usage progress:hover,#settings-panel-usage progress:active,#settings-panel-usage progress:focus,#settings-panel-usage progress:focus-visible{border:0;outline:none;box-shadow:none;filter:none;transform:none;cursor:default}
-#settings-panel-usage[data-state=exhausted] progress::-webkit-progress-value{background:linear-gradient(90deg,#ef5363,#f97316)}
+#settings-panel-usage progress:hover,#settings-panel-usage progress:active,#settings-panel-usage progress:focus,#settings-panel-usage progress:focus-visible{border:0;outline:none;box-shadow:inset 0 1px 2px rgba(0,0,0,.07);filter:none;transform:none;cursor:default}
+#settings-panel-usage[data-state=exhausted] progress::-webkit-progress-value{background:linear-gradient(90deg,#ef5363,#f97316);box-shadow:0 0 8px color-mix(in srgb,#ef5363 26%,transparent)}
 #settings-panel-usage[data-state=exhausted] progress::-moz-progress-bar{background:linear-gradient(90deg,#ef5363,#f97316)}
-#usagePercent{font-size:14px;margin:4px 0 2px}
+#settings-panel-usage[data-state=unavailable] progress::-webkit-progress-value{background:linear-gradient(90deg,#e5a144,#f97316);box-shadow:0 0 8px color-mix(in srgb,#e5a144 26%,transparent)}
+#settings-panel-usage[data-state=unavailable] progress::-moz-progress-bar{background:linear-gradient(90deg,#e5a144,#f97316)}
+#usagePercent{flex:0 0 auto;min-width:40px;text-align:right;font-size:12.5px;font-weight:700;color:var(--fg2);margin:0;font-variant-numeric:tabular-nums}
 #usageHint{margin-bottom:0}
-@media(max-width:600px){#settings-panel-usage progress{height:18px}}
+@media(max-width:600px){#settings-panel-usage progress{height:7px}.usage-row{gap:8px}}
 
 /* --- Notifications: five rows before expanding --- */
 .notice-expand{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:8px 0 2px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--fg2);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
@@ -1183,15 +1217,12 @@ body{background:
  radial-gradient(900px 680px at -12% 112%,color-mix(in srgb,var(--accent) 6%,transparent),transparent 58%),
  var(--bg)}
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
- .overlay{background:rgba(8,8,14,.38);-webkit-backdrop-filter:blur(9px) saturate(1.35);backdrop-filter:blur(9px) saturate(1.35)}
- .modal-box{background:color-mix(in srgb,var(--bg) 74%,transparent);
-  -webkit-backdrop-filter:blur(26px) saturate(1.65);backdrop-filter:blur(26px) saturate(1.65);
-  border:1px solid color-mix(in srgb,var(--border) 65%,transparent);
-  box-shadow:0 24px 70px rgba(6,8,20,.30),inset 0 1px 0 color-mix(in srgb,#fff 26%,transparent)}
- body.dark .modal-box{box-shadow:0 24px 70px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent)}
+ /* Owner request (0.22.3): windows themselves stay opaque like before — the
+    translucent box read as a gray surface inside settings. Glass remains on
+    panels, popovers and the app chrome. */
  #noteAIPanel{background:color-mix(in srgb,var(--bg) 78%,transparent);
   -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5)}
- .notification-popover,#notificationFilter,#agentPopup,#voiceHelp,.confirm-box,.auth-box{
+ .notification-popover,#notificationFilter,#agentPopup,#voiceHelp{
   background:color-mix(in srgb,var(--bg) 80%,transparent);
   -webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5)}
  #smartEditor{background:color-mix(in srgb,var(--bg2) 42%,transparent);
@@ -1200,10 +1231,9 @@ body{background:
   -webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3)}
  #sidebar,#topbar{background:color-mix(in srgb,var(--bg2) 72%,transparent);
   -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
- html[data-render-budget=compact] .modal-box,html[data-render-budget=compact] #noteAIPanel,
+ html[data-render-budget=compact] #noteAIPanel,
  html[data-render-budget=compact] .notification-popover,html[data-render-budget=compact] #notificationFilter,
  html[data-render-budget=compact] #agentPopup,html[data-render-budget=compact] #voiceHelp,
- html[data-render-budget=compact] .confirm-box,html[data-render-budget=compact] .auth-box,
  html[data-render-budget=compact] #smartEditor,html[data-render-budget=compact] #noteToolbar,
  html[data-render-budget=compact] #sidebar,html[data-render-budget=compact] #topbar{
   -webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg)}
