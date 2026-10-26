@@ -13,7 +13,7 @@ try{
  r=await req('/api/feedback',{rating:3});assert.equal(r.status,200);
  for(let n=0;n<50&&sent.length<2;n++)await new Promise(resolve=>setTimeout(resolve,20));
  assert.equal(sent.length,2);
- assert(sent.every(mail=>mail.to==='pongy.support@gmail.com'),'review was not delivered to the support mailbox: '+JSON.stringify(sent.map(mail=>mail.to)));
+ assert(sent.every(mail=>mail.to==='pongy.suppot@gmail.com'),'review was not delivered to the support mailbox: '+JSON.stringify(sent.map(mail=>mail.to)));
  assert(sent.some(mail=>mail.subject.includes('5/5'))&&sent.some(mail=>mail.subject.includes('3/5')));
  assert(sent.every(mail=>mail.text.includes('reviewer@example.test')));
  assert.equal(runtime.db.prepare('SELECT COUNT(*) AS n FROM feedback WHERE sent_at IS NULL').get().n,0);

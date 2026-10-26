@@ -36,7 +36,7 @@ const VOSK_STUB=`(function(){
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.locator('#authEmail').fill('wake@example.test');await page.locator('#authPassword').fill('fixture-password');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
   await page.locator('#settingsBtn').click();await page.locator('#settingsModal.open').waitFor();
-  check(await page.locator('#wakeWordSetting').isVisible(),'wake word setting row absent');
+  await page.locator('#settings-tab-interface').click();check(await page.locator('#wakeWordSetting').isVisible(),'wake word setting row absent');
   check(/Активация голосом|Voice activation/.test(await page.locator('#wakeWordLabel').textContent()),'wake word label missing');
   check(!(await page.locator('#wakeWordToggle').isChecked()),'wake word enabled by default');
   await page.locator('#wakeWordToggle').click();
@@ -45,7 +45,7 @@ const VOSK_STUB=`(function(){
   await page.locator('#closeSettings').click();await page.waitForTimeout(350);
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000});
   // Visible-tab trigger: the wake word starts voice input immediately.
-  await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'эй понги открой чат'}}));
+  await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'эй понги'}}));
   await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
   check(true,'wake word did not start voice input while the tab was visible');
   await page.locator('#micBtn').click();await page.waitForFunction(()=>!document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
@@ -59,7 +59,7 @@ const VOSK_STUB=`(function(){
   // Hidden-tab trigger: the tab is raised with a signal and voice input starts on return.
   await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:function(){return 'hidden'}});document.dispatchEvent(new Event('visibilitychange'));});
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000}); // the background listener stays armed while hidden
-  const titleBefore=await page.title();
+  await page.waitForTimeout(6200);const titleBefore=await page.title();
   await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'понги'}}));
   await page.waitForFunction(title=>document.title!==title,titleBefore,{timeout:5000});
   check(true,'hidden-tab trigger gave no raise signal');
@@ -69,8 +69,16 @@ const VOSK_STUB=`(function(){
   await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
   check(true,'returning to the raised tab did not start voice input');
   await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'просто добавь воды в суп'}}));
-  await page.waitForTimeout(400);
+  await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('result',{result:{text:'Как тебя зовут'}}));
+  await page.waitForFunction(()=>[...document.querySelectorAll('.msg.user')].some(n=>n.textContent.includes('Как тебя зовут')),null,{timeout:10000});
+  await page.waitForFunction(()=>!document.getElementById('micBtn').classList.contains('recording'));
+  check(true,'wake command was not automatically sent');
+  await page.waitForTimeout(6200);
+  await page.evaluate(()=>{document.getElementById('userInput').value='';window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'Понги'}})});
+  await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
+  await page.waitForTimeout(10500);
+  check(!(await page.locator('#micBtn').evaluate(el=>el.classList.contains('recording'))),'wake command capture did not stop after silence');
   check(errors.length===0,'browser errors: '+errors.join('; '));
   console.log('Wake word trigger, guard words and tab raise assertions passed:',count);
- }catch(error){try{fs.mkdirSync('tests/artifacts',{recursive:true});await page.screenshot({path:'tests/artifacts/wake-word-failure.png'})}catch(captureError){console.error('Failure screenshot unavailable:',captureError.message)}throw error}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
+ }catch(error){console.error('WAKE DEBUG',await page.evaluate(()=>({input:document.getElementById('userInput').value,hint:document.getElementById('wakeWordHint').textContent,status:document.getElementById('voiceStatus').textContent,help:document.getElementById('voiceHelpText').textContent,toast:document.getElementById('toast').textContent,visibility:document.visibilityState,mic:document.getElementById('micBtn').className,serial:window.__pongyFakeRecognizerSerial})));try{fs.mkdirSync('tests/artifacts',{recursive:true});await page.screenshot({path:'tests/artifacts/wake-word-failure.png'})}catch(captureError){console.error('Failure screenshot unavailable:',captureError.message)}throw error}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
 })().catch(error=>{console.error(error);process.exitCode=1});
