@@ -15,12 +15,12 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "Pongy AI Dev\0"
    VALUE "FileDescription", "Pongy AI native WebView2 application\0"
-   VALUE "FileVersion", "0.22.1\0"
+   VALUE "FileVersion", "0.22.2\0"
    VALUE "InternalName", "PongyAI\0"
    VALUE "LegalCopyright", "Pongy AI Dev\0"
    VALUE "OriginalFilename", "PongyAI.exe\0"
    VALUE "ProductName", "Pongy AI\0"
-   VALUE "ProductVersion", "0.22.1\0"
+   VALUE "ProductVersion", "0.22.2\0"
   END
  END
  BLOCK "VarFileInfo"
