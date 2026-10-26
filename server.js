@@ -93,13 +93,14 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  // unsent rows are retried on startup and after every new review so nothing is lost without SMTP.
  const FEEDBACK_EMAIL='pongy.support@gmail.com';
  async function deliverFeedback(){
-  if(!authMailer.configured)return;
+  if(!authMailer.configured){console.warn('[pongy] Почта не настроена (SMTP_HOST/SMTP_USER/SMTP_PASS или RESEND_API_KEY + MAIL_FROM) — отзывы копятся в базе и уйдут на '+FEEDBACK_EMAIL+' автоматически после настройки.');return;}
   for(const row of db.prepare('SELECT * FROM feedback WHERE sent_at IS NULL ORDER BY created_at').all()){
    try{await authMailer.send({to:FEEDBACK_EMAIL,subject:'Отзыв о Pongy AI: '+row.rating+'/5',text:'Новый отзыв о сервисе Pongy AI.\nОценка: '+row.rating+' из 5\nАккаунт: '+(row.user_email||'не указан')+'\nДата: '+new Date(row.created_at).toISOString()+'\n',id:'fb-'+row.id});db.prepare('UPDATE feedback SET sent_at=? WHERE id=?').run(now(),row.id);}
-   catch(error){return;}
+   catch(error){console.warn('[pongy] Не удалось отправить отзыв '+row.id+' на '+FEEDBACK_EMAIL+': '+(error&&error.message||error)+' — повторю позже.');return;}
   }
  }
  setTimeout(()=>{deliverFeedback().catch(()=>{});},15000).unref?.();
+ setInterval(()=>{deliverFeedback().catch(()=>{});},300000).unref?.();
  const codes=new Codes(db,config.jwtSecret,now),ai=new FreeAI(config,fetchImpl,now),firebase=new FirebaseAuth(config,fetchImpl),app=express();
  app.disable('x-powered-by');if(config.trustProxy!==false){if(!Number.isInteger(config.trustProxy)||config.trustProxy<1)throw new Error('TRUST_PROXY must be a trusted hop count');app.set('trust proxy',config.trustProxy);}
  app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],scriptSrcAttr:["'none'"],workerSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:','blob:','https:'],connectSrc:["'self'",...config.allowedOrigins,...(config.publicApiOrigin?[config.publicApiOrigin]:[])],mediaSrc:["'self'",'blob:'],fontSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],baseUri:["'none'"],formAction:["'self'"],upgradeInsecureRequests:config.production?[]:null}},strictTransportSecurity:config.production?undefined:false,referrerPolicy:{policy:'no-referrer'}}));
