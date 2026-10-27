@@ -24,7 +24,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
    check(await visibleTab('main'),name+': keyboard Home leaves the first tab clipped');
    check(await page.locator('.settings-tabs-next').isVisible()&&await page.locator('.settings-tabs-next').isEnabled(),name+': missing forward navigation');
    const rail=await page.locator('.settings-tabs').boundingBox();await page.mouse.move(rail.x+rail.width/2,rail.y+rail.height/2);await page.mouse.wheel(0,3000);
-   await page.waitForFunction(()=>{const s=document.querySelector('.settings-tabs');return s.scrollLeft+s.clientWidth>=s.scrollWidth-2;});
+   await page.waitForFunction(()=>{const s=document.querySelector('.settings-tabs');return s.scrollLeft+s.clientWidth>=s.scrollWidth-1&&document.querySelector('.settings-tabs-next').disabled;});
    check(await visibleTab('developer'),name+': mouse wheel does not expose Developer');
    check(await page.locator('.settings-tabs-next').isDisabled(),name+': forward arrow not disabled at the end');
    await page.locator('#settings-tab-developer').click();check(await page.locator('#settings-panel-developer').isVisible(),name+': Developer cannot be opened');

@@ -29,3 +29,27 @@ test('motion and checkbox preferences survive partial updates, a new session and
   await call('/api/preferences','PUT',{memory:false,betaFunctions:false,notifications:false,motion:'full'});prefs=await(await call('/api/preferences')).json();for(const name of ['memory','betaFunctions','notifications'])assert.equal(prefs[name],false);assert.equal(prefs.motion,'full');
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+function preferenceQueueFixture(){
+ const source=fs.readFileSync('public/app.js','utf8'),start=source.indexOf('var preferenceTimer,'),end=source.indexOf('function save(k,v)',start),requests=[],disk=new Map(),account='queue@example.test';
+ const context=vm.createContext({document:{hidden:false},authEpoch:1,currentUser:{email:account},sessionValidated:true,chatAccount:()=>account,load:()=>null,localStorage:{removeItem:key=>disk.delete(key)},syncError:()=>{},api:async(url,options)=>{requests.push({url,body:options.body});return{ok:true};}});
+ vm.runInContext(source.slice(start,end),context);const stage=(version,memory)=>{context.preferenceOutbox[account]={version,body:{memory}};disk.set('pongy_preferences_pending:'+account,version);};
+ return{context,requests,disk,account,stage,flush:()=>vm.runInContext('flushPreferences()',context)};
+}
+test('preference queue coalesces duplicate flushes without duplicate PUTs',async()=>{
+ const q=preferenceQueueFixture();q.stage('v1',true);await Promise.all([q.flush(),q.flush(),q.flush()]);assert.equal(q.requests.length,1);assert.equal(q.disk.size,0);assert.equal(q.context.preferenceOutbox[q.account],undefined);
+});
+test('preference queue re-reads the latest version after the earlier request completes',async()=>{
+ const q=preferenceQueueFixture();let release;q.context.api=async(url,options)=>{q.requests.push({url,body:options.body});if(q.requests.length===1)await new Promise(r=>release=r);return{ok:true};};
+ q.stage('v1',true);const first=q.flush();while(!release)await new Promise(r=>setImmediate(r));q.stage('v2',false);const second=q.flush();release();await Promise.all([first,second]);assert.equal(q.requests.length,2);assert.equal(q.requests[0].body.memory,true);assert.equal(q.requests[1].body.memory,false);assert.equal(q.disk.size,0);
+});
+test('hidden or unloading preference queues preserve the outbox without starting requests',async()=>{
+ const q=preferenceQueueFixture();q.stage('v1',true);q.context.preferencePageHidden=true;await q.flush();q.context.preferencePageHidden=false;q.context.preferencePageUnloading=true;await q.flush();assert.equal(q.requests.length,0);assert.equal(q.disk.size,1);q.context.preferencePageUnloading=false;await q.flush();assert.equal(q.requests.length,1);assert.equal(q.disk.size,0);
+});
+test('queued preference work checks lifecycle and account again before starting a request',async()=>{
+ const q=preferenceQueueFixture();let release;q.context.preferenceQueue=new Promise(r=>release=r);q.stage('v1',true);const pending=q.flush();q.context.preferencePageHidden=true;release();await pending;assert.equal(q.requests.length,0);assert.equal(q.disk.size,1);
+ q.context.preferencePageHidden=false;q.context.preferenceQueue=new Promise(r=>release=r);const stale=q.flush();q.context.authEpoch++;release();await stale;assert.equal(q.requests.length,0);assert.equal(q.disk.size,1);
+});
+test('failed preference writes reject the caller and retain the exact pending version',async()=>{
+ const q=preferenceQueueFixture();q.stage('v1',false);q.context.api=async()=>{throw Object.assign(Error('fixture unavailable'),{status:503});};await assert.rejects(q.flush(),/fixture unavailable/);assert.equal(q.context.preferenceOutbox[q.account].version,'v1');assert.equal(q.disk.size,1);q.context.api=async()=>({ok:true});await q.flush();assert.equal(q.disk.size,0);
+});

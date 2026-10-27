@@ -8,7 +8,15 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('other@example.test',bcrypt.hashSync('fixture-password',4));
  runtime.reminders.enqueueNotification(uid,'ready','en','persist-notice',false);
  const noticeId=runtime.reminders.notifications(uid)[0].id;
- const server=await new Promise(r=>{const s=runtime.app.listen(0,'127.0.0.1',()=>r(s))}),base='http://127.0.0.1:'+server.address().port,browser=await launchBrowser();let checks=0;const errors=[];
+ let denyPreferences=false;
+ const server=await new Promise(r=>{const s=require('node:http').createServer((req,res)=>{
+  // A real HTTP failure keeps origin/headers/lifecycle behavior identical across
+  // engines. Browser-protocol fulfill/unroute can race a response already in flight.
+  if(denyPreferences&&req.method==='PUT'&&req.url==='/api/preferences'){
+   req.resume();res.writeHead(503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({error:'Fixture write unavailable'}));return;
+  }
+  runtime.app(req,res);
+ }).listen(0,'127.0.0.1',()=>r(s))}),base='http://127.0.0.1:'+server.address().port,browser=await launchBrowser();let checks=0;const errors=[];
  function check(v,m){if(!v)throw Error(m);checks++;}
  async function login(p,email='persist@example.test'){p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('#authEmail').fill(email);await p.locator('#authPassword').fill('fixture-password');await p.locator('#authBtn').click();await p.waitForFunction(()=>!document.getElementById('userInput').disabled);}
  async function settings(p,tab){if(await p.evaluate(()=>PongyDisplay.mobile()&&!document.getElementById('sidebar').classList.contains('open')))await p.locator('#menuBtn').click();await p.locator('#settingsBtn').click();await p.locator('#settings-tab-'+tab).click();}
@@ -41,14 +49,23 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   const isolated=await browser.newContext(),other=await isolated.newPage();await login(other,'other@example.test');await other.locator('#notificationsBtn').click();check(await other.locator('.notification-row').count()===0,'notifications leaked between accounts');await settings(other,'main');check(!(await other.locator('#memoryToggle').isChecked()),'memory leaked between accounts');await isolated.close();
   // A failed preference write stays queued through a reload and is not
   // acknowledged merely because the network request finished.
-  await settings(page,'main');await page.route('**/api/preferences',r=>r.request().method()==='PUT'?r.fulfill({status:503,json:{error:'Fixture write unavailable'}}):r.continue());
+  await settings(page,'main');denyPreferences=true;
   const failedSave=page.waitForResponse(r=>r.url().endsWith('/api/preferences')&&r.request().method()==='PUT');await page.locator('#memoryToggle').uncheck();check((await failedSave).status()===503,'write failure fixture did not run');
   check(await page.evaluate(()=>!!localStorage.getItem('pongy_preferences_pending:persist@example.test')),'failed preference write was removed from the outbox');
   await page.reload();await page.waitForFunction(()=>!document.getElementById('userInput').disabled);await settings(page,'main');check(!(await page.locator('#memoryToggle').isChecked()),'pending checkbox value was lost on reload');
-  await page.locator('#settings-tab-account').click();await page.locator('#logoutBtnSettings').click();await page.locator('#confirmYes').click();
+  await page.locator('#settings-tab-account').click();await page.locator('#logoutBtnSettings').click();
+  await page.evaluate(()=>{document.getElementById('footerText').textContent='Waiting for this logout save';});
+  const rejectedLogout=page.waitForResponse(r=>r.url().endsWith('/api/preferences')&&r.request().method()==='PUT'&&r.status()===503);
+  await page.locator('#confirmYes').click();await(await rejectedLogout).finished();
   await page.waitForFunction(()=>document.getElementById('footerText').textContent.includes('not been confirmed'));
   check(await page.locator('#authScreen').isHidden(),'failed settings save silently logged the user out');
-  await page.unroute('**/api/preferences');const replay=page.waitForResponse(r=>r.url().endsWith('/api/preferences')&&r.request().method()==='PUT');await page.evaluate(()=>window.dispatchEvent(new Event('online')));check((await replay).status()===200,'pending preferences were not retried');
+  denyPreferences=false;
+  // A late 503 belongs to the earlier failed attempt, not to this replay.
+  const replay=page.waitForResponse(r=>r.url().endsWith('/api/preferences')&&r.request().method()==='PUT'&&r.status()===200);
+  await page.evaluate(()=>window.dispatchEvent(new Event('online')));await replay;
+  await page.waitForFunction(()=>!localStorage.getItem('pongy_preferences_pending:persist@example.test'));
+  const acknowledged=JSON.parse(runtime.db.prepare('SELECT json FROM preferences WHERE user_id=?').get(uid).json);
+  check(acknowledged.memory===false,'pending preferences were not retried and saved by the server');
   await page.locator('#logoutBtnSettings').click();await page.locator('#confirmYes').click();await page.locator('#authBtn').waitFor();
   await page.locator('#authEmail').fill('other@example.test');await page.locator('#authPassword').fill('fixture-password');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.getElementById('userInput').disabled);
   await page.locator('#notificationsBtn').click();check(await page.locator('.notification-row').count()===0,'cached notifications leaked after switching accounts in the same browser');await settings(page,'interface');check(!(await page.locator('#betaFunctions').isChecked()),'cached beta checkbox leaked after switching accounts');
