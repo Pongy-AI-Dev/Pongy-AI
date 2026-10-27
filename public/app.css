@@ -1333,3 +1333,12 @@ html[data-motion=reduced] :is(#settings-panel-interface *,#sidebarPlus,.plus-act
 /* A native modal in the top layer, detached from scrolling/animated panels. */
 .admin-check-dialog{position:fixed;inset:50% auto auto 50%;translate:-50% -50%;margin:0;box-sizing:border-box;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 20px 70px #0004}
 .admin-check-dialog::backdrop{background:#080c1859;backdrop-filter:blur(4px)}
+
+/* A finished sheen animation used to return to an opaque stripe at rest. */
+#workspaceSwitch .workspace-slider::after{content:none!important;display:none!important;animation:none!important}
+#workspaceSwitch .workspace-slider{box-shadow:0 1px 3px #0000000a;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* Both Plus entry points keep the same restrained, accent-aware treatment. */
+body #sidebarPlus.plus-action,body #settings-panel-subscription .plus-action,body.dark #sidebarPlus.plus-action,body.dark #settings-panel-subscription .plus-action{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 25%,var(--bg)),color-mix(in srgb,var(--accent) 12%,var(--bg)) 58%,color-mix(in srgb,var(--accent) 20%,var(--bg)))!important;border-color:color-mix(in srgb,var(--accent) 42%,var(--bg))!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bg) 65%,transparent),0 3px 10px color-mix(in srgb,var(--accent) 9%,transparent)!important;color:var(--fg)!important}
+body #sidebarPlus.plus-action::before,body #settings-panel-subscription .plus-action::before{color:var(--accent-h)}
+body #sidebarPlus.plus-action:hover,body #settings-panel-subscription .plus-action:hover{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 32%,var(--bg)),color-mix(in srgb,var(--accent) 17%,var(--bg)) 58%,color-mix(in srgb,var(--accent) 26%,var(--bg)))!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bg) 65%,transparent),0 4px 12px color-mix(in srgb,var(--accent) 12%,transparent)!important}
+body #sidebarPlus.plus-action:focus-visible,body #settings-panel-subscription .plus-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
