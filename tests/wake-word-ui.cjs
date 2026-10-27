@@ -33,7 +33,7 @@ const VOSK_STUB=`(function(){
  let count=0;const check=(value,message)=>{if(!value)throw Error(message);count++};
  try{
   await page.route('**/vendor/vosk/api.js',route=>route.fulfill({contentType:'text/javascript',body:VOSK_STUB}));
-  await page.addInitScript(()=>{window.SpeechRecognition=class{start(){window.__browserSpeechStarts=(window.__browserSpeechStarts||0)+1;setTimeout(()=>this.onerror?.({error:'network'}),0)}abort(){}};window.webkitSpeechRecognition=undefined;});
+  await page.addInitScript(()=>{window.__wakeMicRequests=[];const get=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);navigator.mediaDevices.getUserMedia=constraints=>{window.__wakeMicRequests.push(constraints);return get(constraints)};window.SpeechRecognition=class{start(){window.__browserSpeechStarts=(window.__browserSpeechStarts||0)+1;setTimeout(()=>this.onerror?.({error:'network'}),0)}abort(){}};window.webkitSpeechRecognition=undefined;});
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.locator('#authEmail').fill('wake@example.test');await page.locator('#authPassword').fill('fixture-password');await page.locator('#authBtn').click();await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
   await page.locator('#settingsBtn').click();await page.locator('#settingsModal.open').waitFor();
@@ -42,8 +42,8 @@ const VOSK_STUB=`(function(){
   check(!(await page.locator('#wakeWordToggle').isChecked()),'wake word enabled by default');
   await page.locator('#wakeWordToggle').click();
   await page.waitForFunction(()=>window.PongyWakeWord.status()==='listening'&&/^(Позовите Pongy|Call Pongy)$/.test(document.getElementById('wakeWordHint').textContent),null,{timeout:20000});
-  check(true,'wake listener did not reach the listening state');check(await page.evaluate(()=>window.__wakeGrammar===null),'wake recognizer forces ordinary speech into a wake phrase');
-  await page.locator('#closeSettings').click();await page.waitForTimeout(350);
+  check(true,'wake listener did not reach the listening state');check(await page.evaluate(()=>window.__wakeMicRequests[0]?.audio?.channelCount?.ideal===1&&window.__wakeMicRequests[0].audio.noiseSuppression===true),'initial microphone request lost its audio constraints');check(await page.evaluate(()=>{const d=PongyWakeWord.diagnostics();return d.listening&&d.microphoneLive&&d.audioState==='running'}),'listening status has no live audio pipeline');check(await page.evaluate(()=>window.__wakeGrammar===null),'wake recognizer forces ordinary speech into a wake phrase');
+  await page.locator('#langGrid button').filter({hasText:'Русский'}).click();await page.waitForFunction(()=>PongyWakeWord.diagnostics().language==='ru'&&PongyWakeWord.diagnostics().listening);check(true,'wake recognizer did not rearm in Russian');await page.locator('#langGrid button').filter({hasText:'English'}).click();await page.waitForFunction(()=>PongyWakeWord.diagnostics().language==='en'&&PongyWakeWord.diagnostics().listening);check(true,'wake recognizer did not rearm in English');await page.locator('#closeSettings').click();await page.waitForTimeout(350);
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000});
   // Visible-tab trigger: the wake word starts voice input immediately.
   await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'эй понги'}}));
@@ -80,7 +80,7 @@ const VOSK_STUB=`(function(){
   await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
   await page.waitForTimeout(10500);
   check(!(await page.locator('#micBtn').evaluate(el=>el.classList.contains('recording'))),'wake command capture did not stop after silence');
-  check(await page.evaluate(()=>window.__browserSpeechStarts>0),'browser-to-offline fallback not exercised');check(errors.length===0,'browser errors: '+errors.join('; '));
+  check(await page.evaluate(()=>window.__browserSpeechStarts>0),'browser-to-offline fallback not exercised');await page.evaluate(()=>{const t=document.getElementById('wakeWordToggle');t.checked=false;t.dispatchEvent(new Event('change'))});check(await page.evaluate(()=>{const d=PongyWakeWord.diagnostics();return !d.enabled&&!d.listening&&!d.microphoneLive&&d.audioState==='closed'}),'disabled wake listener retained microphone/audio');check(errors.length===0,'browser errors: '+errors.join('; '));
   console.log('Wake word trigger, guard words and tab raise assertions passed:',count);
  }catch(error){console.error('WAKE DEBUG',await page.evaluate(()=>({input:document.getElementById('userInput').value,hint:document.getElementById('wakeWordHint').textContent,status:document.getElementById('voiceStatus').textContent,help:document.getElementById('voiceHelpText').textContent,toast:document.getElementById('toast').textContent,visibility:document.visibilityState,mic:document.getElementById('micBtn').className,serial:window.__pongyFakeRecognizerSerial})));try{fs.mkdirSync('tests/artifacts',{recursive:true});await page.screenshot({path:'tests/artifacts/wake-word-failure.png'})}catch(captureError){console.error('Failure screenshot unavailable:',captureError.message)}throw error}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
 })().catch(error=>{console.error(error);process.exitCode=1});
