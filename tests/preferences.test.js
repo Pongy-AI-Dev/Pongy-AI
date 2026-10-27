@@ -10,3 +10,22 @@ test('partial preference updates preserve notification opt-in until explicit opt
 });
 test('notification preference ordering metadata survives IndexedDB and backup normalization',()=>{const context={Blob,URL,Date,Math,Number,JSON,Object,Error,Set,Promise,setTimeout,clearTimeout};vm.runInNewContext(fs.readFileSync('public/local-history.js','utf8'),context);const value=context.PongyHistory.preferences({notifications:true,notificationsUpdatedAt:1234,updated_at:4567});assert.equal(value.notifications,true);assert.equal(value.notificationsUpdatedAt,1234);assert.equal(value.updated_at,4567);assert.equal(context.PongyHistory.preferences({notificationsUpdatedAt:-1}).notificationsUpdatedAt,0);});
 test('voice gender preference is normalized and preserved by local backup storage',()=>{const context={Blob,URL,Date,Math,Number,JSON,Object,Error,Set,Promise,setTimeout,clearTimeout};vm.runInNewContext(fs.readFileSync('public/local-history.js','utf8'),context);assert.equal(context.PongyHistory.preferences({voiceGender:'female'}).voiceGender,'female');assert.equal(context.PongyHistory.preferences({voiceGender:'invalid'}).voiceGender,'male');const restored=context.PongyHistory.parseBackup({format:'pongy-local-history',version:1,account:'prefs@example.test',chats:[],settings:{voiceGender:'female'}},'prefs@example.test');assert.equal(restored.settings.voiceGender,'female');});
+
+test('motion and checkbox preferences survive partial updates, a new session and server restart',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-prefs-restart-')),config=loadConfig({DATA_DIR:dir,JWT_SECRET:'restart-jwt-'.repeat(4),SESSION_SECRET:'restart-session-'.repeat(4)},dir);
+ let runtime=createApp({config}),server;const start=async()=>{server=await new Promise(r=>{const s=runtime.app.listen(0,'127.0.0.1',()=>r(s))});return 'http://127.0.0.1:'+server.address().port;};let base=await start(),cookie='';
+ const call=(url,method='GET',body)=>fetch(base+url,{method,headers:{Origin:base,Cookie:cookie,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
+ const login=async()=>{const r=await call('/api/login','POST',{email:'restart@example.test',password:'fixture-password'});assert.equal(r.status,200);cookie=r.headers.getSetCookie()[0].split(';')[0];};
+ try{
+  const id=runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('restart@example.test',bcrypt.hashSync('fixture-password',4)).lastInsertRowid;await login();
+  assert.equal((await call('/api/preferences','PUT',{motion:'reduced',memory:true,betaFunctions:true,notifications:true,voiceGender:'female'})).status,200);
+  const before=await(await call('/api/preferences')).json();assert.equal(before.motion,'reduced');
+  await call('/api/preferences','PUT',{nickname:'Kept'});await call('/api/preferences','PUT',{motion:'invalid'});
+  let prefs=await(await call('/api/preferences')).json();assert.equal(prefs.motion,'reduced');for(const name of ['memory','betaFunctions','notifications'])assert.equal(prefs[name],true);assert.equal(prefs.voiceGender,'female');
+  runtime.reminders.enqueueNotification(id,'ready','en','restart-notice',false);const notificationId=runtime.reminders.notifications(id)[0].id;await call('/api/notifications/read','POST',{ids:[notificationId]});const readAt=(await(await call('/api/notifications')).json()).notifications[0].readAt;assert(readAt>0);
+  server.closeAllConnections();await new Promise(r=>server.close(r));runtime.close();runtime=createApp({config});base=await start();cookie='';await login();
+  prefs=await(await call('/api/preferences')).json();assert.equal(prefs.motion,'reduced');assert.equal(prefs.memory,true);assert.equal(prefs.betaFunctions,true);assert.equal(prefs.notifications,true);assert.equal(prefs.voiceGender,'female');
+  const notes=(await(await call('/api/notifications')).json()).notifications;assert.equal(notes.length,1);assert.equal(notes[0].id,notificationId);assert.equal(notes[0].readAt,readAt);
+  await call('/api/preferences','PUT',{memory:false,betaFunctions:false,notifications:false,motion:'full'});prefs=await(await call('/api/preferences')).json();for(const name of ['memory','betaFunctions','notifications'])assert.equal(prefs[name],false);assert.equal(prefs.motion,'full');
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
+});
