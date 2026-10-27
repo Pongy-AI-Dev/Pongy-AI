@@ -157,7 +157,7 @@ const path=require('node:path');
     await page.waitForFunction(()=>document.querySelector('#adminBlacklist').textContent.includes('blocked@example.test'));
     await page.locator('#adminBlacklist').evaluate(n=>n.closest('details').open=true);
     await page.locator('#adminBlacklist button').click();
-    await page.waitForFunction(()=>document.querySelector('#adminBlacklist').textContent==='');
+    await page.waitForFunction(()=>document.querySelectorAll('#adminBlacklist .admin-block-row').length===0&&!document.getElementById('adminBlockButton').disabled);
     check(true,'blacklist editing failed');
 
     await page.locator('#settings-tab-interface').click();
