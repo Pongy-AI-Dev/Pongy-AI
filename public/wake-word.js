@@ -5,6 +5,7 @@
    the browser speech service, with an offline fallback. */
 (function(root){'use strict';var ctx=null,listening=false,starting=false,recognizer=null,stream=null,audCtx=null,source=null,node=null,mute=null,seq=0,refractory=0,restartTimer=0,watchTimer=0,failures=0,pendingFocus=false,pendingAt=0,titleTimer=0,titleOriginal='',lastStatus='',activeLanguage='',lastHeard='',candidate=null,lastLoudAt=0,learning=null;
 var $=function(id){return document.getElementById(id)},tr=function(ru,en){return ctx&&ctx.lang&&ctx.lang()==='ru'?ru:en};
+var acoustic=root.PongyWakeAcoustic?.create({onWake:function(){if(!listening||!enabled()||learning||Date.now()<refractory||ctx?.voiceActive?.())return;refractory=Date.now()+6000;trigger('');}});
 var permissionBlocked=false;var WAKE_KEY='pongy_wake_word';
 function enabled(){try{return root.localStorage.getItem(WAKE_KEY)==='on'}catch(e){return false}}
 function setEnabled(value){try{if(value)root.localStorage.setItem(WAKE_KEY,'on');else root.localStorage.removeItem(WAKE_KEY)}catch(e){}}
@@ -36,7 +37,7 @@ function hasWake(text){return !!wakeMatch(text);}
 // rejected after ordinary recorded Russian speech produced false wake phrases.
 // Do not force unknown audio into a product name absent from the vocabulary.
 function status(state){lastStatus=state;var el=$('wakeWordHint');if(!el)return;var map={model:tr('Загружаю офлайн-модель распознавания…','Loading the offline recognition model…'),denied:tr('Нет доступа к микрофону — разрешите его, чтобы активация голосом работала.','Microphone access is blocked — allow it so voice activation can hear you.'),error:tr('Активация голосом остановлена из-за ошибки. Включите переключатель снова.','Voice activation stopped after an error. Toggle it back on to retry.'),waiting:tr('Жду разрешения на запуск звука — коснитесь экрана, и слушание включится.','Waiting for the browser to allow audio — tap the page and listening starts.'),listening:tr('Позовите Pongy','Call Pongy'),triggered:tr('Активация голосом: «Pongy» распознан.','Voice activation: “Pongy” detected.')};el.textContent=enabled()?(map[state]||''):'';}
-function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(learning&&at<learning.until){learning.heard=lastHeard;return;}if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(match.ambiguous&&!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
+function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(acoustic?.info().learning)return;if(learning&&at<learning.until){learning.heard=lastHeard;return;}if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(match.ambiguous&&!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
 // Some engines hold a short brand-name approximation in partial results without
 // emitting an endpoint. Confirm it only after stable text AND actual mic silence.
 function checkSilence(buffer){try{var samples=buffer.getChannelData(0),sum=0;for(var i=0;i<samples.length;i++)sum+=samples[i]*samples[i];var at=Date.now();if(Math.sqrt(sum/Math.max(1,samples.length))>.012)lastLoudAt=at;if(candidate&&at-candidate.at>=1200&&at-lastLoudAt>=800)handleText(candidate.text,true);}catch(e){}}
@@ -52,11 +53,11 @@ function trigger(seed){
  pendingFocus=true;pendingAt=Date.now();flashTitle();chime();announce();
 }
 function langCode(){return ctx&&ctx.lang&&String(ctx.lang()).toLowerCase().indexOf('ru')===0?'ru':'en'}
-function teardown(keepAudio){++seq;candidate=null;activeLanguage='';clearTimeout(restartTimer);if(node)node.onaudioprocess=null;[source,node,mute].forEach(function(n){try{n&&n.disconnect()}catch(e){}});try{recognizer&&recognizer.remove&&recognizer.remove()}catch(e){}recognizer=null;try{stream&&stream.getTracks().forEach(function(t){t.stop()})}catch(e){}stream=null;source=node=mute=null;if(audCtx&&!keepAudio){try{audCtx.close().catch(function(){})}catch(e){}audCtx=null;}listening=false;starting=false;}
+function teardown(keepAudio){++seq;acoustic?.reset();candidate=null;activeLanguage='';clearTimeout(restartTimer);if(node)node.onaudioprocess=null;[source,node,mute].forEach(function(n){try{n&&n.disconnect()}catch(e){}});try{recognizer&&recognizer.remove&&recognizer.remove()}catch(e){}recognizer=null;try{stream&&stream.getTracks().forEach(function(t){t.stop()})}catch(e){}stream=null;source=node=mute=null;if(audCtx&&!keepAudio){try{audCtx.close().catch(function(){})}catch(e){}audCtx=null;}listening=false;starting=false;}
 var WAKE_AUDIO={audio:{channelCount:{ideal:1},echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false};
 // Autoplay policies keep an AudioContext suspended until a user gesture; the watcher
 // keeps retrying, and the first tap/key resumes it immediately.
-function gestureResume(){if(!enabled()||permissionBlocked||ctx?.voiceActive?.())return;try{prepareAudio();}catch(e){return;}if(!listening&&!starting)ensure();}
+function gestureResume(event){if(!enabled()||permissionBlocked||ctx?.voiceActive?.())return;try{prepareAudio();}catch(e){return;}if(!listening&&!starting&&(!event||!['pointerdown','touchstart'].includes(event.type)))ensure();}
 function begin(model){
  var id=++seq;
  starting=true;
@@ -67,13 +68,13 @@ function begin(model){
   var resumeTimer;return Promise.race([Promise.resolve(audCtx.resume()),new Promise(function(resolve,reject){resumeTimer=setTimeout(function(){reject(Error('audio-capture'))},2500)})]).catch(function(error){throw Object.assign(Error('audio-capture'),{cause:error});}).finally(function(){clearTimeout(resumeTimer)}).then(function(){
    if(id!==seq||!enabled())return;
    if(!audCtx||audCtx.state!=='running'){starting=false;teardown(true);status('waiting');scheduleRestart();return;}
-   var rec=new model.KaldiRecognizer(audCtx.sampleRate);recognizer=rec;
-   rec.on('partialresult',function(message){if(id===seq)handleText(message.result?.partial||'')});
-   rec.on('result',function(message){if(id===seq)handleText(message.result?.text||'',true)});
-   rec.on('error',function(){if(id!==seq)return;failures++;teardown();status('error');scheduleRestart();});
+   var rec=model?new model.KaldiRecognizer(audCtx.sampleRate):null;recognizer=rec;
+   if(rec)rec.on('partialresult',function(message){if(id===seq)handleText(message.result?.partial||'')});
+   if(rec)rec.on('result',function(message){if(id===seq)handleText(message.result?.text||'',true)});
+   if(rec)rec.on('error',function(){if(id!==seq)return;failures++;teardown();status('error');scheduleRestart();});
    var src=audCtx.createMediaStreamSource(stream),proc=audCtx.createScriptProcessor(2048,1,1),quiet=audCtx.createGain();quiet.gain.value=0;
    src.connect(proc);proc.connect(quiet);quiet.connect(audCtx.destination);source=src;node=proc;mute=quiet;
-   proc.onaudioprocess=function(event){if(id!==seq||!listening)return;try{checkSilence(event.inputBuffer);if(id===seq&&listening)rec.acceptWaveform(event.inputBuffer)}catch(e){failures++;teardown();status('error');scheduleRestart();}};
+   proc.onaudioprocess=function(event){if(id!==seq||!listening)return;try{acoustic?.push(event.inputBuffer.getChannelData(0),audCtx.sampleRate);checkSilence(event.inputBuffer);if(id===seq&&listening&&rec)rec.acceptWaveform(event.inputBuffer)}catch(e){failures++;teardown();status('error');scheduleRestart();}};
    listening=true;starting=false;activeLanguage=langCode();lastLoudAt=Date.now();failures=0;status('listening');stream.getAudioTracks().forEach(function(track){track.addEventListener('ended',function(){if(id!==seq)return;teardown(true);status('error');scheduleRestart();},{once:true});});
   });
  }).catch(function(error){
@@ -84,12 +85,13 @@ function begin(model){
 }
 // Reuse an unlocked, microphone-free context between wake commands. Explicit
 // disable/pagehide still closes it; recreating it after every command loses the gesture.
-function stop(keepAudio){if(keepAudio!==true)learning=null;if(listening||starting||audCtx||stream)teardown(keepAudio===true);}
+function stop(keepAudio){if(keepAudio!==true){learning=null;acoustic?.cancel();}if(listening||starting||audCtx||stream)teardown(keepAudio===true);}
 function ensure(){
  clearTimeout(restartTimer);
  if(!enabled()||permissionBlocked||listening||starting)return;
  if(ctx&&ctx.voiceActive&&ctx.voiceActive())return;
  if(ctx&&ctx.ready&&!ctx.ready())return;
+ if(acoustic&&(acoustic.info().enrolled||acoustic.info().learning)){begin(null);return;}
  var language=langCode(),model=root.PongyOfflineSpeech?.model&&root.PongyOfflineSpeech.model(language);
  if(!model){status('model');root.PongyOfflineSpeech?.preload?.(language).then(function(ok){if(ok)ensure();else status('error')});return;}
  begin(model);
@@ -123,9 +125,9 @@ function init(options){
    else{setEnabled(false);stop();ctx?.cancelWake?.();pendingFocus=false;pendingCommand='';status('');}
   });
  }
- ['pointerdown','keydown','touchstart'].forEach(function(type){document.addEventListener(type,gestureResume,{capture:true,passive:true});});document.addEventListener('visibilitychange',onVisible);
+ ['pointerdown','keydown','touchstart','click'].forEach(function(type){document.addEventListener(type,gestureResume,{capture:true,passive:true});});document.addEventListener('visibilitychange',onVisible);
  root.addEventListener('pagehide',function(){stop();});
  watch();
 }
-root.PongyWakeWord={init:init,startCalibration:startCalibration,calibration:calibration,saveCalibration:saveCalibration,resetCalibration:resetCalibration,cancelCalibration:function(){if(!learning)return;learning=null;candidate=null;if(listening){teardown(true);ensure();}},profile:profile,isWake:hasWake,match:wakeMatch,stop:stop,status:function(){return lastStatus},diagnostics:function(){return{enabled:enabled(),listening:listening,starting:starting,language:activeLanguage||langCode(),audioState:audCtx?.state||'closed',microphoneLive:!!stream?.getAudioTracks().some(function(t){return t.readyState==='live'}),lastHeard:lastHeard,permissionBlocked:permissionBlocked}}};
+root.PongyWakeWord={init:init,startAcousticCalibration:function(){if(!enabled()||permissionBlocked||ctx?.voiceActive?.()||!acoustic||ctx&&ctx.ready&&!ctx.ready())return false;learning=null;candidate=null;acoustic.start();try{prepareAudio();}catch(e){}if(!listening&&!starting)ensure();return true;},saveAcousticCalibration:function(){var saved=acoustic?.save()||false;if(saved&&listening){teardown(true);ensure();}return saved;},cancelAcousticCalibration:function(){var wasLearning=acoustic?.info().learning;acoustic?.cancel();if(wasLearning&&listening&&!recognizer&&!acoustic?.info().enrolled){teardown(true);ensure();}},resetAcousticCalibration:function(){acoustic?.clear();if(listening&&!recognizer){teardown(true);ensure();}},acousticStatus:function(){return acoustic?.info()||{enrolled:false,learning:false,count:0};},startCalibration:startCalibration,calibration:calibration,saveCalibration:saveCalibration,resetCalibration:resetCalibration,cancelCalibration:function(){if(!learning)return;learning=null;candidate=null;if(listening){teardown(true);ensure();}},profile:profile,isWake:hasWake,match:wakeMatch,stop:stop,status:function(){return lastStatus},diagnostics:function(){return{enabled:enabled(),listening:listening,starting:starting,language:activeLanguage||langCode(),audioState:audCtx?.state||'closed',microphoneLive:!!stream?.getAudioTracks().some(function(t){return t.readyState==='live'}),lastHeard:lastHeard,acoustic:acoustic?.info(),permissionBlocked:permissionBlocked}}};
 })(window);

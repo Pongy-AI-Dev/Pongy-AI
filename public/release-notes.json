@@ -1,21 +1,15 @@
 {
-  "version": "0.24.0",
+  "version": "0.24.1",
   "ru": [
-    "Add Connections в меню «+»: GitHub, Google Drive, Gmail, Google Calendar и Slack. Только чтение по явному запросу; OAuth требует настройки владельцем сервера, GitHub также поддерживает fine-grained token.",
-    "Ключи подключений проверяются сервисом и шифруются на сервере. Окно подключений по центру, отдельное отключение каждого сервиса.",
-    "Настройка зова Pongy под фактически распознанное произношение: локальный профиль для выбранного языка, без загрузки аудио на сервер.",
-    "Уточнена работа с фото и публичными каталогами товаров; чтение карточек из JSON-LD. Закрытые и заблокированные каталоги не обходятся.",
-    "Понимание фонетического английского и контекстных мемов; новые неизвестные мемы требуют актуальных источников, полного знания всех мемов не заявляется.",
-    "Создатель — российская компания Pongy AI Dev, главный разработчик — Иван Сергеев, год выпуска — 2026.",
-    "Регрессии безопасности подключений и настоящий акустический тест Vosk на синтетическом «Эй, Понги». Нативные установщики требуют отдельной сборки."
+    "Кнопка прокрутки к последнему сообщению расположена по центру области чата, включая мобильный режим.",
+    "Размышления оформлены как журнал реальных действий: отдельные карточки, иконки, статусы, план, результаты проверок и файлы. Начало и результат операции объединены, порядок событий сохранён.",
+    "Новый персональный звуковой образец зова: три повтора и пауза. Не зависит от расшифровки имени и после сохранения не требует загрузки словаря. Числовые признаки хранятся только в этом браузере.",
+    "Проверен путь настоящего PCM через MediaStream и обработчик микрофона до включения команды. Точность для живого голоса и шумного окружения требует проверки пользователем. Нативные установщики не пересобраны."
   ],
   "en": [
-    "Add Connections in the composer + menu: GitHub, Google Drive, Gmail, Google Calendar and Slack. Read-only access on explicit request; OAuth requires owner setup, GitHub also supports fine-grained tokens.",
-    "Service-verified connection keys encrypted on the server. Centered connection manager with per-service disconnect.",
-    "Personal wake enrollment using the actual recognized pronunciation. Per-language local profile; no server audio upload.",
-    "Better photo guidance and public marketplace product JSON-LD reading. No bypass of private or blocked catalogues.",
-    "Phonetic English and contextual meme cues. Unfamiliar current memes require current sources, not a claim of universal meme knowledge.",
-    "Creator: Russian company Pongy AI Dev. Lead developer: Ivan Sergeev. First release: 2026.",
-    "Connection security regressions and real Vosk decoding of a synthetic “Hey, Pongy” fixture. Native installers require a separate build."
+    "The latest-message button is centered in the chat area, including mobile layout.",
+    "Public activity now uses separate cards, left-side icons, explicit statuses, plans, actual checks and files. Start/result events are paired and received event order is preserved.",
+    "New personal acoustic wake template: repeat the same call three times with pauses. No name transcript or vocabulary download is needed after saving; numerical features stay in this browser.",
+    "Actual PCM was tested through MediaStream and the microphone processor to command capture. Live-voice and noisy-environment accuracy still require user testing. Native installers were not rebuilt."
   ]
 }
