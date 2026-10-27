@@ -1315,3 +1315,8 @@ html[data-motion=reduced] :is(#settings-panel-interface *,#sidebarPlus,.plus-act
 #settings-panel-interface .opt.active{color:var(--accent-h)}
 .admin-control-status{color:var(--accent-h)}
 .admin-control-status[data-error=true]{color:#b4232c}body.dark .admin-control-status[data-error=true]{color:#ff8c8c}
+
+/* 0.23.1 CI hotfix: explicit top-layer centering works for intrinsic-height
+   dialogs in WebKit as well as Chromium/Firefox. Individual translate leaves
+   entry/exit transform animations independent of viewport positioning. */
+.release-dialog{inset:50% auto auto 50%;margin:0;translate:-50% -50%;box-sizing:border-box;max-height:85dvh}
