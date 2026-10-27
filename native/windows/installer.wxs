@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
- <Product Id="*" Name="Pongy AI" Language="1033" Codepage="1251" Version="0.23.0" Manufacturer="Pongy AI Dev" UpgradeCode="A552734F-4A0F-4F6B-9D69-F1F46B56C0D3">
+ <Product Id="*" Name="Pongy AI" Language="1033" Codepage="1251" Version="0.23.1" Manufacturer="Pongy AI Dev" UpgradeCode="A552734F-4A0F-4F6B-9D69-F1F46B56C0D3">
   <Package InstallerVersion="500" Compressed="yes" InstallScope="perUser" Manufacturer="Pongy AI Dev" Description="Pongy AI online application"/>
   <MajorUpgrade DowngradeErrorMessage="A newer version of Pongy AI is already installed."/>
   <Property Id="PONGYLANG" Value="en"/><Property Id="PONGYDESKTOP" Value="1"/><Binary Id="PongyBackground" SourceFile="installer-background.bmp"/>
@@ -11,7 +11,7 @@
   <Directory Id="TARGETDIR" Name="SourceDir">
    <Directory Id="LocalAppDataFolder"><Directory Id="INSTALLDIR" Name="Pongy AI">
     <Component Id="Application" Guid="1BC5F3E5-6405-4E68-B294-55E16C0A4B73" Win64="yes">
-     <File Id="Launcher" Source="build/PongyAI.exe"/><File Id="WebViewLoader" Source="build/WebView2Loader.dll"/><File Id="WebViewLicense" Source="WebView2-LICENSE.txt"/><File Id="WebViewNotice" Source="WebView2-NOTICE.txt"/><RemoveFolder Id="RemoveInstallFolder" On="uninstall"/><RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="InitialLanguage" Type="string" Value="[PONGYLANG]"/><RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="InstalledVersion" Type="string" Value="0.23.0" KeyPath="yes"/>
+     <File Id="Launcher" Source="build/PongyAI.exe"/><File Id="WebViewLoader" Source="build/WebView2Loader.dll"/><File Id="WebViewLicense" Source="WebView2-LICENSE.txt"/><File Id="WebViewNotice" Source="WebView2-NOTICE.txt"/><RemoveFolder Id="RemoveInstallFolder" On="uninstall"/><RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="InitialLanguage" Type="string" Value="[PONGYLANG]"/><RegistryValue Root="HKCU" Key="Software\Pongy AI Dev\Pongy AI" Name="InstalledVersion" Type="string" Value="0.23.1" KeyPath="yes"/>
     </Component>
    </Directory></Directory>
    <Directory Id="ProgramMenuFolder"><Directory Id="MenuFolder" Name="Pongy AI">
