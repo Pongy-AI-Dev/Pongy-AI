@@ -3,7 +3,7 @@
    trigger word is heard it signals the tab (native apps can raise their window)
    and starts voice input. Wake detection is local; command dictation may use
    the browser speech service, with an offline fallback. */
-(function(root){'use strict';var ctx=null,listening=false,starting=false,recognizer=null,stream=null,audCtx=null,source=null,node=null,mute=null,seq=0,refractory=0,restartTimer=0,watchTimer=0,failures=0,pendingFocus=false,pendingAt=0,titleTimer=0,titleOriginal='',lastStatus='',activeLanguage='',lastHeard='',candidate=null,lastLoudAt=0;
+(function(root){'use strict';var ctx=null,listening=false,starting=false,recognizer=null,stream=null,audCtx=null,source=null,node=null,mute=null,seq=0,refractory=0,restartTimer=0,watchTimer=0,failures=0,pendingFocus=false,pendingAt=0,titleTimer=0,titleOriginal='',lastStatus='',activeLanguage='',lastHeard='',candidate=null,lastLoudAt=0,learning=null;
 var $=function(id){return document.getElementById(id)},tr=function(ru,en){return ctx&&ctx.lang&&ctx.lang()==='ru'?ru:en};
 var permissionBlocked=false;var WAKE_KEY='pongy_wake_word';
 function enabled(){try{return root.localStorage.getItem(WAKE_KEY)==='on'}catch(e){return false}}
@@ -11,7 +11,15 @@ function setEnabled(value){try{if(value)root.localStorage.setItem(WAKE_KEY,'on')
 // Match a wake prefix, never a substring in an unrelated sentence. The Russian
 // model lacks a reliable pronunciation for the product name. Known phonetic
 // alternatives are accepted only alone or before an imperative command.
+function normalizePhrase(value){return String(value||'').toLowerCase().replace(/ё/g,'е').match(/[\p{L}]+/gu)||[];}
+function profile(){try{var all=JSON.parse(root.localStorage.getItem('pongy_wake_profile_v1')||'{}');return all[langCode()]||'';}catch(e){return '';}}
+function customWake(text){var saved=normalizePhrase(profile());if(saved.length<2||saved.length>5)return null;var raw=String(text||''),words=Array.from(raw.matchAll(/[\p{L}]+/gu));if(words.length<saved.length)return null;for(var i=0;i<saved.length;i++)if(normalizePhrase(words[i][0])[0]!==saved[i])return null;var end=words[saved.length-1];return {remainder:raw.slice(end.index+end[0].length).replace(/^[\s,.:!?…]+/,''),ambiguous:true,personalized:true};}
+function startCalibration(){if(!enabled()||!listening||ctx?.voiceActive?.())return false;candidate=null;lastHeard='';learning={until:Date.now()+15000,heard:'',language:langCode()};return true;}
+function calibration(){return {active:!!learning&&Date.now()<learning.until,heard:learning?.heard||'',language:learning?.language||langCode()};}
+function saveCalibration(value){if(learning&&learning.language!==langCode())return false;var words=normalizePhrase(value),ignored=['эй','привет','окей','hey','hello','okay','да','нет','пожалуйста','открой','найди','помоги','yes','no','please','open','help'];if(words.length<2||words.length>5||!['эй','привет','окей','hey','hello','okay'].includes(words[0])||words.slice(1).every(function(v){return ignored.includes(v)}))return false;try{var all=JSON.parse(root.localStorage.getItem('pongy_wake_profile_v1')||'{}');all[langCode()]=words.join(' ');root.localStorage.setItem('pongy_wake_profile_v1',JSON.stringify(all));learning=null;candidate=null;refractory=Date.now()+1500;if(listening){teardown(true);ensure();}return true;}catch(e){return false;}}
+function resetCalibration(){try{var all=JSON.parse(root.localStorage.getItem('pongy_wake_profile_v1')||'{}');delete all[langCode()];root.localStorage.setItem('pongy_wake_profile_v1',JSON.stringify(all));}catch(e){}learning=null;candidate=null;}
 function wakeMatch(text){
+ var custom=customWake(text);if(custom)return custom;
  var raw=String(text||'').trim().replace(/^[\s,.:!?…]+/,'').replace(/^(?:(?:эй|привет|слушай|hey|hello)[\s,.:!?…]+){1,2}/iu,'');
  var match=/^(понгиай|понгери|понджи|понги|понг|pongery|pongy|pongi|pong)(?=[\s,.:!?…]|$)/iu.exec(raw),ambiguous=false;
  if(!match){match=/^(он\s+ге|о\s+ге|онги|ольге)(?=[\s,.:!?…]|$)/iu.exec(raw);ambiguous=!!match;}
@@ -28,7 +36,7 @@ function hasWake(text){return !!wakeMatch(text);}
 // rejected after ordinary recorded Russian speech produced false wake phrases.
 // Do not force unknown audio into a product name absent from the vocabulary.
 function status(state){lastStatus=state;var el=$('wakeWordHint');if(!el)return;var map={model:tr('Загружаю офлайн-модель распознавания…','Loading the offline recognition model…'),denied:tr('Нет доступа к микрофону — разрешите его, чтобы активация голосом работала.','Microphone access is blocked — allow it so voice activation can hear you.'),error:tr('Активация голосом остановлена из-за ошибки. Включите переключатель снова.','Voice activation stopped after an error. Toggle it back on to retry.'),waiting:tr('Жду разрешения на запуск звука — коснитесь экрана, и слушание включится.','Waiting for the browser to allow audio — tap the page and listening starts.'),listening:tr('Позовите Pongy','Call Pongy'),triggered:tr('Активация голосом: «Pongy» распознан.','Voice activation: “Pongy” detected.')};el.textContent=enabled()?(map[state]||''):'';}
-function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(match.ambiguous&&!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
+function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(learning&&at<learning.until){learning.heard=lastHeard;return;}if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(match.ambiguous&&!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
 // Some engines hold a short brand-name approximation in partial results without
 // emitting an endpoint. Confirm it only after stable text AND actual mic silence.
 function checkSilence(buffer){try{var samples=buffer.getChannelData(0),sum=0;for(var i=0;i<samples.length;i++)sum+=samples[i]*samples[i];var at=Date.now();if(Math.sqrt(sum/Math.max(1,samples.length))>.012)lastLoudAt=at;if(candidate&&at-candidate.at>=1200&&at-lastLoudAt>=800)handleText(candidate.text,true);}catch(e){}}
@@ -76,7 +84,7 @@ function begin(model){
 }
 // Reuse an unlocked, microphone-free context between wake commands. Explicit
 // disable/pagehide still closes it; recreating it after every command loses the gesture.
-function stop(keepAudio){if(listening||starting||audCtx||stream)teardown(keepAudio===true);}
+function stop(keepAudio){if(keepAudio!==true)learning=null;if(listening||starting||audCtx||stream)teardown(keepAudio===true);}
 function ensure(){
  clearTimeout(restartTimer);
  if(!enabled()||permissionBlocked||listening||starting)return;
@@ -96,7 +104,7 @@ function watch(){
  clearInterval(watchTimer);
  watchTimer=setInterval(function(){
   if(!enabled()||(ctx&&ctx.ready&&!ctx.ready())){if(listening||starting||audCtx||stream)stop();pendingFocus=false;pendingCommand='';ctx?.cancelWake?.();return;}
-  if(listening&&audCtx&&audCtx.state!=='running'){try{prepareAudio();}catch(e){}if(audCtx.state!=='running'){teardown(true);status('waiting');scheduleRestart();}return;}
+  if(listening&&audCtx&&audCtx.state!=='running'){if(audCtx.state==='closed'){teardown();status('waiting');scheduleRestart();return;}try{prepareAudio();}catch(e){}if(audCtx.state!=='running'){teardown(true);status('waiting');scheduleRestart();}return;}
   if(listening&&activeLanguage!==langCode()){teardown(true);ensure();return;}var busy=ctx&&ctx.voiceActive&&ctx.voiceActive();if(pendingFocus&&Date.now()-pendingAt>=10000){pendingFocus=false;pendingCommand='';}
   if(busy&&listening)stop(true);
   else if(!busy&&!listening&&!starting)ensure();
@@ -119,5 +127,5 @@ function init(options){
  root.addEventListener('pagehide',function(){stop();});
  watch();
 }
-root.PongyWakeWord={init:init,isWake:hasWake,match:wakeMatch,stop:stop,status:function(){return lastStatus},diagnostics:function(){return{enabled:enabled(),listening:listening,starting:starting,language:activeLanguage||langCode(),audioState:audCtx?.state||'closed',microphoneLive:!!stream?.getAudioTracks().some(function(t){return t.readyState==='live'}),lastHeard:lastHeard,permissionBlocked:permissionBlocked}}};
+root.PongyWakeWord={init:init,startCalibration:startCalibration,calibration:calibration,saveCalibration:saveCalibration,resetCalibration:resetCalibration,cancelCalibration:function(){if(!learning)return;learning=null;candidate=null;if(listening){teardown(true);ensure();}},profile:profile,isWake:hasWake,match:wakeMatch,stop:stop,status:function(){return lastStatus},diagnostics:function(){return{enabled:enabled(),listening:listening,starting:starting,language:activeLanguage||langCode(),audioState:audCtx?.state||'closed',microphoneLive:!!stream?.getAudioTracks().some(function(t){return t.readyState==='live'}),lastHeard:lastHeard,permissionBlocked:permissionBlocked}}};
 })(window);

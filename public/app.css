@@ -494,7 +494,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.23.1"}
+:root{--pongy-build:"0.24.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -1155,12 +1155,12 @@ html[data-motion=reduced] #sidebar .sb-row .sb-btn,html[data-motion=reduced] #si
 html[data-motion=reduced] #sidebar .sb-row .sb-btn:active{transform:none}
 @media(prefers-reduced-motion:reduce){#sidebar .sb-row .sb-btn,#sidebar .sb-row .sb-btn::after{transition:none!important}#sidebar .sb-row .sb-btn:active{transform:none}}
 
-/* --- 0.23.1: top-bar icons share one optical size --- */
+/* --- 0.24.0: top-bar icons share one optical size --- */
 #topbar .tb-actions :is(.icon-btn,.tb-btn) svg{width:18px;height:18px}
 
-/* --- 0.23.1: toast is a fixed-width block; the close cross lives on its right edge --- */
+/* --- 0.24.0: toast is a fixed-width block; the close cross lives on its right edge --- */
 
-/* --- 0.23.1: "История" card with the standard chevron instead of the OS marker --- */
+/* --- 0.24.0: "История" card with the standard chevron instead of the OS marker --- */
 .local-history-card{margin-top:16px;padding:2px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
 .local-history-card summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;min-height:46px;line-height:1.35;padding:0 2px;border-radius:8px;user-select:none}
 .local-history-card summary::-webkit-details-marker{display:none}
@@ -1170,10 +1170,10 @@ html[data-motion=reduced] #sidebar .sb-row .sb-btn:active{transform:none}
 html[data-motion=reduced] .local-history-card summary::after{transition:none}
 @media(prefers-reduced-motion:reduce){.local-history-card summary::after{transition:none}}
 
-/* --- 0.23.1: notes empty state --- */
+/* --- 0.24.0: notes empty state --- */
 .note-empty{padding:72px 28px;text-align:center;font-size:17px;line-height:1.65;font-weight:500;color:var(--fg2)}
 
-/* --- 0.23.1: "Умный редактор" — AI strip under the editing tools --- */
+/* --- 0.24.0: "Умный редактор" — AI strip under the editing tools --- */
 #smartEditor{border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg2) 55%,transparent)}
 #smartEditorBar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:5px 8px 5px 14px}
 #smartEditorTitle{font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--fg)}
@@ -1188,7 +1188,7 @@ html[data-motion=reduced] .local-history-card summary::after{transition:none}
 html[data-motion=reduced] #smartEditorToggle svg{transition:none}
 @media(prefers-reduced-motion:reduce){#smartEditorToggle svg{transition:none}}
 
-/* --- 0.23.1: smoother workspace crossfade (fixes the 360ms cut-off) --- */
+/* --- 0.24.0: smoother workspace crossfade (fixes the 360ms cut-off) --- */
 body.workspace-changing.notes-active #notesEditor{animation:workspace-in-right .42s cubic-bezier(.25,.75,.2,1) both}
 body.workspace-changing:not(.notes-active) #chatViewport{animation:workspace-in-left .42s cubic-bezier(.25,.75,.2,1) both}
 
@@ -1241,7 +1241,7 @@ body{background:
  html[data-render-budget=compact] #smartEditor,html[data-render-budget=compact] #noteToolbar{background:var(--bg2)}
 }
 
-/* 0.23.1 — unified spacing, accent palettes and soft, liquid motion. */
+/* 0.24.0 — unified spacing, accent palettes and soft, liquid motion. */
 html[data-accent=yellow] body{--accent:#8a6200;--accent-h:#735100;--accent-rgb:138,98,0}
 html[data-accent=red] body{--accent:#bc383e;--accent-h:#9e2830;--accent-rgb:188,56,62}
 html[data-accent=green] body{--accent:#23794f;--accent-h:#1a613d;--accent-rgb:35,121,79}
@@ -1262,7 +1262,7 @@ details>summary{list-style:none;position:relative;cursor:pointer;padding-right:3
 html[data-motion=reduced] :is(.liquid-indicator,.workspace-slider,.settings-tab-indicator,details>summary::after,.colour-choice i){transition:none!important}html[data-motion=reduced] :is(.release-dialog,.settings-section,input[type=checkbox]::before){animation:none!important}
 @media(max-width:500px){.colour-palette{gap:8px}.release-dialog{padding:20px}#changelogBtn{min-width:36px}#topbar .tb-actions{gap:2px}}
 
-/* 0.23.1 — quiet chrome, shared accent actions and a consistent settings rhythm. */
+/* 0.24.0 — quiet chrome, shared accent actions and a consistent settings rhythm. */
 #sidebar,body.dark #sidebar,html[data-render-budget=compact] #sidebar{background:var(--bg);border-right:0;backdrop-filter:none;-webkit-backdrop-filter:none}
 #sidebar :is(.sb-head,.sb-bottom,.sb-search){border:0}
 #sidebar .sb-bottom{padding-top:12px}
@@ -1316,7 +1316,7 @@ html[data-motion=reduced] :is(#settings-panel-interface *,#sidebarPlus,.plus-act
 .admin-control-status{color:var(--accent-h)}
 .admin-control-status[data-error=true]{color:#b4232c}body.dark .admin-control-status[data-error=true]{color:#ff8c8c}
 
-/* 0.23.1 CI hotfix: explicit top-layer centering works for intrinsic-height
+/* 0.24.0 CI hotfix: explicit top-layer centering works for intrinsic-height
    dialogs in WebKit as well as Chromium/Firefox. Individual translate leaves
    entry/exit transform animations independent of viewport positioning. */
 .release-dialog{inset:50% auto auto 50%;margin:0;translate:-50% -50%;box-sizing:border-box;max-height:85dvh}
@@ -1342,3 +1342,19 @@ body #sidebarPlus.plus-action,body #settings-panel-subscription .plus-action,bod
 body #sidebarPlus.plus-action::before,body #settings-panel-subscription .plus-action::before{color:var(--accent-h)}
 body #sidebarPlus.plus-action:hover,body #settings-panel-subscription .plus-action:hover{background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 32%,var(--bg)),color-mix(in srgb,var(--accent) 17%,var(--bg)) 58%,color-mix(in srgb,var(--accent) 26%,var(--bg)))!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bg) 65%,transparent),0 4px 12px color-mix(in srgb,var(--accent) 12%,transparent)!important}
 body #sidebarPlus.plus-action:focus-visible,body #settings-panel-subscription .plus-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* Private service connections: one top-layer sheet, bounded on phones. */
+#composerMenu #addConnections{border-top:1px solid var(--border);margin-top:4px;padding-top:12px}
+#addConnections i{display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid currentColor;border-radius:6px}
+#addConnections i::after{content:'+';font-style:normal;font-size:16px;line-height:1}
+.connections-dialog{position:fixed;inset:50% auto auto 50%;translate:-50% -50%;margin:0;box-sizing:border-box;width:min(540px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--border);border-radius:22px;padding:24px;background:var(--bg);color:var(--fg);box-shadow:0 18px 70px #0003;font:16px/1.5 Arial,sans-serif}
+.connections-dialog::backdrop{background:#10152566;backdrop-filter:blur(5px)}
+.connections-dialog header{display:flex;justify-content:space-between;align-items:center;gap:16px}.connections-dialog header .icon-btn{width:44px;height:44px;flex:0 0 44px;color:var(--fg2)}
+.connection-eyebrow{font-size:11px;letter-spacing:.15em;color:var(--accent-h);font-weight:700}.connections-dialog h2{font-size:26px;letter-spacing:-.7px;line-height:1.25;margin:4px 0 0}.connections-dialog p{font-size:14px;line-height:1.6;color:var(--fg2);margin:14px 0}.connections-dialog h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg2);margin:24px 0 6px}.connections-dialog footer{font-size:12px;line-height:1.65;color:var(--fg2);border-top:1px solid var(--border);padding-top:16px;margin-top:20px}
+.connection-row{display:flex;align-items:center;gap:14px;min-height:74px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--border) 65%,transparent)}.connection-row:last-child{border-bottom:0}.connection-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:color-mix(in srgb,var(--accent) 9%,var(--bg));color:var(--accent-h);flex-shrink:0}.connection-copy{flex:1;min-width:0}.connection-copy strong{display:block;font-size:15px;font-weight:600}.connection-copy small{display:block;font-size:12px;color:var(--fg2);overflow-wrap:anywhere;margin-top:3px}
+.connection-add{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;background:var(--bg2);color:var(--accent-h);border:1px solid var(--border);border-radius:13px;font-size:24px;cursor:pointer}.connection-add:hover{background:color-mix(in srgb,var(--accent) 15%,var(--bg));transform:translateY(-1px)}.connections-dialog button:focus-visible,.connections-dialog input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.connections-dialog button{cursor:pointer}.connections-dialog button:disabled{opacity:.5;cursor:wait}
+#connectionsStatus{font-size:14px;line-height:1.5;color:var(--accent-h);overflow-wrap:anywhere}#connectionsStatus:empty{display:none}#connectionsStatus.error{color:#b4232c}body.dark #connectionsStatus.error{color:#ff9b9b}
+#connectionDetails[hidden],#connectionsCatalog[hidden]{display:none!important}#connectionDetails h3{font-size:20px;text-transform:none;letter-spacing:0;color:var(--fg)}.connection-back{border:0;background:none;color:var(--accent-h);min-height:44px;padding:0;font:inherit;font-size:14px}.connection-primary,.connection-secondary{width:100%;min-height:46px;padding:10px 16px;margin:10px 0;border-radius:12px;font-size:15px;font-weight:600}.connection-primary{background:var(--accent);color:var(--bg);border:1px solid var(--accent)}.connection-secondary{background:var(--bg2);color:var(--fg);border:1px solid var(--border)}#connectionDetails form{display:flex;flex-direction:column;gap:8px}#connectionDetails label{font-size:14px;font-weight:600}#connectionToken{box-sizing:border-box;width:100%;min-height:46px;border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg2);color:var(--fg);font-size:16px}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) .connections-dialog[open]{animation:connection-enter .22s ease-out both}@keyframes connection-enter{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}}
+@media(max-width:600px){.connections-dialog{padding:20px;border-radius:20px}.connections-dialog h2{font-size:24px}.connection-row{gap:12px}.connection-copy small{font-size:12px}.connections-dialog h3{margin-top:20px}}
+.wake-sample{padding:18px;border-radius:14px;background:var(--bg2);border:1px solid var(--border);font-size:20px;line-height:1.5;overflow-wrap:anywhere;min-height:68px;box-sizing:border-box}#wakeCalibrate{align-self:flex-start;font-size:14px;min-height:44px}#wakeCalibrationStatus{color:var(--fg2);font-size:14px;line-height:1.6}

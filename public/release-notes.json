@@ -1,23 +1,21 @@
 {
-  "version": "0.23.1",
+  "version": "0.24.0",
   "ru": [
-    "Список изменений перенесён в начало верхней панели. Размеры и расположение её иконок выровнены.",
-    "Добавлен подтверждённый адрес разработчика pongy.support@gmail.com. Управление ограничениями и чёрным списком подтверждает сохранение сервером; ошибки видны даже без всплывающих уведомлений.",
-    "Убрана дублирующая версия под полем ввода. Боковая панель без серого фона и разделительных линий.",
-    "Обе кнопки Plus имеют одинаковое оформление в выбранном цвете интерфейса. Кнопки сохранения имени и названия чата — аккуратные галочки без кружков.",
-    "В разделе «Интерфейс» унифицированы отступы, подписи и элементы управления на телефоне и компьютере. Добавлены мягкие появления элементов и закрытие списка изменений с учётом уменьшенного движения.",
-    "Голосовой триггер: локальное распознавание без принудительного узкого словаря, обработка вариантов «он ге», «о ге», «ольге» в позиции обращения и защита от части ложных срабатываний. Неоднозначные варианты проверяются по завершённой фразе.",
-    "Команды после активации используют речевой движок браузера с офлайн-резервом; выбор офлайн-режима сохраняется. Резервный путь не теряет режим голосовой команды. Непрерывное ожидание имени работает только при включённой настройке.",
-    "Уточнена диагностика принудительного обслуживания MAINTENANCE_MODE. Добавлены проверки роли разработчика, сохранения ограничений и работы голосового резерва."
+    "Add Connections в меню «+»: GitHub, Google Drive, Gmail, Google Calendar и Slack. Только чтение по явному запросу; OAuth требует настройки владельцем сервера, GitHub также поддерживает fine-grained token.",
+    "Ключи подключений проверяются сервисом и шифруются на сервере. Окно подключений по центру, отдельное отключение каждого сервиса.",
+    "Настройка зова Pongy под фактически распознанное произношение: локальный профиль для выбранного языка, без загрузки аудио на сервер.",
+    "Уточнена работа с фото и публичными каталогами товаров; чтение карточек из JSON-LD. Закрытые и заблокированные каталоги не обходятся.",
+    "Понимание фонетического английского и контекстных мемов; новые неизвестные мемы требуют актуальных источников, полного знания всех мемов не заявляется.",
+    "Создатель — российская компания Pongy AI Dev, главный разработчик — Иван Сергеев, год выпуска — 2026.",
+    "Регрессии безопасности подключений и настоящий акустический тест Vosk на синтетическом «Эй, Понги». Нативные установщики требуют отдельной сборки."
   ],
   "en": [
-    "Changelog moved to the start of the toolbar; icon sizing and alignment unified.",
-    "Added verified developer address pongy.support@gmail.com. Site controls and blacklist changes are confirmed by the server; errors remain visible with popup notifications off.",
-    "Removed the duplicate version label below the composer. The sidebar has a plain background without divider lines.",
-    "Both Plus entry points share the selected accent and styling. Name and chat-title save actions use plain checkmarks without circular buttons.",
-    "Consistent Appearance spacing, labels and controls on mobile and desktop. Softer field entrances and animated changelog closing respect reduced motion.",
-    "Wake detection uses the full local vocabulary and prefix-checked Russian phonetic alternatives. Ambiguous alternatives require a finalized phrase to reduce accidental activation.",
-    "Voice commands prefer the browser speech engine with an offline fallback; an explicit offline preference is respected. Fallback preserves voice-command mode. Wake listening runs only while the setting is enabled.",
-    "Clear diagnostics for environment-enforced maintenance, plus developer-role, persistence and voice-recovery regression tests."
+    "Add Connections in the composer + menu: GitHub, Google Drive, Gmail, Google Calendar and Slack. Read-only access on explicit request; OAuth requires owner setup, GitHub also supports fine-grained tokens.",
+    "Service-verified connection keys encrypted on the server. Centered connection manager with per-service disconnect.",
+    "Personal wake enrollment using the actual recognized pronunciation. Per-language local profile; no server audio upload.",
+    "Better photo guidance and public marketplace product JSON-LD reading. No bypass of private or blocked catalogues.",
+    "Phonetic English and contextual meme cues. Unfamiliar current memes require current sources, not a claim of universal meme knowledge.",
+    "Creator: Russian company Pongy AI Dev. Lead developer: Ivan Sergeev. First release: 2026.",
+    "Connection security regressions and real Vosk decoding of a synthetic “Hey, Pongy” fixture. Native installers require a separate build."
   ]
 }
