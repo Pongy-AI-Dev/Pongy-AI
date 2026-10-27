@@ -1,0 +1,8 @@
+Synthetic Russian wake fixture: «Эй, Понги».
+Generated locally with eSpeak NG 1.51, Russian voice, rate 145:
+espeak-ng -v ru -s 145 -w wake-pongy-ru.wav 'Эй, Понги'
+This is synthetic audio, not a human recording or an accuracy benchmark.
+The real Vosk RU model may decode the brand as «эй подвиги». The enrollment
+regression uses the ACTUAL decoder output, without a mocked transcript or
+constrained grammar, to verify a user-confirmed local wake mapping.
+No TTS binaries or playback libraries are included in the patch.
