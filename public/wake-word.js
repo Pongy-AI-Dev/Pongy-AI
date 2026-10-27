@@ -7,14 +7,27 @@ var $=function(id){return document.getElementById(id)},tr=function(ru,en){return
 var permissionBlocked=false;var WAKE_KEY='pongy_wake_word';
 function enabled(){try{return root.localStorage.getItem(WAKE_KEY)==='on'}catch(e){return false}}
 function setEnabled(value){try{if(value)root.localStorage.setItem(WAKE_KEY,'on');else root.localStorage.removeItem(WAKE_KEY)}catch(e){}}
-// Fuzzy trigger match: "понг/понги/понгери/понджи/понги аи/понги ии/понги эй ай" and
-// "pong/pongy/pongery", tolerant to single-letter recognizer slips ("pongi", "понги" misspells).
-function lev(a,b){var m=a.length,n=b.length,row=[],i,j;for(i=0;i<=m;i++)row[i]=i;for(j=1;j<=n;j++){var prev=row[0];row[0]=j;for(i=1;i<=m;i++){var cur=row[i];row[i]=Math.min(row[i]+1,row[i-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=cur;}}return row[m]}
-function isWakeToken(t){if(!t)return false;return /^(?:понг|понги|понгери|понджи|понгиай|pong|pongy|pongery|pongi)$/.test(t)||(t.length>=4&&t.length<=6&&lev(t,'pongy')<=1)}
-function wakeRemainder(text){var words=String(text||'').split(/\s+/),at=words.findIndex(function(t){return isWakeToken(t.toLowerCase().replace(/[^a-zа-яё]/g,''))});return at<0?'':words.slice(at+1).join(' ').replace(/^(?:ai|аи|ии|эй ай)[,\s]+/iu,'').replace(/^[,.:!\s]+/,'').trim();}
-function hasWake(text){var tokens=String(text||'').toLowerCase().replace(/ё/g,'е').split(/[^a-zа-я]+/);for(var i=0;i<tokens.length;i++)if(isWakeToken(tokens[i]))return true;return false}
-function status(state){lastStatus=state;var el=$('wakeWordHint');if(!el)return;var map={model:tr('Загружаю офлайн-модель распознавания…','Loading the offline recognition model…'),denied:tr('Нет доступа к микрофону — разрешите его, чтобы активация голосом работала.','Microphone access is blocked — allow it so voice activation can hear you.'),error:tr('Активация голосом остановлена из-за ошибки. Включите переключатель снова.','Voice activation stopped after an error. Toggle it back on to retry.'),waiting:tr('Жду разрешения на запуск звука — коснитесь экрана, и слушание включится.','Waiting for the browser to allow audio — tap the page and listening starts.'),listening:tr('Слушаю в фоне: скажите «Понги». Локально ищу только имя; команда слушается после сигнала, до 10 секунд тишины. Микрофон выключается переключателем.','Listening in the background: say “Pongy”. Only the wake word is detected locally; commands are captured after the chime, until 10 seconds of silence. Toggle off to release the microphone.'),triggered:tr('Активация голосом: «Pongy» распознан.','Voice activation: “Pongy” detected.')};el.textContent=enabled()?(map[state]||''):'';}
-function handleText(text){if(!listening||!text)return;var at=Date.now();if(at<refractory)return;if(!hasWake(text))return;refractory=at+6000;trigger(wakeRemainder(text));}
+// Match a wake prefix, never a substring in an unrelated sentence. The Russian
+// model lacks a reliable pronunciation for the product name. Known phonetic
+// alternatives are accepted only alone or before an imperative command.
+function wakeMatch(text){
+ var raw=String(text||'').trim().replace(/^[\s,.:!?…]+/,'').replace(/^(?:(?:эй|привет|слушай|hey|hello)[\s,.:!?…]+){1,2}/iu,'');
+ var match=/^(понгиай|понгери|понджи|понги|понг|pongery|pongy|pongi|pong)(?=[\s,.:!?…]|$)/iu.exec(raw),ambiguous=false;
+ if(!match){match=/^(он\s+ге|о\s+ге|онги|ольге)(?=[\s,.:!?…]|$)/iu.exec(raw);ambiguous=!!match;}
+ if(!match)return null;
+ var rest=raw.slice(match[0].length).replace(/^[\s,.:!?…]+/,'').replace(/^(?:ai|аи|ии|эй ай)(?:[\s,.:!?…]+|$)/iu,'').trim();
+ if(ambiguous&&rest&&!/^(?:открой|открыть|создай|создать|напомни|напомнить|покажи|расскажи|найди|напиши|скажи|включи|выключи|посчитай|сколько|как|что|почему|сделай|помоги|open|create|remind|show|find|write|tell|calculate)(?=\s|$)/iu.test(rest))return null;
+ // Never rewrite punctuation or case in a dictated command (URLs/code/files).
+ if(/\[unk\]/i.test(String(text)))rest='';
+ return {remainder:rest,ambiguous:ambiguous};
+}
+function wakeRemainder(text){return wakeMatch(text)?.remainder||'';}
+function hasWake(text){return !!wakeMatch(text);}
+// Keep the full acoustic vocabulary. A constrained brand-name grammar was
+// rejected after ordinary recorded Russian speech produced false wake phrases.
+// Do not force unknown audio into a product name absent from the vocabulary.
+function status(state){lastStatus=state;var el=$('wakeWordHint');if(!el)return;var map={model:tr('Загружаю офлайн-модель распознавания…','Loading the offline recognition model…'),denied:tr('Нет доступа к микрофону — разрешите его, чтобы активация голосом работала.','Microphone access is blocked — allow it so voice activation can hear you.'),error:tr('Активация голосом остановлена из-за ошибки. Включите переключатель снова.','Voice activation stopped after an error. Toggle it back on to retry.'),waiting:tr('Жду разрешения на запуск звука — коснитесь экрана, и слушание включится.','Waiting for the browser to allow audio — tap the page and listening starts.'),listening:tr('Слушаю в фоне: скажите «Понги». Имя ищется локально; для команды используется речевой движок браузера (может передавать звук своему сервису) с офлайн-резервом. Слушание команды заканчивается через 10 секунд тишины. Микрофон выключается переключателем.','Listening in the background: say “Pongy”. Wake detection is local; commands use the browser speech engine (which may send audio to its service), with an offline fallback. Command capture ends after 10 seconds of silence. Toggle off to release the microphone.'),triggered:tr('Активация голосом: «Pongy» распознан.','Voice activation: “Pongy” detected.')};el.textContent=enabled()?(map[state]||''):'';}
+function handleText(text,final){if(!listening||!text)return;var at=Date.now();if(at<refractory)return;var match=wakeMatch(text);if(!match||match.ambiguous&&!final)return;refractory=at+6000;trigger(wakeRemainder(text));}
 function flashTitle(){if(titleTimer)return;titleOriginal=document.title;var flag=true;var tick=function(){document.title=(flag?'Pongy AI — ':titleOriginal);flag=!flag;};document.title=tr('Pongy AI — слушаю…','Pongy AI — listening…');titleTimer=setInterval(tick,900);setTimeout(function(){clearInterval(titleTimer);titleTimer=0;document.title=titleOriginal;},9000);}
 function chime(){try{if(!audCtx)return;var at=audCtx.currentTime,g=audCtx.createGain();g.gain.value=0;g.connect(audCtx.destination);[[880,0],[1320,0.22]].forEach(function(pair){var o=audCtx.createOscillator();o.type='sine';o.frequency.value=pair[0];o.connect(g);o.start(at+pair[1]);o.stop(at+pair[1]+0.16);g.gain.setValueAtTime(0,at+pair[1]);g.gain.linearRampToValueAtTime(0.12,at+pair[1]+0.02);g.gain.linearRampToValueAtTime(0,at+pair[1]+0.16);});}catch(e){}}
 function announce(){status('triggered');try{if(root.PongyAndroid?.showNotification)root.PongyAndroid.showNotification(JSON.stringify({id:'pongy-wake',text:tr('Скажите команду — вкладка Pongy AI открыта.','Say your command — the Pongy AI tab is open.')}));else if('Notification'in root&&Notification.permission==='granted'){var n=new Notification('Pongy AI',{body:tr('Говорите — я слушаю.','Say your command — I am listening.'),tag:'pongy-wake'});n.onclick=function(){try{n.close();root.focus()}catch(e){}};}}catch(e){}}
@@ -43,9 +56,9 @@ function begin(model){
    if(!audCtx||audCtx.state!=='running'){starting=false;teardown();status('waiting');gestureResume();scheduleRestart();return;}
    var rec=new model.KaldiRecognizer(audCtx.sampleRate);recognizer=rec;
    rec.on('partialresult',function(message){if(id===seq)handleText(message.result?.partial||'')});
-   rec.on('result',function(message){if(id===seq)handleText(message.result?.text||'')});
+   rec.on('result',function(message){if(id===seq)handleText(message.result?.text||'',true)});
    rec.on('error',function(){if(id!==seq)return;failures++;teardown();status('error');scheduleRestart();});
-   var src=audCtx.createMediaStreamSource(stream),proc=audCtx.createScriptProcessor(4096,1,1),quiet=audCtx.createGain();quiet.gain.value=0;
+   var src=audCtx.createMediaStreamSource(stream),proc=audCtx.createScriptProcessor(2048,1,1),quiet=audCtx.createGain();quiet.gain.value=0;
    src.connect(proc);proc.connect(quiet);quiet.connect(audCtx.destination);source=src;node=proc;mute=quiet;
    proc.onaudioprocess=function(event){if(id!==seq||!listening)return;try{rec.acceptWaveform(event.inputBuffer)}catch(e){failures++;teardown();status('error');scheduleRestart();}};
    listening=true;starting=false;failures=0;status('listening');
@@ -86,7 +99,7 @@ function init(options){
  var box=$('wakeWordSetting');if(!box)return;
  var toggle=$('wakeWordToggle');
  var label=function(){var el=$('wakeWordLabel');if(el)el.textContent=tr('Активация голосом','Voice activation')};
- label();status(enabled()?'listening':'');
+ label();status(enabled()?'model':'');new MutationObserver(function(){label();status(lastStatus);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  if(toggle){
   toggle.checked=enabled();
   toggle.addEventListener('change',function(){
@@ -98,5 +111,5 @@ function init(options){
  root.addEventListener('pagehide',function(){stop();});
  watch();
 }
-root.PongyWakeWord={init:init,isWake:hasWake,stop:stop,status:function(){return lastStatus}};
+root.PongyWakeWord={init:init,isWake:hasWake,match:wakeMatch,stop:stop,status:function(){return lastStatus}};
 })(window);

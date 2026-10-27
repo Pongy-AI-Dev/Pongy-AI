@@ -1,5 +1,23 @@
 {
- "version":"0.23.0",
- "ru":["Отзывы направляются на pongy.suppot@gmail.com. В окне оценки появилась кнопка «Позже».","Плавающие индикаторы разделов, мягкие переходы, аккуратные переключатели и раскрывающиеся блоки.","Шесть цветов интерфейса с сохранением выбора и экраном применения. Отдельный переключатель всплывающих уведомлений.","Список изменений, кнопка Plus и версия под полем ввода.","Напоминания: разбор разговорных дат и времени, отдельное описание, диагностика почты и проверочное письмо на адрес аккаунта.","Голосовые запросы: перенос команды после имени в чат, отправка после распознавания, остановка захвата команды после 10 секунд тишины. Голосовая активация — только в разделе «Интерфейс».","Прикрепление файлов перетаскиванием, улучшения чтения ZIP и раскладки вложений.","В исходниках Windows-клиента — вывод окна и подтверждаемое открытие Блокнота, Калькулятора и Проводника. Требуется новая нативная сборка; полный контроль Windows не предоставляется.","Исправления раздела разработчика, названий чатов до 30 символов и единых размеров иконок. Обновлена почтовая библиотека."],
- "en":["Feedback is sent to pongy.suppot@gmail.com. The rating dialog now has a Later button.","Floating section indicators, softer transitions, tidy switches and animated disclosures.","Six persistent accent colours with an applying screen. Separate popup notification control.","Changelog, Plus shortcut and version below the composer.","Reminders: spoken dates and times, separate description, email diagnostics and a test message to the account email.","Voice commands preserve text after the wake word, submit after recognition and release command capture after 10 seconds of silence. Voice activation lives only in Appearance.","Drag-and-drop attachments, improved ZIP reading and attachment layout.","Windows source adds window activation and confirmed launch of Notepad, Calculator and Explorer. Requires a new native build; no unrestricted Windows control.","Developer panel, 30-character chat titles and consistent icon sizing fixes. Updated mail library."]
+  "version": "0.23.1",
+  "ru": [
+    "Список изменений перенесён в начало верхней панели. Размеры и расположение её иконок выровнены.",
+    "Добавлен подтверждённый адрес разработчика pongy.support@gmail.com. Управление ограничениями и чёрным списком подтверждает сохранение сервером; ошибки видны даже без всплывающих уведомлений.",
+    "Убрана дублирующая версия под полем ввода. Боковая панель без серого фона и разделительных линий.",
+    "Обе кнопки Plus имеют одинаковое оформление в выбранном цвете интерфейса. Кнопки сохранения имени и названия чата — аккуратные галочки без кружков.",
+    "В разделе «Интерфейс» унифицированы отступы, подписи и элементы управления на телефоне и компьютере. Добавлены мягкие появления элементов и закрытие списка изменений с учётом уменьшенного движения.",
+    "Голосовой триггер: локальное распознавание без принудительного узкого словаря, обработка вариантов «он ге», «о ге», «ольге» в позиции обращения и защита от части ложных срабатываний. Неоднозначные варианты проверяются по завершённой фразе.",
+    "Команды после активации используют речевой движок браузера с офлайн-резервом; выбор офлайн-режима сохраняется. Резервный путь не теряет режим голосовой команды. Непрерывное ожидание имени работает только при включённой настройке.",
+    "Уточнена диагностика принудительного обслуживания MAINTENANCE_MODE. Добавлены проверки роли разработчика, сохранения ограничений и работы голосового резерва."
+  ],
+  "en": [
+    "Changelog moved to the start of the toolbar; icon sizing and alignment unified.",
+    "Added verified developer address pongy.support@gmail.com. Site controls and blacklist changes are confirmed by the server; errors remain visible with popup notifications off.",
+    "Removed the duplicate version label below the composer. The sidebar has a plain background without divider lines.",
+    "Both Plus entry points share the selected accent and styling. Name and chat-title save actions use plain checkmarks without circular buttons.",
+    "Consistent Appearance spacing, labels and controls on mobile and desktop. Softer field entrances and animated changelog closing respect reduced motion.",
+    "Wake detection uses the full local vocabulary and prefix-checked Russian phonetic alternatives. Ambiguous alternatives require a finalized phrase to reduce accidental activation.",
+    "Voice commands prefer the browser speech engine with an offline fallback; an explicit offline preference is respected. Fallback preserves voice-command mode. Wake listening runs only while the setting is enabled.",
+    "Clear diagnostics for environment-enforced maintenance, plus developer-role, persistence and voice-recovery regression tests."
+  ]
 }

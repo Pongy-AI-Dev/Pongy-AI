@@ -494,7 +494,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.23.0"}
+:root{--pongy-build:"0.23.1"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -1155,12 +1155,12 @@ html[data-motion=reduced] #sidebar .sb-row .sb-btn,html[data-motion=reduced] #si
 html[data-motion=reduced] #sidebar .sb-row .sb-btn:active{transform:none}
 @media(prefers-reduced-motion:reduce){#sidebar .sb-row .sb-btn,#sidebar .sb-row .sb-btn::after{transition:none!important}#sidebar .sb-row .sb-btn:active{transform:none}}
 
-/* --- 0.23.0: top-bar icons share one optical size --- */
+/* --- 0.23.1: top-bar icons share one optical size --- */
 #topbar .tb-actions :is(.icon-btn,.tb-btn) svg{width:18px;height:18px}
 
-/* --- 0.23.0: toast is a fixed-width block; the close cross lives on its right edge --- */
+/* --- 0.23.1: toast is a fixed-width block; the close cross lives on its right edge --- */
 
-/* --- 0.23.0: "История" card with the standard chevron instead of the OS marker --- */
+/* --- 0.23.1: "История" card with the standard chevron instead of the OS marker --- */
 .local-history-card{margin-top:16px;padding:2px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
 .local-history-card summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;min-height:46px;line-height:1.35;padding:0 2px;border-radius:8px;user-select:none}
 .local-history-card summary::-webkit-details-marker{display:none}
@@ -1170,10 +1170,10 @@ html[data-motion=reduced] #sidebar .sb-row .sb-btn:active{transform:none}
 html[data-motion=reduced] .local-history-card summary::after{transition:none}
 @media(prefers-reduced-motion:reduce){.local-history-card summary::after{transition:none}}
 
-/* --- 0.23.0: notes empty state --- */
+/* --- 0.23.1: notes empty state --- */
 .note-empty{padding:72px 28px;text-align:center;font-size:17px;line-height:1.65;font-weight:500;color:var(--fg2)}
 
-/* --- 0.23.0: "Умный редактор" — AI strip under the editing tools --- */
+/* --- 0.23.1: "Умный редактор" — AI strip under the editing tools --- */
 #smartEditor{border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg2) 55%,transparent)}
 #smartEditorBar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:5px 8px 5px 14px}
 #smartEditorTitle{font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--fg)}
@@ -1188,7 +1188,7 @@ html[data-motion=reduced] .local-history-card summary::after{transition:none}
 html[data-motion=reduced] #smartEditorToggle svg{transition:none}
 @media(prefers-reduced-motion:reduce){#smartEditorToggle svg{transition:none}}
 
-/* --- 0.23.0: smoother workspace crossfade (fixes the 360ms cut-off) --- */
+/* --- 0.23.1: smoother workspace crossfade (fixes the 360ms cut-off) --- */
 body.workspace-changing.notes-active #notesEditor{animation:workspace-in-right .42s cubic-bezier(.25,.75,.2,1) both}
 body.workspace-changing:not(.notes-active) #chatViewport{animation:workspace-in-left .42s cubic-bezier(.25,.75,.2,1) both}
 
@@ -1241,7 +1241,7 @@ body{background:
  html[data-render-budget=compact] #smartEditor,html[data-render-budget=compact] #noteToolbar{background:var(--bg2)}
 }
 
-/* 0.23.0 — unified spacing, accent palettes and soft, liquid motion. */
+/* 0.23.1 — unified spacing, accent palettes and soft, liquid motion. */
 html[data-accent=yellow] body{--accent:#8a6200;--accent-h:#735100;--accent-rgb:138,98,0}
 html[data-accent=red] body{--accent:#bc383e;--accent-h:#9e2830;--accent-rgb:188,56,62}
 html[data-accent=green] body{--accent:#23794f;--accent-h:#1a613d;--accent-rgb:35,121,79}
@@ -1261,3 +1261,57 @@ details>summary{list-style:none;position:relative;cursor:pointer;padding-right:3
 .msg.ai .msg-content{align-items:stretch;min-width:0}.msg.ai :is(.attachment-list,.source-list,.site-proposal){width:100%;min-width:0;align-self:stretch}.message-file-card{min-width:0;max-width:100%}.message-file-card .attachment-chip{min-width:0;flex:1}.bubble pre{max-width:100%;overflow-x:auto}.bubble table{max-width:100%}.attachment-list{align-items:stretch}.message-file-card a{overflow-wrap:anywhere}.settings-field input,.settings-field select{min-height:44px}input[type=checkbox]:checked:not(.display-switch)::before{animation:check-pop .25s ease-out}@keyframes check-pop{from{transform:scale(.45)}to{transform:scale(1)}}
 html[data-motion=reduced] :is(.liquid-indicator,.workspace-slider,.settings-tab-indicator,details>summary::after,.colour-choice i){transition:none!important}html[data-motion=reduced] :is(.release-dialog,.settings-section,input[type=checkbox]::before){animation:none!important}
 @media(max-width:500px){.colour-palette{gap:8px}.release-dialog{padding:20px}#changelogBtn{min-width:36px}#topbar .tb-actions{gap:2px}}
+
+/* 0.23.1 — quiet chrome, shared accent actions and a consistent settings rhythm. */
+#sidebar,body.dark #sidebar,html[data-render-budget=compact] #sidebar{background:var(--bg);border-right:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+#sidebar :is(.sb-head,.sb-bottom,.sb-search){border:0}
+#sidebar .sb-bottom{padding-top:12px}
+#topbar .tb-actions{display:flex;align-items:center;gap:4px}
+#topbar .tb-actions :is(button,.tb-btn,.icon-btn){box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:44px;height:44px;padding:10px;border-radius:10px;line-height:1;vertical-align:middle}
+#topbar .tb-actions :is(button,.tb-btn,.icon-btn) svg{display:block;width:20px;height:20px;min-width:20px;flex:none;stroke-width:1.8;transform:none}
+#topbar .tb-actions #downloadAppTop{gap:8px}
+#topbar .tb-actions #downloadAppTop>span{display:inline-flex;align-items:center;justify-content:center}
+html[data-large-icons=true] #topbar .tb-actions :is(button,.tb-btn,.icon-btn) svg{width:24px;height:24px;min-width:24px}
+/* Both entry points share the same label, icon, geometry and selected accent. */
+body #sidebarPlus.plus-action,body #settings-panel-subscription .plus-action,body.dark #sidebarPlus.plus-action,body.dark #settings-panel-subscription .plus-action{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;margin:8px 0 0;padding:12px 18px;border:1px solid color-mix(in srgb,var(--accent) 32%,transparent)!important;border-radius:12px;background:linear-gradient(125deg,color-mix(in srgb,var(--accent) 14%,var(--bg)),color-mix(in srgb,var(--accent) 6%,var(--bg)))!important;color:var(--accent-h)!important;font:600 15px/1.4 var(--font, -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--bg) 75%,transparent)!important;transition:background .25s,transform .25s,border-color .25s}
+body #sidebarPlus.plus-action::before,body #settings-panel-subscription .plus-action::before{content:'';width:20px;height:20px;flex:none;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4z' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+body #sidebarPlus.plus-action:hover,body #settings-panel-subscription .plus-action:hover{background:color-mix(in srgb,var(--accent) 18%,var(--bg))!important;transform:translateY(-1px);box-shadow:none!important}
+body #sidebarPlus.plus-action:active,body #settings-panel-subscription .plus-action:active{transform:scale(.98)}
+body :is(.field-save,.rename-save){display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:10px;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--accent)}
+body :is(.field-save,.rename-save):hover{background:transparent;border:0;box-shadow:none;color:var(--accent-h);transform:scale(1.08)}
+body :is(.field-save,.rename-save) svg{display:block;width:22px;height:22px;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+body :is(.field-save,.rename-save):focus-visible{outline:2px solid var(--accent);outline-offset:0;border-radius:6px}
+/* Only the Appearance panel is normalized: don't disturb unrelated form layouts. */
+#settings-panel-interface:not([hidden]){display:flex;flex-direction:column;gap:24px;font-family:inherit;font-size:14px;line-height:1.5}
+#settings-panel-interface>*{margin:0!important;min-width:0}
+#settings-panel-interface :is(.appearance-field,.motion-setting){display:flex;flex-direction:column;gap:8px;padding:0;border:0}
+#settings-panel-interface :is(.field-label,label.field-label){font-family:inherit;font-size:14px;font-weight:600;line-height:1.5;margin:0}
+#settings-panel-interface :is(.settings-hint,#motionHint,#voiceGenderHint,#wakeWordHint){font-family:inherit;font-size:14px;font-weight:400;line-height:1.5;color:var(--fg2);margin:0;padding:0}
+#settings-panel-interface :is(.grid2,.display-preferences){margin:0;padding:0;gap:12px}
+#settings-panel-interface :is(select.inp,.inp){font-family:inherit;font-size:15px;line-height:1.5;min-height:46px;margin:0}
+#settings-panel-interface .display-option{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;padding:0;margin:0;font-size:14px;font-weight:500;line-height:1.5}
+#settings-panel-interface .display-option>span{min-width:0;flex:1}
+#settings-panel-interface .display-switch{flex-shrink:0;margin:0 4px}
+#settings-panel-interface #displayPreferences{display:flex;flex-direction:column;gap:16px;border:0}
+#settings-panel-interface #interfaceColour>summary{min-height:44px;font-family:inherit;font-size:14px;font-weight:600;line-height:1.5;padding:0 32px 0 0}
+#settings-panel-interface .colour-palette{gap:12px;padding:12px 0 0}
+#settings-panel-interface .colour-choice{font-size:14px;min-height:84px;gap:10px;padding:12px 4px}
+#settings-panel-interface .opt{font-family:inherit;font-size:15px;line-height:1.5;min-height:46px}
+.admin-control-status{margin:12px 0;font-size:14px;line-height:1.5;color:var(--accent);overflow-wrap:anywhere}
+.admin-control-status:empty{display:none}.admin-control-status[data-error=true]{color:var(--danger)}
+#adminBlacklist .admin-block-row{gap:12px;align-items:center}#adminBlacklist .admin-block-row>span{min-width:0;overflow-wrap:anywhere}
+#adminControlHint{font-size:14px;line-height:1.5}
+@keyframes preference-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) #settings-panel-interface:not([hidden])>*,html:not([data-motion=reduced]) #adminBlacklist .admin-block-row{animation:preference-arrive .3s ease both}html:not([data-motion=reduced]) #settings-panel-interface>:nth-child(2){animation-delay:25ms}html:not([data-motion=reduced]) #settings-panel-interface>:nth-child(3){animation-delay:50ms}}
+@media(max-width:600px){#settings-panel-interface .inp{font-size:16px}#topbar .tb-actions{gap:0}#topbar .tb-actions :is(button,.tb-btn,.icon-btn){padding:10px;min-width:40px;height:44px}#settingsModal .modal-body{padding:20px}#settings-panel-interface:not([hidden]){gap:24px}#topbar .tb-actions #downloadAppTop{font-size:0;gap:0}}
+@media(prefers-reduced-motion:reduce){#settings-panel-interface *,#sidebarPlus,.plus-action{animation:none!important;transition:none!important}}
+html[data-motion=reduced] :is(#settings-panel-interface *,#sidebarPlus,.plus-action,.field-save,.rename-save){animation:none!important;transition:none!important}
+#topbar .tb-actions [hidden],#settings-panel-interface [hidden]{display:none!important}
+@media(max-width:600px){#topbar .tb-actions :is(button,.tb-btn,.icon-btn){min-width:44px}}
+
+@media(max-width:600px){#settings-panel-interface .opt{font-size:16px}}
+
+/* Stronger foregrounds keep accent actions readable on their soft surfaces. */
+#settings-panel-interface .opt.active{color:var(--accent-h)}
+.admin-control-status{color:var(--accent-h)}
+.admin-control-status[data-error=true]{color:#b4232c}body.dark .admin-control-status[data-error=true]{color:#ff8c8c}
