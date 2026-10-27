@@ -145,7 +145,7 @@ const path=require('node:path');
     await page.locator('#settings-tab-developer').click();
     await page.locator('#adminCheckButton').click();
     await page.locator('#adminCheckDialog[open]').waitFor();
-    await page.locator('#settings-panel-developer button').filter({hasText:'Standard test'}).click();
+    await page.locator('#adminCheckDialog button').filter({hasText:'Standard test'}).click();
     await page.waitForFunction(()=>document.querySelector('#settingsModal').dataset.scanning!=='true');
     await page.locator('#adminReports details').first().waitFor();
     check((await page.locator('#adminScanCount').textContent()).includes('/ 7'),'real diagnostic progress absent');

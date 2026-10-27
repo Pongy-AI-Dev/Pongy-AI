@@ -41,7 +41,7 @@ const VOSK_STUB=`(function(){
   check(/Активация голосом|Voice activation/.test(await page.locator('#wakeWordLabel').textContent()),'wake word label missing');
   check(!(await page.locator('#wakeWordToggle').isChecked()),'wake word enabled by default');
   await page.locator('#wakeWordToggle').click();
-  await page.waitForFunction(()=>/Слушаю в фоне|Listening in the background/.test(document.getElementById('wakeWordHint').textContent),null,{timeout:20000});
+  await page.waitForFunction(()=>window.PongyWakeWord.status()==='listening'&&/^(Позовите Pongy|Call Pongy)$/.test(document.getElementById('wakeWordHint').textContent),null,{timeout:20000});
   check(true,'wake listener did not reach the listening state');check(await page.evaluate(()=>window.__wakeGrammar===null),'wake recognizer forces ordinary speech into a wake phrase');
   await page.locator('#closeSettings').click();await page.waitForTimeout(350);
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000});
