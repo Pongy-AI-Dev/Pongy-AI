@@ -23,4 +23,10 @@ async function launchBrowser(){const {name,options}=getBrowserConfig(),browser=a
  browser.newPage=opts=>page(contextOptions(opts));
  return browser;}
 
-module.exports={getBrowserConfig,contextOptions,launchBrowser};
+// Extensions require a persistent profile and their own Service Worker. Keep engine
+// selection and executable overrides centralized, just like ordinary UI suites.
+async function launchExtensionContext(profile,extension){const {name,options}=getBrowserConfig();
+ if(name!=='chromium')throw new Error('Extension integration requires Chromium');
+ return require('playwright').chromium.launchPersistentContext(profile,{...options,args:[...(options.args||[]),'--disable-extensions-except='+extension,'--load-extension='+extension],viewport:{width:1000,height:700}});
+}
+module.exports={getBrowserConfig,contextOptions,launchBrowser,launchExtensionContext};
