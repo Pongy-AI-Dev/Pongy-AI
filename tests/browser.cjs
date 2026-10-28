@@ -25,8 +25,14 @@ async function launchBrowser(){const {name,options}=getBrowserConfig(),browser=a
 
 // Extensions require a persistent profile and their own Service Worker. Keep engine
 // selection and executable overrides centralized, just like ordinary UI suites.
-async function launchExtensionContext(profile,extension){const {name,options}=getBrowserConfig();
+function getExtensionBrowserConfig(env=process.env){const {name,options}=getBrowserConfig(env);
  if(name!=='chromium')throw new Error('Extension integration requires Chromium');
+ // The default headless shell does not load extensions. The chromium channel
+ // selects bundled full Chromium with new headless, including MV3 workers.
+ // Do not change ordinary suites or allow SWs in their network fixtures.
+ return {...options,channel:'chromium',serviceWorkers:'allow'};
+}
+async function launchExtensionContext(profile,extension){const options=getExtensionBrowserConfig();
  return require('playwright').chromium.launchPersistentContext(profile,{...options,args:[...(options.args||[]),'--disable-extensions-except='+extension,'--load-extension='+extension],viewport:{width:1000,height:700}});
 }
-module.exports={getBrowserConfig,contextOptions,launchBrowser,launchExtensionContext};
+module.exports={getBrowserConfig,contextOptions,launchBrowser,getExtensionBrowserConfig,launchExtensionContext};
