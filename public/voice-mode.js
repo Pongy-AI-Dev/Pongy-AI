@@ -30,7 +30,7 @@ function labels(){
  $('voiceModeBtn').setAttribute('aria-expanded',String(opened));
  $('voiceModeClose').ariaLabel=tr('Закрыть голосовой режим','Close voice mode');
  $('voiceModeTitle').textContent=tr('Голосовой режим','Voice conversation');
- $('voiceModePause').textContent=phase==='paused'?tr('Продолжить','Continue'):tr('Пауза','Pause');
+ var orb=$('voiceModeOrb');orb.setAttribute('aria-label',phase==='paused'?tr('Продолжить разговор','Resume conversation'):tr('Поставить разговор на паузу','Pause conversation'));orb.setAttribute('aria-pressed',String(phase==='paused'));$('voiceModeHint').textContent=tr('Нажмите на круг — пауза / продолжение','Tap the orb to pause or resume');
 }
 function state(value,message){
  phase=value;$('voiceModeStage').dataset.state=value;labels();
@@ -43,7 +43,7 @@ function canListen(){var s=ctx.snapshot();return opened&&s.ready&&!s.busy&&!s.dr
 function listen(){
  if(!opened)return;
  if(!canListen()){pause(tr('Отправьте или сохраните черновик, закройте другие окна и нажмите «Продолжить».','Send or keep your draft, close other dialogs, then press Continue.'));return;}
- var token=++generation;clearReply();ctx.stopSpeaking();$('voiceModeHeard').textContent='';state('connecting');ctx.startListening();
+ var token=++generation;clearReply();ctx.stopSpeaking();state('connecting');ctx.startListening();
  setTimeout(function(){if(opened&&token===generation&&phase==='connecting'&&!ctx.snapshot().recording)pause(tr('Микрофон пока не запущен. Проверьте разрешение или сообщение под полем ввода.','The microphone has not started. Check its permission or the help below.'));},190000);
 }
 function close(){
@@ -56,10 +56,10 @@ function open(){
  if(opened){close();return;}var s=ctx.snapshot();if(!s.ready)return;ctx.closeMenu();previousFocus=document.activeElement;boundAccount=s.account;boundChat=s.chatId;
  home=$('inputArea').parentNode;anchor=document.createComment('Pongy composer home');$('inputArea').before(anchor);$('voiceModeStage').appendChild($('inputArea'));
  for(var id of ['main','sidebar'])if($(id)){oldInert[id]=$(id).inert;$(id).inert=true;}
- opened=true;document.body.classList.add('voice-mode');$('voiceModeStage').hidden=false;labels();ctx.stopListening();ctx.stopSpeaking();$('voiceModeCaption').textContent='';$('voiceModeHeard').textContent='';$('voiceModeClose').focus();timer=setInterval(watch,150);listen();
+ opened=true;document.body.classList.add('voice-mode');$('voiceModeStage').hidden=false;labels();ctx.stopListening();ctx.stopSpeaking();$('voiceModeClose').focus();timer=setInterval(watch,150);listen();
 }
 function pending(chatId){
- if(!opened)return;if(boundChat&&boundChat!==chatId){close();return;}boundChat=chatId;++generation;clearReply();ctx.stopListening();ctx.stopSpeaking();level(0);state('thinking');$('voiceModeCaption').textContent='';
+ if(!opened)return;if(boundChat&&boundChat!==chatId){close();return;}boundChat=chatId;++generation;clearReply();ctx.stopListening();ctx.stopSpeaking();level(0);state('thinking');
 }
 function current(){var s=ctx.snapshot();return opened&&s.ready&&s.account===boundAccount&&(!boundChat||s.chatId===boundChat);}
 function playNext(){
@@ -83,15 +83,15 @@ function collect(complete){
 }
 function chunk(result){
  if(!current()||result.chatId!==boundChat||phase==='paused')return;
- replyRaw=String(result.text||'');$('voiceModeCaption').textContent=ctx.cleanText(replyRaw).slice(-1400);collect(false);
+ replyRaw=String(result.text||'');collect(false);
 }
 function answer(result){
  if(!opened||result.chatId!==boundChat)return;if(!current()){close();return;}
  if(result.error||result.interrupted||!result.text){pause(tr('Ответ не завершён. Проверьте чат перед продолжением.','The answer did not finish. Check the chat before continuing.'));return;}
- $('voiceModeCaption').textContent=ctx.cleanText(result.text).slice(-1400);if(phase==='paused')return;
+ if(phase==='paused')return;
  replyRaw=String(result.text);replyComplete=true;collect(true);
 }
-function transcript(text){if(opened&&['connecting','listening'].includes(phase))$('voiceModeHeard').textContent=String(text||'').slice(-1200);}
+function transcript(text){/* Transcript stays in the app turn buffer; never expose chat text on the orb screen. */}
 function level(value){if(!opened)return;var n=Math.max(0,Math.min(1,Number(value)||0));$('voiceModeStage').style.setProperty('--voice-level',n.toFixed(3));}
 function watch(){
  if(!opened)return;var s=ctx.snapshot();if(!current()){close();return;}
@@ -104,8 +104,8 @@ function init(options){
  var cross='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
  button.innerHTML='<span class="voice-mode-dot" aria-hidden="true"><span class="voice-mode-exit">'+cross+'</span></span>';$('micBtn').before(button);button.onclick=open;
  var stage=document.createElement('section');stage.id='voiceModeStage';stage.hidden=true;stage.setAttribute('role','dialog');stage.setAttribute('aria-modal','true');stage.setAttribute('aria-labelledby','voiceModeTitle');
- stage.innerHTML='<header class="voice-mode-head"><div><strong>Pongy AI</strong><span id="voiceModeTitle"></span></div><button id="voiceModeClose" type="button">'+cross+'</button></header><div class="voice-mode-center"><div class="voice-mode-orb" aria-hidden="true"><span class="voice-orb-surface"></span><i class="voice-orb-wave"></i><i class="voice-orb-wave"></i><i class="voice-orb-wave"></i></div><h1 id="voiceModeStatus" role="status" aria-live="polite"></h1><p id="voiceModeHeard" aria-label="Transcript"></p><p id="voiceModeCaption"></p><button type="button" id="voiceModePause"></button></div>';
- document.body.appendChild(stage);$('voiceModeClose').onclick=close;$('voiceModePause').onclick=function(){if(phase==='paused')listen();else pause();};
+ stage.innerHTML='<header class="voice-mode-head"><div><strong>Pongy AI</strong><span id="voiceModeTitle"></span></div><button id="voiceModeClose" type="button">'+cross+'</button></header><div class="voice-mode-center"><button id="voiceModeOrb" type="button" class="voice-mode-orb"><span class="voice-orb-halo" aria-hidden="true"></span><span class="voice-orb-surface" aria-hidden="true"></span><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i></button><h1 id="voiceModeStatus" role="status" aria-live="polite"></h1><p id="voiceModeHint"></p></div>';
+ document.body.appendChild(stage);$('voiceModeClose').onclick=close;$('voiceModeOrb').onclick=function(){if(phase==='paused')listen();else pause();};
  $('userInput').addEventListener('beforeinput',function(e){if(opened&&e.isTrusted&&phase!=='paused')pause(tr('Можно написать сообщение. Для голоса нажмите «Продолжить».','You can type a message. Press Continue to use voice again.'));});
  $('attachBtn').addEventListener('click',function(){if(opened)pause();},true);
  document.addEventListener('visibilitychange',function(){if(opened&&document.visibilityState!=='visible')pause(tr('Вкладка скрыта — разговор на паузе.','This tab is hidden — conversation paused.'));});

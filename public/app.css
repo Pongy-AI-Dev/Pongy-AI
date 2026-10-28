@@ -1415,7 +1415,11 @@ body.dark .reminder-cancel #reminderCancelConfirm{color:#ff9ba5;border-color:#ff
 html[data-large-icons=true] .input-box>#voiceModeBtn{width:46px;height:46px;min-width:46px;flex:0 0 46px}html[data-large-icons=true] .voice-mode-dot{width:34px;height:34px}html[data-large-icons=true] .voice-mode-exit svg{width:20px;height:20px}
 #voiceModeStage button:focus-visible,#voiceModeBtn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 /* The menu is portaled outside scrolling/inert composer ancestors before measuring. */
-#composerMenu{position:fixed;bottom:auto;z-index:90;max-width:calc(100vw - 16px);overflow:auto;overscroll-behavior:contain;animation:none!important;transform:none!important}
+#composerMenu{position:fixed;bottom:auto;z-index:90;max-width:calc(100vw - 16px);overflow:auto;overscroll-behavior:contain;transform:none!important}
+@keyframes composer-reveal{from{opacity:0;clip-path:inset(12px 0 0 round 16px)}to{opacity:1;clip-path:inset(0 round 16px)}}
+html:not([data-motion=reduced]) #composerMenu:not([hidden]){animation:composer-reveal .2s ease-out both!important}
+@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #composerMenu:not([hidden]){animation:none!important}}
+html[data-motion=reduced] #composerMenu:not([hidden]){animation:none!important}
 #voiceModeStage #attachmentPreview{max-height:16dvh;overflow:auto}#voiceModeStage #replyPreview{max-height:12dvh;overflow:auto}
 @keyframes voice-orb-flow{to{transform:rotate(360deg)}}
 @keyframes voice-orb-wave{0%{transform:scale(.94);opacity:0}18%{opacity:.45}100%{transform:scale(1.3);opacity:0}}
@@ -1435,3 +1439,46 @@ html[data-motion=reduced] .voice-mode-orb,html[data-motion=reduced] .voice-mode-
 .wake-focus-setup ol{padding-left:22px;margin:8px 0 0;color:var(--fg2);font-size:14px;line-height:1.6;overflow-wrap:anywhere}
 .wake-focus-setup li+li{margin-top:8px}
 .wake-focus-setup code{font-size:12px;letter-spacing:0;overflow-wrap:anywhere;white-space:normal}
+
+/* Orb interaction and breathing: decorative state animation, not a fabricated audio meter. */
+#voiceModeOrb{--orb-a:#c4f6f4;--orb-b:#9585ee;--orb-c:#5840a9;display:block;appearance:none;border:0;padding:0;background:none;cursor:pointer;overflow:visible;touch-action:manipulation;box-shadow:none;line-height:1;transform-origin:center;animation:orb-breathe 3s ease-in-out infinite!important}
+#voiceModeOrb .voice-orb-surface{pointer-events:none;background:radial-gradient(ellipse at 26% 18%,var(--orb-a),var(--orb-b) 43%,var(--orb-c) 78%,#292653 100%);box-shadow:inset 6px 9px 18px #ffffff65,inset -12px -16px 30px #24214a65,0 18px 38px #6154b83d;transition:filter .3s,box-shadow .3s}
+#voiceModeOrb .voice-orb-surface::before{background:conic-gradient(from 40deg,transparent 0 12%,#c9ffff99 24%,transparent 40% 58%,#b977fa99 75%,transparent 90%);inset:-35%;border-radius:43%;animation:voice-orb-flow 5s linear infinite}
+#voiceModeOrb .voice-orb-surface::after{background:radial-gradient(ellipse at 32% 23%,#ffffffaa,transparent 35%),radial-gradient(ellipse at 75% 75%,#bf7eed77,transparent 55%);inset:-10%;animation:orb-drift 4s ease-in-out infinite alternate}
+.voice-orb-halo{position:absolute;inset:-24%;border-radius:50%;background:radial-gradient(circle,#8c76de35,transparent 68%);filter:blur(9px);pointer-events:none;z-index:-1;animation:orb-halo 3s ease-in-out infinite}
+#voiceModeStage:is([data-state=listening],[data-state=speaking]) #voiceModeOrb .voice-orb-wave{inset:-6%;border:2px solid #9c8aee;animation:orb-ripple 2.2s ease-out infinite;opacity:0;pointer-events:none}
+#voiceModeOrb .voice-orb-wave:nth-of-type(2){animation-delay:.72s!important}#voiceModeOrb .voice-orb-wave:nth-of-type(3){animation-delay:1.44s!important}
+#voiceModeStage[data-state=speaking] #voiceModeOrb{animation:orb-speak .85s ease-in-out infinite alternate!important}
+#voiceModeStage[data-state=speaking] #voiceModeOrb .voice-orb-surface{animation:none}
+#voiceModeStage[data-state=paused] #voiceModeOrb{--orb-a:#ffd6cd;--orb-b:#ed7385;--orb-c:#a52855;animation:orb-breathe 4s ease-in-out infinite!important}
+#voiceModeStage[data-state=paused] #voiceModeOrb .voice-orb-surface{filter:none;box-shadow:inset 6px 9px 18px #ffffff65,inset -12px -16px 30px #65193365,0 18px 38px #b54d6a35}
+#voiceModeStage[data-state=paused] #voiceModeOrb .voice-orb-surface::before{background:conic-gradient(transparent,#ffd1b499,transparent,#ff718a99,transparent)}
+#voiceModeStage[data-state=paused] #voiceModeOrb .voice-orb-halo{background:radial-gradient(circle,#e76c8335,transparent 68%)}
+@media(hover:hover){#voiceModeOrb:hover .voice-orb-surface{filter:brightness(1.13);box-shadow:inset 6px 9px 18px #ffffff88,inset -12px -16px 30px #24214a55,0 0 36px #ac9bf280}#voiceModeOrb:hover .voice-orb-surface::after{animation:orb-shimmer 1.3s ease-in-out infinite alternate}}
+#voiceModeHint{font-size:13px;line-height:1.5;color:var(--fg2);margin:0;max-width:100%}
+@keyframes orb-breathe{0%,100%{transform:scale(calc(.97 + var(--voice-level)*.09))}50%{transform:scale(calc(1.035 + var(--voice-level)*.09))}}
+@keyframes orb-speak{0%{transform:scale(.97) rotate(-1.5deg)}100%{transform:scale(1.075) rotate(1.5deg)}}
+@keyframes orb-ripple{0%{transform:scale(.93);opacity:.05}18%{opacity:.6}100%{transform:scale(1.42);opacity:0}}
+@keyframes orb-drift{from{transform:translate(-3%,-3%) rotate(-10deg)}to{transform:translate(4%,4%) rotate(14deg)}}
+@keyframes orb-halo{50%{opacity:.6;transform:scale(1.12)}}@keyframes orb-shimmer{from{opacity:.65;transform:translate(-2%,-2%)}to{opacity:1;transform:translate(3%,3%)}}
+#clearComposerMode,#clearUploadSkill,.attachment-chip>button:not(.attachment-preview-open){padding:0;line-height:1;display:inline-grid;place-items:center;align-self:center;flex-shrink:0}
+#clearUploadSkill svg,#clearComposerMode svg,.attachment-chip>button:not(.attachment-preview-open) svg{display:block;flex:none;pointer-events:none}
+html[data-motion=reduced] #voiceModeOrb,html[data-motion=reduced] #voiceModeOrb *,html[data-motion=reduced] #voiceModeOrb *::before,html[data-motion=reduced] #voiceModeOrb *::after{animation:none!important;transition:none!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #voiceModeOrb,html:not([data-motion=full]) #voiceModeOrb *,html:not([data-motion=full]) #voiceModeOrb *::before,html:not([data-motion=full]) #voiceModeOrb *::after{animation:none!important;transition:none!important;transform:none!important}}
+.connections-dialog header{align-items:center}.connections-dialog h2{margin:0;font-size:24px}#connectionsClose{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;padding:0;line-height:1}#connectionsClose svg{display:block;pointer-events:none}
+#connectionsStatus:empty,#settingsConnectionsStatus:empty{display:none}.connections-dialog footer{padding-top:12px;margin-top:12px;font-size:12px}.connections-dialog .connection-row{min-height:66px;padding:8px 0}.connection-add{line-height:1;padding:0}.connection-eyebrow{display:none}
+#settingsConnectionsCatalog .connection-row{min-height:64px}#settingsConnectionsHint{font-size:14px;line-height:1.5;color:var(--fg2)}
+html[data-motion=reduced] #voiceModeStage button#voiceModeOrb,html[data-motion=reduced] #voiceModeStage #voiceModeOrb :is(.voice-orb-surface,.voice-orb-wave,.voice-orb-halo),html[data-motion=reduced] #voiceModeStage #voiceModeOrb .voice-orb-surface::before,html[data-motion=reduced] #voiceModeStage #voiceModeOrb .voice-orb-surface::after{animation:none!important;transition:none!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #voiceModeStage button#voiceModeOrb,html:not([data-motion=full]) #voiceModeStage #voiceModeOrb :is(.voice-orb-surface,.voice-orb-wave,.voice-orb-halo),html:not([data-motion=full]) #voiceModeStage #voiceModeOrb .voice-orb-surface::before,html:not([data-motion=full]) #voiceModeStage #voiceModeOrb .voice-orb-surface::after{animation:none!important;transition:none!important;transform:none!important}}
+
+.voice-choice{display:flex;flex-direction:column;gap:10px;margin-top:14px;min-width:0}.voice-choice label{font-size:13px;font-weight:600}.voice-choice select{width:100%;min-width:0;text-overflow:ellipsis}.voice-choice p{font-size:12px;line-height:1.5;color:var(--fg2);margin:0}.voice-preview{padding:10px 14px;min-height:44px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--fg);align-self:flex-start}
+
+#replyPreview>button{padding:0;display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;line-height:1;align-self:center}#replyPreview>button svg{display:block;pointer-events:none}#attachmentPreview .attachment-chip>button:last-child:not(.attachment-preview-open){display:grid;place-items:center;width:24px;height:24px;line-height:1}
+/* Keep the click target still; animate its visible surface instead of moving the hitbox. */
+#voiceModeStage button#voiceModeOrb{animation:none!important;transform:none;transition:none}
+#voiceModeStage #voiceModeOrb>.voice-orb-surface{animation:orb-breathe 3s ease-in-out infinite!important}
+#voiceModeStage[data-state=speaking] #voiceModeOrb>.voice-orb-surface{animation:orb-speak .85s ease-in-out infinite alternate!important}
+#voiceModeStage[data-state=paused] #voiceModeOrb>.voice-orb-surface{animation:orb-breathe 4s ease-in-out infinite!important}
+html[data-motion=reduced] #voiceModeStage button#voiceModeOrb>.voice-orb-surface{animation:none!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #voiceModeStage button#voiceModeOrb>.voice-orb-surface{animation:none!important;transform:none!important}}
+#voiceModeStage[data-state] button#voiceModeOrb{animation:none!important;transform:none!important;transition:none!important}
