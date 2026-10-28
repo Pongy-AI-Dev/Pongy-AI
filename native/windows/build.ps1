@@ -8,7 +8,7 @@ $nativeDir = $PSScriptRoot
 $repoRoot = (Resolve-Path (Join-Path $nativeDir '..\..')).Path
 $buildDir = Join-Path $nativeDir 'build'
 $downloadsDir = Join-Path $repoRoot 'public\downloads'
-$output = Join-Path $downloadsDir 'Pongy-AI-0.24.3-windows-x64.msi'
+$output = Join-Path $downloadsDir 'Pongy-AI-0.25.0-windows-x64.msi'
 
 if (-not $WebView2SdkPath -or -not (Test-Path (Join-Path $WebView2SdkPath 'build\native\x64\WebView2LoaderStatic.lib'))) {
   throw 'Set WEBVIEW2_SDK to the extracted Microsoft.Web.WebView2 1.0.3537.50 NuGet package.'
@@ -38,7 +38,7 @@ $logo = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $repoRoot '
 $offline = $offline.Replace('/welcome-logo.png',"data:image/png;base64,$logo")
 $offlineScript = [IO.File]::ReadAllText((Join-Path $repoRoot 'public\offline-page.js')).Replace(
   'location.reload()',
-  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.24.3")'
+  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.25.0")'
 )
 $offline = $offline.Replace(
   '<script src="/offline-page.js"></script>',
