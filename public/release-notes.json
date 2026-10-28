@@ -1,13 +1,13 @@
 {
-  "version": "0.25.0",
+  "version": "0.26.0",
   "ru": [
-    "Connections: реальные ограниченные API-данные поступают в контекст ответа; уточнения могут продолжать чтение выбранного сервиса. Gmail показывает отправителя и тему, GitHub — содержимое папок. Доступ остаётся только для чтения.",
-    "Напоминания из чата: просмотр сохранённого расписания, перенос и отмена по точному названию. Изменения сохраняются только после подтверждения; из прочитанных данных сервиса можно подготовить черновик напоминания.",
-    "Зов запрашивает фокус у нативного приложения и браузера. Если вкладка остаётся скрытой, уведомление позволяет открыть именно её. Обычный сайт не может гарантировать автоматический выход поверх других программ. Установщики не пересобраны."
+    "Полноэкранный голосовой режим: градиентный круг рядом с микрофоном, круглый маскот, озвучивание завершённого ответа и следующий голосовой запрос. Исходное поле ввода и инструменты остаются снизу. Пауза и два способа выхода останавливают разговор.",
+    "Голосовой режим защищает черновики, приостанавливает микрофон во время ответа и при скрытии вкладки; подтверждения напоминаний и других действий сохраняются. Это последовательный разговор, не одновременный двусторонний аудиопоток.",
+    "Дополнительное расширение Chrome/Edge может переключать открытую вкладку Pongy после распознанного зова. Требуется ручная установка и явное разрешение в расширении. Без него сайт использует прежние попытку фокусировки и уведомление; фоновые ограничения браузера и ОС остаются. Установщики не пересобраны."
   ],
   "en": [
-    "Connections: real bounded API results enter the answer context; narrow follow-ups can continue reading the selected service. Gmail includes sender/subject and GitHub supports directory browsing. Access remains read only.",
-    "Chat reminders: list real schedules, reschedule and cancel by exact title with confirmation. Read service data can be used to propose a reminder draft.",
-    "Wake requests native/browser focus and offers a notification targeting the originating tab when hidden. Websites cannot guarantee foreground activation over other programs. Installers were not rebuilt."
+    "Full-screen voice conversation: a gradient circle beside the microphone, a round mascot, spoken completed replies and next-turn listening. The original composer and tools stay at the bottom. Pause and both exit controls stop the conversation.",
+    "Voice mode protects drafts, pauses the microphone during playback and when the tab is hidden, and retains reminder/action confirmation. This is turn-based speech, not simultaneous two-way audio streaming.",
+    "An optional Chrome/Edge extension can activate the existing Pongy tab after a recognized wake call. Manual installation and explicit opt-in are required. Without it, existing focus/notification fallback remains. Browser/OS background restrictions still apply. Installers were not rebuilt."
   ]
 }

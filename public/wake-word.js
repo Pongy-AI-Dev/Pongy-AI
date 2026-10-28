@@ -56,6 +56,7 @@ function trigger(seed){
  try{root.PongyDesktop?.bringToFront?.()}catch(e){}
  try{root.PongyAndroid?.bringToFront?.()}catch(e){}
  try{root.focus?.()}catch(e){}
+ if(document.visibilityState!=='visible')try{root.PongyFocusBridge?.requestFocus?.().catch(function(){})}catch(e){}
  if(document.visibilityState==='visible'){onVisible();return;}
  flashTitle();chime();announce();
 }
