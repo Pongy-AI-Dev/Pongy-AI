@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Pongy — Wake Focus",
+  "version": "0.26.0",
+  "description": "Activates the existing Pongy AI tab after its voice wake request. No microphone access.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApfhkuxnSG7Ierqstt/8Mw4JODYP+ZoXCrCdqNhogshOe7A/lazD/IBqa31g3aI6gGUYBt8Zx8u6m+6LHQpkDaUpwXiTPbm7ILdtmjszIjGivLNlkHMNkn3gLEVd5EyBtdi9tEZASJ+VOQux6JwGMBmjhT0WNnQsPgL9lWzrrvjiRLmQxrMq+kOwOyJ1wcgAYpoi/WBBjZ6c+SV3xeFr6c8WYh0wqG3O/vHJAj7HUiSDCky709JiDJe7rW4T2JvP3TZ2p3TOnENopcPT1xHs68zo5RRFIAbGM4rbxNuNvVe1KI5wQk/ZMu7o4TPi+cGjqquXY+zIbngmR4nUnF8XMdQIDAQAB",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://pongy-ai.devs.surf/*"
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://pongy-ai.devs.surf/*"
+    ]
+  },
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Pongy — Wake Focus"
+  }
+}
