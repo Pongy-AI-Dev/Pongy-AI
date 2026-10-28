@@ -2,8 +2,8 @@
 1 ICON "../../public/favicon.ico"
 2 RCDATA "build/offline.html"
 1 VERSIONINFO
-FILEVERSION 0,26,1,0
-PRODUCTVERSION 0,26,1,0
+FILEVERSION 0,27,0,0
+PRODUCTVERSION 0,27,0,0
 FILEFLAGSMASK 0x3fL
 FILEFLAGS 0
 FILEOS VOS_NT_WINDOWS32
@@ -15,12 +15,12 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "Pongy AI Dev\0"
    VALUE "FileDescription", "Pongy AI native WebView2 application\0"
-   VALUE "FileVersion", "0.26.1\0"
+   VALUE "FileVersion", "0.27.0\0"
    VALUE "InternalName", "PongyAI\0"
    VALUE "LegalCopyright", "Pongy AI Dev\0"
    VALUE "OriginalFilename", "PongyAI.exe\0"
    VALUE "ProductName", "Pongy AI\0"
-   VALUE "ProductVersion", "0.26.1\0"
+   VALUE "ProductVersion", "0.27.0\0"
   END
  END
  BLOCK "VarFileInfo"
