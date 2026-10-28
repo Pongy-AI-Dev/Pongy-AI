@@ -42,16 +42,22 @@ function handleText(text,final){if(!listening||!text)return;lastHeard=String(tex
 // emitting an endpoint. Confirm it only after stable text AND actual mic silence.
 function checkSilence(buffer){try{var samples=buffer.getChannelData(0),sum=0;for(var i=0;i<samples.length;i++)sum+=samples[i]*samples[i];var at=Date.now();if(Math.sqrt(sum/Math.max(1,samples.length))>.012)lastLoudAt=at;if(candidate&&at-candidate.at>=1200&&at-lastLoudAt>=800)handleText(candidate.text,true);}catch(e){}}
 function prepareAudio(){if(!audCtx||audCtx.state==='closed'){var AC=root.AudioContext||root.webkitAudioContext;if(!AC)return null;audCtx=new AC();}if(audCtx.state!=='running')Promise.resolve(audCtx.resume()).catch(function(){});return audCtx;}
-function flashTitle(){if(titleTimer)return;titleOriginal=document.title;var flag=true;var tick=function(){document.title=(flag?'Pongy AI — ':titleOriginal);flag=!flag;};document.title=tr('Pongy AI — слушаю…','Pongy AI — listening…');titleTimer=setInterval(tick,900);setTimeout(function(){clearInterval(titleTimer);titleTimer=0;document.title=titleOriginal;},9000);}
+function flashTitle(){if(titleTimer)return;titleOriginal=document.title;var flag=true;var tick=function(){document.title=(flag?'Pongy AI — ':titleOriginal);flag=!flag;};document.title=tr('Pongy AI — откройте вкладку','Pongy AI — open this tab');titleTimer=setInterval(tick,900);setTimeout(function(){clearInterval(titleTimer);titleTimer=0;document.title=titleOriginal;},9000);}
 function chime(){try{if(!audCtx)return;var at=audCtx.currentTime,g=audCtx.createGain();g.gain.value=0;g.connect(audCtx.destination);[[880,0],[1320,0.22]].forEach(function(pair){var o=audCtx.createOscillator();o.type='sine';o.frequency.value=pair[0];o.connect(g);o.start(at+pair[1]);o.stop(at+pair[1]+0.16);g.gain.setValueAtTime(0,at+pair[1]);g.gain.linearRampToValueAtTime(0.12,at+pair[1]+0.02);g.gain.linearRampToValueAtTime(0,at+pair[1]+0.16);});}catch(e){}}
-function announce(){status('triggered');try{if(root.PongyAndroid?.showNotification)root.PongyAndroid.showNotification(JSON.stringify({id:'pongy-wake',text:tr('Скажите команду — вкладка Pongy AI открыта.','Say your command — the Pongy AI tab is open.')}));else if('Notification'in root&&Notification.permission==='granted'){var n=new Notification('Pongy AI',{body:tr('Говорите — я слушаю.','Say your command — I am listening.'),tag:'pongy-wake'});n.onclick=function(){try{n.close();root.focus()}catch(e){}};}}catch(e){}}
-var pendingCommand='';
+function announce(){status('triggered');var body=tr('Зов распознан. Нажмите, чтобы открыть Pongy и сказать команду.','Wake detected. Click to open Pongy and say your command.');try{if(root.PongyAndroid?.showNotification){root.PongyAndroid.showNotification(JSON.stringify({id:'pongy-wake',text:body}));return;}if(!('Notification'in root)||Notification.permission!=='granted')return;
+ var fallback=function(){try{var n=new Notification('Pongy AI',{body:body,tag:'pongy-wake'});n.onclick=function(){try{n.close();root.focus();onVisible()}catch(e){}};}catch(e){}};
+ if(navigator.serviceWorker?.getRegistration)navigator.serviceWorker.getRegistration().then(function(reg){if(reg?.active&&pendingFocus)reg.active.postMessage({type:'pongy-wake-notify',nonce:pendingNonce,body:body});else if(pendingFocus)fallback();}).catch(fallback);else fallback();}catch(e){} }
+var pendingCommand='',pendingNonce='';
 function trigger(seed){
  if(wakeTest){wakeTest.detectedAt=Date.now();status('listening');return;}
- pendingCommand=seed||'';try{root.PongyDesktop?.bringToFront?.()}catch(e){}
- if(root.PongyAndroid?.bringToFront)try{root.PongyAndroid.bringToFront()}catch(e){}
- if(document.visibilityState==='visible'){status('triggered');stop(true);ctx?.startVoice?.(pendingCommand);pendingCommand='';return;}
- pendingFocus=true;pendingAt=Date.now();flashTitle();chime();announce();
+ pendingCommand=seed||'';
+ // A wake grants no browser user activation. Both native and browser focus are best effort.
+ pendingFocus=true;pendingAt=Date.now();pendingNonce=String(pendingAt)+'-'+Math.random().toString(36).slice(2);
+ try{root.PongyDesktop?.bringToFront?.()}catch(e){}
+ try{root.PongyAndroid?.bringToFront?.()}catch(e){}
+ try{root.focus?.()}catch(e){}
+ if(document.visibilityState==='visible'){onVisible();return;}
+ flashTitle();chime();announce();
 }
 function langCode(){return ctx&&ctx.lang&&String(ctx.lang()).toLowerCase().indexOf('ru')===0?'ru':'en'}
 function teardown(keepAudio){++seq;acoustic?.reset();candidate=null;activeLanguage='';clearTimeout(restartTimer);if(node)node.onaudioprocess=null;[source,node,mute].forEach(function(n){try{n&&n.disconnect()}catch(e){}});try{recognizer&&recognizer.remove&&recognizer.remove()}catch(e){}recognizer=null;try{stream&&stream.getTracks().forEach(function(t){t.stop()})}catch(e){}stream=null;source=node=mute=null;if(audCtx&&!keepAudio){try{audCtx.close().catch(function(){})}catch(e){}audCtx=null;}listening=false;starting=false;}
@@ -100,7 +106,7 @@ function ensure(){
 function scheduleRestart(){if(!enabled())return;var delay=Math.min(15000,2000*Math.pow(2,Math.min(failures,3)));clearTimeout(restartTimer);restartTimer=setTimeout(ensure,delay);}
 function onVisible(){
  if(document.visibilityState!=='visible'||!pendingFocus)return;
- var fresh=Date.now()-pendingAt<10000;pendingFocus=false;if(!fresh)return;
+ var fresh=Date.now()-pendingAt<60000;pendingFocus=false;pendingNonce='';if(!fresh||!enabled()||(ctx?.ready&&!ctx.ready())){pendingCommand='';return;}status('triggered');
  stop(true);ctx?.startVoice?.(pendingCommand);pendingCommand='';
 }
 function watch(){
@@ -108,7 +114,7 @@ function watch(){
  watchTimer=setInterval(function(){
   if(!enabled()||(ctx&&ctx.ready&&!ctx.ready())){if(listening||starting||audCtx||stream)stop();pendingFocus=false;pendingCommand='';ctx?.cancelWake?.();return;}
   if(listening&&audCtx&&audCtx.state!=='running'){if(audCtx.state==='closed'){teardown();status('waiting');scheduleRestart();return;}try{prepareAudio();}catch(e){}if(audCtx.state!=='running'){teardown(true);status('waiting');scheduleRestart();}return;}
-  if(listening&&activeLanguage!==langCode()){teardown(true);ensure();return;}var busy=ctx&&ctx.voiceActive&&ctx.voiceActive();if(pendingFocus&&Date.now()-pendingAt>=10000){pendingFocus=false;pendingCommand='';}
+  if(listening&&activeLanguage!==langCode()){teardown(true);ensure();return;}var busy=ctx&&ctx.voiceActive&&ctx.voiceActive();if(pendingFocus&&Date.now()-pendingAt>=60000){pendingFocus=false;pendingCommand='';}
   if(busy&&listening)stop(true);
   else if(!busy&&!listening&&!starting)ensure();
  },1500);
@@ -126,7 +132,7 @@ function init(options){
    else{setEnabled(false);stop();ctx?.cancelWake?.();pendingFocus=false;pendingCommand='';status('');}
   });
  }
- ['pointerdown','keydown','touchstart','click'].forEach(function(type){document.addEventListener(type,gestureResume,{capture:true,passive:true});});document.addEventListener('visibilitychange',onVisible);
+ ['pointerdown','keydown','touchstart','click'].forEach(function(type){document.addEventListener(type,gestureResume,{capture:true,passive:true});});document.addEventListener('visibilitychange',onVisible);if(navigator.serviceWorker?.addEventListener)navigator.serviceWorker.addEventListener('message',function(e){if(e.data?.type==='pongy-wake-focus'&&pendingFocus&&e.data.nonce===pendingNonce)onVisible();});
  root.addEventListener('pagehide',function(){stop();});
  watch();
 }

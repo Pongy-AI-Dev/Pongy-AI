@@ -1,13 +1,13 @@
 {
-  "version": "0.24.3",
+  "version": "0.25.0",
   "ru": [
-    "Ручная форма нового напоминания предлагает время с запасом пять минут, с правильной датой после полуночи. Явно запрошенные дата и время, пустое время при неоднозначном запросе и редактируемые напоминания не сдвигаются.",
-    "Окна Connections и настройки зова центрируются через ограниченную высоту содержимого и автоматические отступы, без процентного translate. Сохраняются прокрутка длинного каталога, анимация и верхний модальный слой.",
-    "Браузерные проверки ожидают завершения анимации, выводят размеры окна при сбое и проверяют сохранение напоминания при смене минуты и даты. Тексты и секреты OAuth не меняются; готовые MSI/APK не пересобраны."
+    "Connections: реальные ограниченные API-данные поступают в контекст ответа; уточнения могут продолжать чтение выбранного сервиса. Gmail показывает отправителя и тему, GitHub — содержимое папок. Доступ остаётся только для чтения.",
+    "Напоминания из чата: просмотр сохранённого расписания, перенос и отмена по точному названию. Изменения сохраняются только после подтверждения; из прочитанных данных сервиса можно подготовить черновик напоминания.",
+    "Зов запрашивает фокус у нативного приложения и браузера. Если вкладка остаётся скрытой, уведомление позволяет открыть именно её. Обычный сайт не может гарантировать автоматический выход поверх других программ. Установщики не пересобраны."
   ],
   "en": [
-    "New manual reminders default to five minutes ahead, including the correct date across midnight. Explicit request times, missing times and existing reminders are preserved.",
-    "Connections and wake setup dialogs use bounded intrinsic height and auto margins, without percentage translation. Scrolling, entrance motion and the modal top layer remain.",
-    "Browser checks wait for completed animations, log geometry on failure and verify saving across minute/day rollover. OAuth credentials are unchanged; native installers were not rebuilt."
+    "Connections: real bounded API results enter the answer context; narrow follow-ups can continue reading the selected service. Gmail includes sender/subject and GitHub supports directory browsing. Access remains read only.",
+    "Chat reminders: list real schedules, reschedule and cancel by exact title with confirmation. Read service data can be used to propose a reminder draft.",
+    "Wake requests native/browser focus and offers a notification targeting the originating tab when hidden. Websites cannot guarantee foreground activation over other programs. Installers were not rebuilt."
   ]
 }
