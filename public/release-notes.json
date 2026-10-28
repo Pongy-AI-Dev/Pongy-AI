@@ -1,13 +1,13 @@
 {
-  "version": "0.24.2",
+  "version": "0.24.3",
   "ru": [
-    "Запрос напоминания открывает заполненную форму прямо из чата, без зависимости от ответа модели. Дата, время, текст, описание и галочка уведомлений готовы к проверке; сохранение — только после подтверждения.",
-    "Повторный запрос снова открывает форму. Общий разбор расписания для браузера и сервера; неполное время не подменяется догадкой.",
-    "Проверка персонального зова без запуска команды: уровень микрофона и сообщения о результате. Снижен порог захвата для новых тихих образцов с одинаковым разделением записи при обучении и слушании. Живой голос требует проверки на вашем устройстве. Нативные пакеты не пересобраны."
+    "Ручная форма нового напоминания предлагает время с запасом пять минут, с правильной датой после полуночи. Явно запрошенные дата и время, пустое время при неоднозначном запросе и редактируемые напоминания не сдвигаются.",
+    "Окна Connections и настройки зова центрируются через ограниченную высоту содержимого и автоматические отступы, без процентного translate. Сохраняются прокрутка длинного каталога, анимация и верхний модальный слой.",
+    "Браузерные проверки ожидают завершения анимации, выводят размеры окна при сбое и проверяют сохранение напоминания при смене минуты и даты. Тексты и секреты OAuth не меняются; готовые MSI/APK не пересобраны."
   ],
   "en": [
-    "Reminder requests open a prefilled form directly from chat, independently of model replies. Review date, time, title, description and notifications; only confirmation schedules it.",
-    "Repeated requests reopen the form. Browser and server share schedule parsing; ambiguous times are not guessed.",
-    "Personal wake-call test without sending a command, with microphone level and actionable results. New quiet templates use a lower, consistent capture floor. Live voice still requires device testing. Native packages were not rebuilt."
+    "New manual reminders default to five minutes ahead, including the correct date across midnight. Explicit request times, missing times and existing reminders are preserved.",
+    "Connections and wake setup dialogs use bounded intrinsic height and auto margins, without percentage translation. Scrolling, entrance motion and the modal top layer remain.",
+    "Browser checks wait for completed animations, log geometry on failure and verify saving across minute/day rollover. OAuth credentials are unchanged; native installers were not rebuilt."
   ]
 }

@@ -2,7 +2,7 @@
 self.addEventListener('push',e=>e.waitUntil((async()=>{let p;try{p=e.data.json();}catch{return;}if(!p||typeof p.body!=='string')return;await self.registration.showNotification(String(p.title||'Pongy AI').slice(0,100),{body:p.body.slice(0,260),tag:String(p.id||'reminder'),icon:'/welcome-logo.png',data:{url:'/'}});})()));
 self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil((async()=>{const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true}),existing=windows.find(c=>new URL(c.url).origin===self.location.origin);if(existing)return existing.focus();return self.clients.openWindow('/');})());});
 // Cache public shell assets only. Never cache API replies, user data or downloads.
-const SHELL_CACHE='pongy-public-shell-0.24.2';
+const SHELL_CACHE='pongy-public-shell-0.24.3';
 const SHELL_FILES=['/offline.html','/offline-page.js','/welcome-logo.png','/favicon.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(SHELL_CACHE);await cache.addAll(SHELL_FILES);await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith('pongy-public-shell-')&&key!==SHELL_CACHE)await caches.delete(key);await self.clients.claim();})()));
