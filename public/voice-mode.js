@@ -1,6 +1,7 @@
 /* Voice conversation: one composer, private interim transcript, sentence-by-sentence playback. */
 (function(root){'use strict';
 var ctx,opened=false,phase='idle',generation=0,boundAccount='',boundChat=null,home,anchor,previousFocus,oldInert={},timer;
+var recoveryCount=0,recordingSince=0;
 var replyRaw='',speechOffset=0,speechQueue=[],playing=false,replyComplete=false,resumeTimer;
 var $=id=>document.getElementById(id),tr=(a,b)=>ctx.lang()==='ru'?a:b;
 function active(){return opened;}
@@ -30,7 +31,7 @@ function labels(){
  $('voiceModeBtn').setAttribute('aria-expanded',String(opened));
  $('voiceModeClose').ariaLabel=tr('Закрыть голосовой режим','Close voice mode');
  $('voiceModeTitle').textContent=tr('Голосовой режим','Voice conversation');
- var orb=$('voiceModeOrb');orb.setAttribute('aria-label',phase==='paused'?tr('Продолжить разговор','Resume conversation'):tr('Поставить разговор на паузу','Pause conversation'));orb.setAttribute('aria-pressed',String(phase==='paused'));$('voiceModeHint').textContent=tr('Нажмите на круг — пауза / продолжение','Tap the orb to pause or resume');
+ var orb=$('voiceModeOrb');orb.setAttribute('aria-label',phase==='paused'?tr('Продолжить разговор','Resume conversation'):tr('Поставить разговор на паузу','Pause conversation'));orb.setAttribute('aria-pressed',String(phase==='paused'));
 }
 function state(value,message){
  phase=value;$('voiceModeStage').dataset.state=value;labels();
@@ -39,7 +40,7 @@ function state(value,message){
 }
 function clearReply(){clearTimeout(resumeTimer);speechQueue=[];playing=false;replyRaw='';speechOffset=0;replyComplete=false;}
 function pause(message){if(!opened)return;++generation;clearReply();ctx.stopListening();ctx.stopSpeaking();level(0);state('paused',message);}
-function canListen(){var s=ctx.snapshot();return opened&&s.ready&&!s.busy&&!s.draft&&!s.attachments&&!s.blocked&&document.visibilityState==='visible';}
+function canListen(){var s=ctx.snapshot();return opened&&s.ready&&!s.busy&&!s.draft&&!s.attachments&&!s.blocked;}
 function listen(){
  if(!opened)return;
  if(!canListen()){pause(tr('Отправьте или сохраните черновик, закройте другие окна и нажмите «Продолжить».','Send or keep your draft, close other dialogs, then press Continue.'));return;}
@@ -53,7 +54,7 @@ function close(){
  for(var id of ['main','sidebar'])if($(id))$(id).inert=oldInert[id];labels();boundChat=null;boundAccount='';if(previousFocus?.isConnected)previousFocus.focus();
 }
 function open(){
- if(opened){close();return;}var s=ctx.snapshot();if(!s.ready)return;ctx.closeMenu();previousFocus=document.activeElement;boundAccount=s.account;boundChat=s.chatId;
+ recoveryCount=0;recordingSince=0;if(opened){close();return;}var s=ctx.snapshot();if(!s.ready)return;ctx.closeMenu();previousFocus=document.activeElement;boundAccount=s.account;boundChat=s.chatId;
  home=$('inputArea').parentNode;anchor=document.createComment('Pongy composer home');$('inputArea').before(anchor);$('voiceModeStage').appendChild($('inputArea'));
  for(var id of ['main','sidebar'])if($(id)){oldInert[id]=$(id).inert;$(id).inert=true;}
  opened=true;document.body.classList.add('voice-mode');$('voiceModeStage').hidden=false;labels();ctx.stopListening();ctx.stopSpeaking();$('voiceModeClose').focus();timer=setInterval(watch,150);listen();
@@ -96,19 +97,19 @@ function level(value){if(!opened)return;var n=Math.max(0,Math.min(1,Number(value
 function watch(){
  if(!opened)return;var s=ctx.snapshot();if(!current()){close();return;}
  if(s.blocked&&phase!=='paused'){pause(tr('Открыто другое окно. Завершите действие и нажмите «Продолжить».','Another dialog is open. Finish that action and press Continue.'));return;}
- if(phase==='connecting'&&s.recording)state('listening');else if(phase==='connecting'&&s.starting&&s.voiceProgress&&$('voiceModeStatus').textContent!==s.voiceProgress)state('connecting',s.voiceProgress);
- if(['connecting','listening'].includes(phase)&&s.voiceError)pause(s.voiceError);else if(phase==='listening'&&!s.recording&&!s.starting&&!s.busy)pause();
+ if(phase==='connecting'&&s.recording){recordingSince=Date.now();state('listening');}else if(phase==='connecting'&&s.starting&&s.voiceProgress&&$('voiceModeStatus').textContent!==s.voiceProgress)state('connecting',s.voiceProgress);
+ if(['connecting','listening'].includes(phase)&&s.voiceError)pause(s.voiceError);else if(phase==='listening'&&!s.recording&&!s.starting&&!s.busy){if(recordingSince&&Date.now()-recordingSince>5000)recoveryCount=0;if(++recoveryCount>3){pause(tr('Распознавание остановлено браузером. Нажмите на круг, чтобы повторить.','The browser stopped recognition. Tap the orb to retry.'));return;}var token=generation;state('connecting',tr('Возобновляю микрофон…','Resuming microphone…'));setTimeout(function(){if(current()&&token===generation&&phase==='connecting')listen();},Math.min(3000,400*recoveryCount));}
 }
 function init(options){
  ctx=options;var button=document.createElement('button');button.id='voiceModeBtn';button.type='button';button.setAttribute('aria-controls','voiceModeStage');
  var cross='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
  button.innerHTML='<span class="voice-mode-dot" aria-hidden="true"><span class="voice-mode-exit">'+cross+'</span></span>';$('micBtn').before(button);button.onclick=open;
  var stage=document.createElement('section');stage.id='voiceModeStage';stage.hidden=true;stage.setAttribute('role','dialog');stage.setAttribute('aria-modal','true');stage.setAttribute('aria-labelledby','voiceModeTitle');
- stage.innerHTML='<header class="voice-mode-head"><div><strong>Pongy AI</strong><span id="voiceModeTitle"></span></div><button id="voiceModeClose" type="button">'+cross+'</button></header><div class="voice-mode-center"><button id="voiceModeOrb" type="button" class="voice-mode-orb"><span class="voice-orb-halo" aria-hidden="true"></span><span class="voice-orb-surface" aria-hidden="true"></span><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i></button><h1 id="voiceModeStatus" role="status" aria-live="polite"></h1><p id="voiceModeHint"></p></div>';
+ stage.innerHTML='<header class="voice-mode-head"><div><strong>Pongy AI</strong><span id="voiceModeTitle"></span></div><button id="voiceModeClose" type="button">'+cross+'</button></header><div class="voice-mode-center"><button id="voiceModeOrb" type="button" class="voice-mode-orb"><span class="voice-orb-halo" aria-hidden="true"></span><span class="voice-orb-surface" aria-hidden="true"></span><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i><i class="voice-orb-wave" aria-hidden="true"></i></button><h1 id="voiceModeStatus" role="status" aria-live="polite"></h1></div>';
  document.body.appendChild(stage);$('voiceModeClose').onclick=close;$('voiceModeOrb').onclick=function(){if(phase==='paused')listen();else pause();};
  $('userInput').addEventListener('beforeinput',function(e){if(opened&&e.isTrusted&&phase!=='paused')pause(tr('Можно написать сообщение. Для голоса нажмите «Продолжить».','You can type a message. Press Continue to use voice again.'));});
  $('attachBtn').addEventListener('click',function(){if(opened)pause();},true);
- document.addEventListener('visibilitychange',function(){if(opened&&document.visibilityState!=='visible')pause(tr('Вкладка скрыта — разговор на паузе.','This tab is hidden — conversation paused.'));});
+
  root.addEventListener('pagehide',close);
  document.addEventListener('keydown',function(e){
   if(!opened||ctx.snapshot().blocked)return;

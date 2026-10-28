@@ -494,7 +494,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:13px;color:var(--fg2);line-height:1.7;margin:12px 0 18px}.checkout-summary{font-size:16px;line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:32px;width:32px;height:32px;min-width:32px;min-height:32px}}
 
-:root{--pongy-build:"0.26.1"}
+:root{--pongy-build:"0.27.0"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:22px;bottom:16px;width:42px;height:42px;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 4px 18px #0002;z-index:8;}
@@ -1257,7 +1257,7 @@ html:not([data-accent=default]) body.dark :is(.msg.user .bubble,.confirm-btn.pri
 #composerVersion{display:block;color:var(--fg2);font-size:11px;text-align:center;margin-top:8px;line-height:1.4}.sidebar-plus{width:100%;justify-content:center;margin:8px 0 0;border:1px solid var(--border);font-weight:650}.sidebar-plus svg{width:18px;height:18px}.tb-btn svg,.sb-btn svg{width:18px;height:18px;flex-shrink:0;display:block}.tb-btn,.sb-btn{align-items:center;justify-content:center}.release-dialog{position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw - 32px));max-height:85dvh;overflow:auto;padding:24px;border:1px solid var(--border);border-radius:16px;background:var(--bg);color:var(--fg);box-shadow:0 24px 80px #0003}.release-dialog::backdrop{background:#080c1859;backdrop-filter:blur(5px)}.release-dialog[open]{animation:settings-enter .3s ease}.release-dialog h2{font-size:20px;margin:0}.release-dialog ul{padding-left:20px;line-height:1.6;font-size:14px}.release-dialog li+li{margin-top:10px}#changelogVersion{color:var(--fg2);font-size:13px}.admin-check-dialog{position:fixed;inset:16px auto auto 16px;margin:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:14px;padding:20px}.admin-check-dialog::backdrop{background:#0003}#adminScanProgress[hidden],#adminScanCount[hidden]{display:none!important}
 .liquid-nav{position:relative;isolation:isolate}.liquid-nav .sb-btn{position:relative;z-index:1;background:transparent}.liquid-indicator{position:absolute;top:0;left:0;z-index:0;background:rgba(var(--accent-rgb,99,102,241),.13);border:1px solid rgba(var(--accent-rgb,99,102,241),.2);border-radius:12px;pointer-events:none;transition:transform .58s cubic-bezier(.22,.85,.25,1.12),width .45s,height .45s}.liquid-selected{color:var(--accent)!important}.workspace-slider,.settings-tab-indicator{background:rgba(var(--accent-rgb,99,102,241),.14)!important;box-shadow:inset 0 1px 0 #ffffff55,0 2px 8px #00000008;transition:transform .58s cubic-bezier(.22,.85,.25,1.12),width .45s cubic-bezier(.22,.85,.25,1.12)!important}.settings-tab-indicator{border-radius:10px}.settings-tabs [role=tab]{position:relative;z-index:1}.settings-section:not([hidden]){animation:settings-enter .3s cubic-bezier(.2,.8,.2,1)}
 details>summary{list-style:none;position:relative;cursor:pointer;padding-right:30px;min-height:32px;display:flex;align-items:center}details>summary::-webkit-details-marker{display:none}details>summary::after{content:'';position:absolute;right:8px;top:50%;width:7px;height:7px;border-right:1.8px solid currentColor;border-bottom:1.8px solid currentColor;transform:translateY(-65%) rotate(45deg);transition:transform .3s}details[open]>summary::after{transform:translateY(-25%) rotate(225deg)}
-.file-dragging::after{content:'Прикрепить файлы / Attach files';position:fixed;inset:16px;z-index:9999;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 92%,transparent);color:var(--accent);border:2px dashed var(--accent);border-radius:20px;font-size:clamp(18px,4vw,28px);font-weight:650;pointer-events:none}
+.file-dragging::after{content:'Attach files';position:fixed;inset:16px;z-index:9999;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 92%,transparent);color:var(--accent);border:2px dashed var(--accent);border-radius:20px;font-size:clamp(18px,4vw,28px);font-weight:650;pointer-events:none}
 .msg.ai .msg-content{align-items:stretch;min-width:0}.msg.ai :is(.attachment-list,.source-list,.site-proposal){width:100%;min-width:0;align-self:stretch}.message-file-card{min-width:0;max-width:100%}.message-file-card .attachment-chip{min-width:0;flex:1}.bubble pre{max-width:100%;overflow-x:auto}.bubble table{max-width:100%}.attachment-list{align-items:stretch}.message-file-card a{overflow-wrap:anywhere}.settings-field input,.settings-field select{min-height:44px}input[type=checkbox]:checked:not(.display-switch)::before{animation:check-pop .25s ease-out}@keyframes check-pop{from{transform:scale(.45)}to{transform:scale(1)}}
 html[data-motion=reduced] :is(.liquid-indicator,.workspace-slider,.settings-tab-indicator,details>summary::after,.colour-choice i){transition:none!important}html[data-motion=reduced] :is(.release-dialog,.settings-section,input[type=checkbox]::before){animation:none!important}
 @media(max-width:500px){.colour-palette{gap:8px}.release-dialog{padding:20px}#changelogBtn{min-width:36px}#topbar .tb-actions{gap:2px}}
@@ -1482,3 +1482,51 @@ html[data-motion=reduced] #voiceModeStage button#voiceModeOrb,html[data-motion=r
 html[data-motion=reduced] #voiceModeStage button#voiceModeOrb>.voice-orb-surface{animation:none!important;transform:none!important}
 @media(prefers-reduced-motion:reduce){html:not([data-motion=full]) #voiceModeStage button#voiceModeOrb>.voice-orb-surface{animation:none!important;transform:none!important}}
 #voiceModeStage[data-state] button#voiceModeOrb{animation:none!important;transform:none!important;transition:none!important}
+
+/* Stable click geometry; animate paint layers, not hit targets. */
+html[lang^=ru] .file-dragging::after{content:'Прикрепить файлы'}
+body.voice-mode #voiceModeStage #inputArea .modes, #voiceModeHint{display:none!important}
+#topbar .tb-actions :is(button,.tb-btn,.icon-btn){min-width:36px;height:36px;padding:8px}
+#topbar .tb-actions :is(button,.tb-btn,.icon-btn) svg{width:20px;height:20px;min-width:20px}
+html[data-large-icons=true] #topbar .tb-actions :is(button,.tb-btn,.icon-btn){min-width:46px;height:46px;padding:10px}
+.input-box>:is(#attachBtn,#micBtn,#sendBtn,#voiceModeBtn){box-sizing:border-box;width:38px;height:38px;min-width:38px;flex:0 0 38px;display:grid;place-items:center;padding:0;line-height:1}
+html[data-large-icons=true] .input-box>:is(#attachBtn,#micBtn,#sendBtn,#voiceModeBtn){width:46px;height:46px;min-width:46px;flex-basis:46px}
+.input-box>:is(#attachBtn,#micBtn,#sendBtn,#voiceModeBtn) svg{width:20px;height:20px;display:block;flex:none;margin:0;transform:none}
+html[data-large-icons=true] .input-box>:is(#attachBtn,#micBtn,#sendBtn,#voiceModeBtn) svg{width:24px;height:24px}
+#composerMenu button>i{display:grid;place-items:center;width:24px;height:24px;flex:0 0 24px;line-height:1;overflow:visible}
+#composerMenu button>i svg{display:block;width:20px;height:20px;margin:0;transform:none}
+.connection-add{display:grid!important;place-items:center!important;padding:0!important;line-height:1!important;flex-shrink:0}
+.connection-add svg{display:block;width:20px;height:20px;margin:0;transform:none}
+#serviceWarning>svg{flex:0 0 18px;display:block;width:18px;height:18px;overflow:visible;align-self:center}
+.file-visual{position:relative;box-sizing:border-box;flex-shrink:0;overflow:hidden}
+.file-visual>svg{display:block;width:24px!important;height:28px!important;max-width:100%;max-height:100%;flex:none;margin:auto;stroke-width:1.6}
+.upload-ring{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;padding:2px;box-sizing:border-box}
+.upload-ring svg{display:block;width:20px!important;height:20px!important;overflow:visible}
+.extensions-dialog{box-sizing:border-box;width:min(780px,calc(100vw - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:24px;border:1px solid var(--border);border-radius:22px;background:var(--bg);color:var(--fg);overflow:auto;box-shadow:0 24px 70px #0003}
+.extensions-dialog::backdrop{background:#17182766;backdrop-filter:blur(6px)}
+.extensions-dialog header,.extensions-settings-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.extensions-dialog header h2{margin:0 auto 0 0;font-size:24px}
+.extensions-dialog button,.extensions-settings-head button{font:inherit;color:var(--fg);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer}
+.extensions-dialog button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.extensions-dialog #extensionsClose{display:grid;place-items:center;padding:0;flex:0 0 36px;width:36px;height:36px}
+.extensions-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.extensions-layout:has(#skillBuilder:not([hidden])){grid-template-columns:minmax(200px,1fr) minmax(250px,1fr)}
+.extension-card{display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--border)}
+.extension-card .extension-description{display:flex;align-items:center;gap:12px;text-align:left;border:0;background:transparent;padding:0;min-width:0;box-shadow:none;color:var(--fg)}
+.extension-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:color-mix(in srgb,var(--accent) 9%,var(--bg));color:var(--accent)}
+.extension-toggle{display:grid!important;place-items:center;width:40px;height:40px;padding:0!important;color:var(--accent)!important}
+.extension-toggle[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 12%,var(--bg))}
+.extension-detail{grid-column:1/-1;color:var(--fg2);font-size:13px;line-height:1.6;padding:0 4px 0 54px}
+.extension-detail[hidden],#skillBuilder[hidden]{display:none!important}
+#skillBuilder{min-width:0;border-left:1px solid var(--border);padding-left:18px}
+#skillBuilder h3{margin-top:0}#skillBuilder form{display:grid;gap:12px}#skillBuilder label{display:grid;gap:6px;font-size:13px}
+#skillBuilder :is(input,textarea){box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--fg);font:inherit}#skillBuilder textarea{min-height:80px;resize:vertical}
+.skill-builder-log{max-height:35dvh;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap;font-size:13px;line-height:1.6}.builder-user{background:color-mix(in srgb,var(--accent) 10%,var(--bg));padding:10px;border-radius:12px}.builder-assistant{padding:8px 0}
+#extensionsStatus{font-size:13px;color:var(--fg2)}.extensions-settings-head h3{margin-right:auto}
+#usageHint button{border:0;background:transparent;color:var(--accent);text-align:left;font:inherit;line-height:1.6;cursor:pointer}
+@keyframes surface-reveal{from{opacity:0;clip-path:inset(4px 0 0 round 18px)}to{opacity:1;clip-path:inset(0 round 18px)}}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) :is(dialog[open],.overlay.open .modal-box,.overlay.open .confirm-box,.composer-menu:not([hidden])){animation:surface-reveal .24s cubic-bezier(.2,.7,.2,1)}html:not([data-motion=reduced]) :is(.extension-detail:not([hidden]),#skillBuilder:not([hidden])){animation:surface-reveal .2s ease-out}}
+html[data-motion=reduced] :is(dialog,.extensions-dialog,.extension-detail,#skillBuilder,.composer-menu){animation:none!important;transition:none!important}
+@media(max-width:600px){.extensions-dialog{padding:18px;width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}.extensions-dialog header{gap:8px}.extensions-dialog header h2{font-size:22px}.extensions-dialog #extensionCreate{font-size:12px}.extensions-layout:has(#skillBuilder:not([hidden])){grid-template-columns:1fr}#skillBuilder{border-left:0;border-top:1px solid var(--border);padding:16px 0 0}.extension-detail{padding-left:0}}
+
+.file-visual .upload-ring{width:100%;height:100%;padding:4px}.message-file-card .file-visual>small{position:absolute;bottom:2px;right:2px;max-width:32px;font-size:7px;line-height:1.1;background:var(--bg2);border-radius:3px;padding:1px}.attachment-preview-open .file-visual>small{font-size:8px}

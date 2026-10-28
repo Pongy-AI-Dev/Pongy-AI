@@ -1,13 +1,19 @@
 {
-  "version": "0.26.1",
+  "version": "0.27.0",
   "ru": [
-    "Скачивание расширения Chrome/Edge и пошаговая инструкция встроены в «Настройки → Интерфейс → Активация голосом». Установка и разрешение на переключение вкладки остаются ручными. Вкладка Pongy должна оставаться открытой и не быть выгруженной браузером.",
-    "Обновлены актуальные версии README/RELEASES и восстановлена история изменений 0.23.1–0.26.0. Старые описания и версии опубликованных MSI/APK сохранены.",
-    "Голосовой режим с маскотом, исходным composer, паузой и двумя выходами из 0.26.0 сохранён; новых нативных установщиков нет."
+    "Плагины и навыки в настройках и меню +, сохранение в аккаунте и ИИ-конструктор своих навыков.",
+    "Free: 80 сообщений в сутки UTC, исправленная шкала и переход к оплате Plus при исчерпании.",
+    "Connections: обмен OAuth завершается на сайте с проверкой аккаунта и одноразового доказательства вкладки.",
+    "Маскот продолжает разговор в скрытой вкладке, без панели настройки ИИ; отдельный краткий бюджет голоса. Возможна приостановка браузером или ОС.",
+    "Опциональный настоящий локальный нейроголос Piper/Денис — после установки модели владельцем сервера и выбора пользователем.",
+    "Выравнивание SVG-иконок, размеры обычных/крупных значков, превью файлов, локализация drag-and-drop и плавное появление окон."
   ],
   "en": [
-    "Chrome/Edge extension download and setup instructions are now inside Settings → Appearance → Voice activation. Installation and permission to switch tabs remain manual. Keep the Pongy tab open and not discarded.",
-    "Updated current versions in README/RELEASES and restored missing 0.23.1–0.26.0 changelog entries. Historical documents and published MSI/APK versions are preserved.",
-    "The 0.26.0 mascot voice conversation, original composer, pause and both exits are retained. No native installers were rebuilt."
+    "Plugins and skills in Settings and +, account persistence and an AI skill builder.",
+    "Free: 80 messages per UTC day, a corrected usage bar and Plus payment choices when exhausted.",
+    "Connections OAuth completes on the website with account and one-time initiating-tab proof checks.",
+    "Mascot conversation no longer pauses just because the tab is hidden; voice uses a separate concise budget. Browser/OS suspension may still apply.",
+    "Optional real local Piper/Denis neural speech, after server model installation and explicit user selection.",
+    "Aligned SVG icons, distinct normal/large sizes, attachment previews, localized drag-and-drop and smooth window reveals."
   ]
 }
