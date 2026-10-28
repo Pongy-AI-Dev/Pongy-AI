@@ -48,7 +48,7 @@ const path=require('node:path');
     await page.locator('#authBtn').click();
     await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
     await openSettings();
-    check(await page.locator('.settings-tabs [role=tab]').count()===8,'tabs missing');
+    check(await page.locator('.settings-tabs [role=tab]').count()===9,'tabs missing');
     await page.locator('#settings-tab-usage').click();
     await page.waitForFunction(()=>document.querySelector('#usagePercent').textContent==='0%');
     check(await page.locator('#usageProgress').evaluate(e=>e.value)===0,'usage bar does not start empty');
