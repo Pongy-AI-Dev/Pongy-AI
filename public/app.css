@@ -1530,3 +1530,32 @@ html[data-motion=reduced] :is(dialog,.extensions-dialog,.extension-detail,#skill
 @media(max-width:600px){.extensions-dialog{padding:18px;width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}.extensions-dialog header{gap:8px}.extensions-dialog header h2{font-size:22px}.extensions-dialog #extensionCreate{font-size:12px}.extensions-layout:has(#skillBuilder:not([hidden])){grid-template-columns:1fr}#skillBuilder{border-left:0;border-top:1px solid var(--border);padding:16px 0 0}.extension-detail{padding-left:0}}
 
 .file-visual .upload-ring{width:100%;height:100%;padding:4px}.message-file-card .file-visual>small{position:absolute;bottom:2px;right:2px;max-width:32px;font-size:7px;line-height:1.1;background:var(--bg2);border-radius:3px;padding:1px}.attachment-preview-open .file-visual>small{font-size:8px}
+
+/* 0.27.0 composer/editor hotfix: stable control centres, no moving hit targets. */
+.input-box{align-items:center}
+.input-box>button{align-self:center;margin-block:0;padding:0;line-height:1}
+.input-box>button>svg{display:block;flex-shrink:0;margin:auto}
+.composer-editor{padding-block:0;align-items:center;min-height:40px}
+.composer-editor #userInput{box-sizing:border-box;min-height:40px;line-height:22px;padding:9px 4px;margin:0;vertical-align:middle}
+#addConnections i{display:grid;place-items:center;background:none!important;mask:none!important;width:22px;height:22px}
+#addConnections i:before,#addConnections i:after{content:none!important}
+#addConnections i svg{display:block;width:22px;height:22px}
+#voiceGenderHint{display:none}
+.extensions-dialog.skill-editor{inset:12px 12px 12px auto;margin:0;width:min(480px,calc(100vw - 24px));height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);border-radius:20px;overflow:auto}
+.extensions-dialog.skill-editor #extensionsList,.extensions-dialog.skill-editor #extensionCreate{display:none}
+.extensions-dialog.skill-editor .extensions-layout{display:block}
+.extensions-dialog.skill-editor #skillBuilder{display:flex;flex-direction:column;border:0;padding:0;min-width:0}
+.skill-metadata label{display:block;margin-bottom:12px}
+.skill-metadata input,.skill-metadata textarea{display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--bg3);color:var(--fg)}
+.skill-metadata textarea{min-height:72px;resize:vertical}
+.skill-builder-log{min-height:100px;max-height:36dvh;overflow:auto;overscroll-behavior:contain}
+button.speaking,button[aria-busy=true],button[data-busy=true]{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
+@keyframes control-breathe{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 9%,transparent);opacity:.78}}
+@keyframes surface-soft-open{from{opacity:0;clip-path:inset(8px 0 0 round 16px)}to{opacity:1;clip-path:inset(0 round 16px)}}
+@media(prefers-reduced-motion:no-preference){
+ html:not([data-motion=reduced]) :is(button.speaking,button[aria-busy=true],button[data-busy=true]){animation:control-breathe 1.3s ease-in-out infinite}
+ html:not([data-motion=reduced]) :is(dialog[open],.modal.open .modal-box,.overlay.open .modal-box,.extension-detail:not([hidden]),#skillBuilder:not([hidden]),#workspacePreview:not([hidden])){animation:surface-soft-open .28s ease-out both}
+}
+html[data-motion=full] :is(button.speaking,button[aria-busy=true]){animation:control-breathe 1.3s ease-in-out infinite}
+html[data-motion=reduced] :is(dialog[open],#skillBuilder,button.speaking,button[aria-busy=true]){animation:none!important}
+.input-box>:is(#attachBtn,#micBtn,#sendBtn,#voiceModeBtn){align-self:center}
