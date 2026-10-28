@@ -400,6 +400,15 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   res.once('finish',()=>{settleOutcome(outcomeDone&&!outcomeError&&res.statusCode<400);if(res.statusCode<400&&(outcomeDone||outcomeError)){try{reminders.enqueueNotification(req.user.id,outcomeError?'error':'ready',req.body.locale,undefined,notificationPrefs?.notifications===true);void reminders.tick().catch(()=>{});}catch(_){}}});res.once('close',()=>settleOutcome(outcomeDone&&!outcomeError&&res.writableFinished&&res.statusCode<400));
 
   const repeatRu=responseLanguage(rawPrompt,req.body.locale)==='ru';
+  if(reminderIntent(rawPrompt)){
+   // Smart reminder creation: the request is parsed into date, time and text,
+   // and the creation window always opens pre-filled for the user to confirm.
+   const draft=reminderDraft(rawPrompt,{now:now(),zone:req.body.siteContext?.timeZone,locale:repeatRu?'ru':'en'});
+   if(!draft.description&&draft.text)draft.description=draft.text;
+   res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform'});res.flushHeaders();
+   res.write('event: reminder_form\ndata: '+JSON.stringify(draft)+'\n\n');
+   return directReply(res,repeatRu?(draft.complete?'Открыл окно напоминания и заполнил поля из запроса. Проверьте их и нажмите «Напомнить». До подтверждения расписание не сохранено.':'Открыл окно напоминания. Не хватает данных: '+draft.missing.map(k=>({text:'текст',date:'дата',time:'время'})[k]).join(', ')+'. Заполните их и подтвердите.'):draft.complete?'The reminder form is filled from your request. Review and press Remind; nothing is scheduled until you confirm.':'The reminder form needs: '+draft.missing.join(', ')+'. Complete it and confirm.');
+  }
   if(decision.repeat===3)return directReply(res,repeatRu?'Я уже отвечал на этот вопрос выше. Если нужно уточнение, напишите, какую часть разобрать.':'I have already answered this question above. Tell me which part you would like clarified.');
   if(decision.repeat===4)return directReply(res,repeatRu?'Я уже ответил на этот вопрос, поэтому пойду отдохну. Может, что-то новенькое?':'I have already answered this question, so I will take a break. How about something new?');
   // Repeating a request must not silently create another reminder or repeat a workspace mutation.
@@ -420,14 +429,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
   const noteRequest=noteCommand(rawPrompt,[],commandLocale);
   if(noteRequest){const command=noteCommand(rawPrompt,await notes.list(req),commandLocale);if(command.clarification)return directReply(res,command.clarification);if(safetyDecision(command.proposal.html,{code:true}))return res.status(403).json({error:commandLocale==='ru'?'Этот запрос не поддерживается.':'This request is not supported.',code:'REQUEST_BLOCKED'});res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform'});res.flushHeaders();res.write('event: note_proposal\ndata: '+JSON.stringify(command.proposal)+'\n\n');res.write('data: '+JSON.stringify({choices:[{delta:{content:commandLocale==='ru'?'Подготовил изменение заметки. Проверьте текст и подтвердите применение ниже — пока заметка не изменена.':'The note change is ready. Review it and confirm below; nothing has been changed yet.'}}]})+'\n\n');res.end('data: [DONE]\n\n');return;}
   const desktop=reminderIntent(rawPrompt)?null:desktopAction(rawPrompt,req.body.siteContext?.desktopActions);if(desktop){res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform'});res.flushHeaders();res.write('event: native_action\ndata: '+JSON.stringify(desktop)+'\n\n');return directReply(res,commandLocale==='ru'?'Подготовил открытие приложения Windows. Подтвердите действие в окне Pongy и системном запросе.':'Prepared a Windows application action. Confirm it in Pongy and the system prompt.');}
-  if(reminderIntent(rawPrompt)){
-   // Smart reminder creation: the request is parsed into date, time and text,
-   // and the creation window always opens pre-filled for the user to confirm.
-   const draft=reminderDraft(rawPrompt,{now:now(),zone:req.body.siteContext?.timeZone,locale:commandLocale});
-   res.set({'Content-Type':'text/event-stream; charset=utf-8','Cache-Control':'no-cache, no-transform'});res.flushHeaders();
-   res.write('event: reminder_form\ndata: '+JSON.stringify(draft)+'\n\n');
-   return directReply(res,commandLocale==='ru'?(draft.complete?'Открыл окно напоминания и заполнил поля из запроса. Проверьте их и нажмите «Напомнить». До подтверждения расписание не сохранено.':'Открыл окно напоминания. Не хватает данных: '+draft.missing.map(k=>({text:'текст',date:'дата',time:'время'})[k]).join(', ')+'. Заполните их и подтвердите.'):draft.complete?'The reminder form is filled from your request. Review and press Remind; nothing is scheduled until you confirm.':'The reminder form needs: '+draft.missing.join(', ')+'. Complete it and confirm.');
-  }
+
   if(parts.length===1&&!req.body.reply&&!req.body.attachments?.length){const calculation=arithmeticAnswer(rawPrompt,req.body.locale);if(calculation)return directReply(res,calculation);}
   if(parts.length===1&&!req.body.reply&&!req.body.attachments?.length){const playful=culturalReply(rawPrompt,messages);if(playful)return directReply(res,playful);}
   if(!ownApi&&config.localConversation!==false&&aiConfigured(config)&&parts.length===1&&parts[0].text===rawPrompt&&!req.body.reply&&!req.body.attachments?.length&&quickConversation(rawPrompt,req.user)){const prefs=notificationPrefs;return directReply(res,quickConversation(rawPrompt,req.user,prefs||{},req.body.locale,decision.repeat));}
