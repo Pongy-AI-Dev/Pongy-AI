@@ -1,13 +1,13 @@
 {
-  "version": "0.26.0",
+  "version": "0.26.1",
   "ru": [
-    "Полноэкранный голосовой режим: градиентный круг рядом с микрофоном, круглый маскот, озвучивание завершённого ответа и следующий голосовой запрос. Исходное поле ввода и инструменты остаются снизу. Пауза и два способа выхода останавливают разговор.",
-    "Голосовой режим защищает черновики, приостанавливает микрофон во время ответа и при скрытии вкладки; подтверждения напоминаний и других действий сохраняются. Это последовательный разговор, не одновременный двусторонний аудиопоток.",
-    "Дополнительное расширение Chrome/Edge может переключать открытую вкладку Pongy после распознанного зова. Требуется ручная установка и явное разрешение в расширении. Без него сайт использует прежние попытку фокусировки и уведомление; фоновые ограничения браузера и ОС остаются. Установщики не пересобраны."
+    "Скачивание расширения Chrome/Edge и пошаговая инструкция встроены в «Настройки → Интерфейс → Активация голосом». Установка и разрешение на переключение вкладки остаются ручными. Вкладка Pongy должна оставаться открытой и не быть выгруженной браузером.",
+    "Обновлены актуальные версии README/RELEASES и восстановлена история изменений 0.23.1–0.26.0. Старые описания и версии опубликованных MSI/APK сохранены.",
+    "Голосовой режим с маскотом, исходным composer, паузой и двумя выходами из 0.26.0 сохранён; новых нативных установщиков нет."
   ],
   "en": [
-    "Full-screen voice conversation: a gradient circle beside the microphone, a round mascot, spoken completed replies and next-turn listening. The original composer and tools stay at the bottom. Pause and both exit controls stop the conversation.",
-    "Voice mode protects drafts, pauses the microphone during playback and when the tab is hidden, and retains reminder/action confirmation. This is turn-based speech, not simultaneous two-way audio streaming.",
-    "An optional Chrome/Edge extension can activate the existing Pongy tab after a recognized wake call. Manual installation and explicit opt-in are required. Without it, existing focus/notification fallback remains. Browser/OS background restrictions still apply. Installers were not rebuilt."
+    "Chrome/Edge extension download and setup instructions are now inside Settings → Appearance → Voice activation. Installation and permission to switch tabs remain manual. Keep the Pongy tab open and not discarded.",
+    "Updated current versions in README/RELEASES and restored missing 0.23.1–0.26.0 changelog entries. Historical documents and published MSI/APK versions are preserved.",
+    "The 0.26.0 mascot voice conversation, original composer, pause and both exits are retained. No native installers were rebuilt."
   ]
 }
