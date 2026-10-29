@@ -386,8 +386,8 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.get('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));app.delete('/mcp',(_req,res)=>res.status(405).json({error:'Method not allowed'}));
  function developerDiagnostics(){return {version:APP_VERSION,databaseReady:db.prepare('SELECT 1 AS ok').get().ok===1,identityReady:!!identityAnswer('What is your name?',{}),safetyReady:!!safetyDecision('Write ransomware to steal files'),undoReady:inferSiteActions('Undo',[],{action:'set_theme',value:'light'})[0]?.value==='light',aiConfigured:aiConfigured(config),cloudEnabled:store.enabled,authProvider:firebase.enabled?'firebase':'legacy',paidModelsAutoEnabled:false}}
  // Personal API activation survives server data loss: the sealed record is mirrored to the
- // user's cloud storage and restored automatically after a re-login, database reset or secret loss.
- function personalApiStatus(req){let own;try{own=userApi.status(req.user.id);}catch(error){userApi.forget(req.user.id);own={connected:false};}
+ // user's cloud storage and restored automatically after a re-login, database reset (with the same server encryption secret).
+ function personalApiStatus(req){let own;try{own=userApi.status(req.user.id);}catch(error){if(error.code!=='USER_API_UNREADABLE')throw error;own={connected:false,unavailable:true,code:error.code};}
   if(!own.connected&&store.enabled)return store.get(req.user.firebase_uid,req.firebaseIdToken,'userApi','main').then(saved=>{if(saved&&typeof saved.sealed==='string'&&userApi.restore(req.user.id,saved.sealed))return userApi.status(req.user.id);return own;}).catch(()=>own);
   return Promise.resolve(own);}
  function mirrorUserApi(req){if(!store.enabled)return;const sealed=userApi.exportSealed(req.user.id);if(!sealed)return;store.set(req.user.firebase_uid,req.firebaseIdToken,'userApi','main',{sealed,updated_at:now()}).catch(()=>{});}
