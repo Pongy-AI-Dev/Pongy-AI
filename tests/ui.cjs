@@ -12,7 +12,8 @@ const fs=require('fs'),os=require('os'),path=require('path');
   const payload=JSON.parse(opts.body);calls.push(payload);
   if(hold){return new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode(delta('First fragment')));release=()=>{controller.enqueue(new TextEncoder().encode(delta(' from the original conversation')+'data: [DONE]\n\n'));controller.close();};}}));}
   if(payload.model==='fixture-b:free'&&payload.messages.at(-1)?.content==='Earth'&&!payload.messages.some(m=>m.role==='tool'))return new Response('data: '+JSON.stringify({choices:[{delta:{tool_calls:[{index:0,id:'earth-search',type:'function',function:{name:'web_search',arguments:JSON.stringify({query:'Earth'})}}]}}]})+'\n\ndata: [DONE]\n\n');
-  if(payload.model==='fixture-a:free')return new Response(delta('Discarded fragment')+'data: {"error":{"message":"fixture failure"}}\n\n');
+  // Fallback is allowed before any text. Partial-text recovery is covered by response-recovery-ui.cjs.
+  if(payload.model==='fixture-a:free')return new Response('temporary fixture failure',{status:502});
   return new Response(delta('Complete replacement. Literal "error" is normal text. **Bold**')+'data: [DONE]\n\n');
  };
  const runtime=createApp({config,fetchImpl});runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('fixture@example.test',bcrypt.hashSync('fixture-password',4));
