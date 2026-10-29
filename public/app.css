@@ -1639,3 +1639,29 @@ html[data-motion=reduced] .quick-skills{animation:none!important;transition:none
 @media(pointer:coarse){:is(#composerMode,#selectedSkillChip).skill-chip{min-height:calc(40px * var(--ui-scale,1))}:is(#composerMode,#selectedSkillChip).skill-chip>button{flex-basis:calc(30px * var(--ui-scale,1));width:calc(30px * var(--ui-scale,1));height:calc(30px * var(--ui-scale,1))}}
 @media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) #selectedSkillChip{animation:skill-appear .24s ease-out both}}
 html[data-motion=reduced] #selectedSkillChip{animation:none!important}
+
+/* Consistent, layout-stable motion; avoid animating geometry or streamed text. */
+:root{--ui-ease:cubic-bezier(.2,.75,.25,1);--ui-fast:180ms;--ui-control:280ms;--ui-surface:320ms}
+@keyframes ui-surface-in{from{opacity:0;clip-path:inset(6px 0 0 round 14px)}to{opacity:1;clip-path:none}}
+@keyframes ui-item-in{from{opacity:0}to{opacity:1}}
+@keyframes ui-work-breathe{0%,100%{opacity:1}50%{opacity:.65}}
+@media(prefers-reduced-motion:no-preference){
+ html:not([data-motion=reduced]) :is(button,a,[role=button],[role=tab],summary){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),border-color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-fast) ease}
+ html:not([data-motion=reduced]) :is(input:not([type=checkbox]):not([type=radio]),textarea,select){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),border-color var(--ui-fast) ease,box-shadow var(--ui-control) var(--ui-ease)}
+ html:not([data-motion=reduced]) :is(.extension-card,.connection-row,.quick-skill-row,.note-card,.attachment-chip,.message-file-card,.plan-card,.support-card,.site-proposal,.activity-card){transition:background-color var(--ui-control) var(--ui-ease),border-color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-control) ease}
+ html:not([data-motion=reduced]) :is(.extension-card,.connection-row,.quick-skill-row):hover{background-color:color-mix(in srgb,var(--accent) 5%,var(--bg))}
+ html:not([data-motion=reduced]) :is(dialog[open],.overlay.open .modal-box,.overlay.open .confirm-box,.modal.open .modal-box,.notification-popover.open,#workspacePreview:not([hidden])){animation:ui-surface-in var(--ui-surface) var(--ui-ease) both}
+ html:not([data-motion=reduced]) #composerMenu:not([hidden]){animation:ui-surface-in 260ms var(--ui-ease) both!important}
+ html:not([data-motion=reduced]) :is(.settings-section:not([hidden]),.extension-detail:not([hidden]),#skillBuilder:not([hidden]),.progress-body:not([hidden]),.pinned-list:not([hidden])){animation:ui-item-in 260ms var(--ui-ease) both}
+ html:not([data-motion=reduced]) :is(#extensionsList,#settings-panel-skills,#settings-panel-plugins,#quickSkills) .extension-card,html:not([data-motion=reduced]) #quickSkills .quick-skill-row{animation:ui-item-in 240ms ease both}
+ html:not([data-motion=reduced]) #quickSkills .quick-skill-row:nth-child(2){animation-delay:25ms}
+ html:not([data-motion=reduced]) #quickSkills .quick-skill-row:nth-child(3){animation-delay:45ms}
+ html:not([data-motion=reduced]) #quickSkills .quick-skill-row:nth-child(4){animation-delay:65ms}
+ html:not([data-motion=reduced]) #quickSkills .quick-skill-row:nth-child(n+5){animation-delay:85ms}
+ html:not([data-motion=reduced]) :is(button[aria-busy=true],button.busy){cursor:progress;animation:ui-work-breathe 1.4s ease-in-out infinite}
+ html:not([data-motion=reduced]) :is(.skill-chip>i,.palette-option,.color-swatch,.chat-act,.msg-actions button){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-control) ease}
+ html:not([data-motion=reduced]) input.display-switch[type=checkbox]::before{transition:transform 320ms var(--ui-ease),background-color var(--ui-control) ease}
+}
+/* A low-power device keeps feedback but skips repeated activity effects. */
+html[data-render-budget=compact] :is(button[aria-busy=true],button.busy){animation:none!important}
+html[data-motion=reduced] :is(#composerMenu,.quick-skills,dialog,.extension-card,.quick-skill-row,.settings-section,button[aria-busy=true]){animation:none!important;transition:none!important}

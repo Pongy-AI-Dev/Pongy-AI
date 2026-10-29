@@ -1,6 +1,7 @@
 {
   "version": "0.27.0",
   "ru": [
+    "Более плавные анимации элементов интерфейса и удобное закрытие списка навыков.",
     "Выровнены блоки навыков, улучшены открытие и анимация быстрого списка.",
     "Улучшены голосовой ввод и работа с датами.",
     "Добавлены навыки «Переводчик» и «Программист».",
@@ -10,6 +11,7 @@
     "Упрощены уведомления о проверке почты."
   ],
   "en": [
+    "Smoother interface feedback and improved skill-list dismissal.",
     "Refined skill blocks and improved quick-list opening and animation.",
     "Improved voice input and date handling.",
     "Added Translator and Programmer skills.",
