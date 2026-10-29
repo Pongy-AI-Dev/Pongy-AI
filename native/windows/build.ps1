@@ -46,7 +46,7 @@ $offline = $offline.Replace(
 )
 [IO.File]::WriteAllText((Join-Path $buildDir 'offline.html'),$offline,[Text.UTF8Encoding]::new($false))
 
-$compile = 'call "'+$vcvars+'" >nul && cd /d "'+$nativeDir+'" && rc /nologo /fo build\resources.res launcher.rc && cl /nologo /utf-8 /std:c++17 /O2 /EHsc /I"'+$buildDir+'" /I"'+(Join-Path $WebView2SdkPath 'build\native\include')+'" /Fo:build\PongyAI.obj /c launcher.cpp && link /nologo /SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup /OUT:build\PongyAI.exe build\PongyAI.obj build\resources.res /LIBPATH:"'+(Join-Path $WebView2SdkPath 'build\native\x64')+'" WebView2LoaderStatic.lib ole32.lib shell32.lib uuid.lib advapi32.lib user32.lib'
+$compile = 'call "'+$vcvars+'" >nul && cd /d "'+$nativeDir+'" && rc /nologo /fo build\resources.res launcher.rc && cl /nologo /utf-8 /std:c++17 /O2 /EHsc /I"'+$buildDir+'" /I"'+(Join-Path $WebView2SdkPath 'build\native\include')+'" /Fo:build\PongyAI.obj /c launcher.cpp && link /nologo /SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup /OUT:build\PongyAI.exe build\PongyAI.obj build\resources.res /LIBPATH:"'+(Join-Path $WebView2SdkPath 'build\native\x64')+'" WebView2LoaderStatic.lib ole32.lib winhttp.lib wbemuuid.lib oleaut32.lib shell32.lib uuid.lib advapi32.lib user32.lib'
 & $env:ComSpec /d /c $compile
 if ($LASTEXITCODE -ne 0) { throw "Native Windows application build failed with exit code $LASTEXITCODE." }
 
