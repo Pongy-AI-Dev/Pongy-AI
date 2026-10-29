@@ -1730,3 +1730,8 @@ html[data-motion=reduced] :is(.extension-toggle,.connection-add,.quick-skill-row
 /* Keep primary-action text readable in both palettes. */
 #productGrantDialog .primary,#personalApiSave{background:var(--accent-h);border-color:var(--accent-h)}
 body.dark .product-dialog .primary,body.dark #personalApiSave{color:var(--bg)}
+
+/* Explicit recovery actions: bounded motion, keyboard focus and narrow screens. */
+.response-recovery{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 14px;margin:10px 0;border:1px solid var(--border);border-radius:14px;background:var(--bg2);color:var(--fg2);font-size:13px;line-height:1.5}
+.response-recovery-action{font:inherit;min-height:36px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;color:var(--accent);background:transparent;cursor:pointer;transition:background-color .18s ease,transform .18s ease}
+.response-recovery-action:hover:not(:disabled){background:var(--bg3);transform:translateY(-1px)}.response-recovery-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.response-recovery-action:disabled{opacity:.5;cursor:default}@media(prefers-reduced-motion:reduce){.response-recovery-action{transition:none;transform:none!important}}
