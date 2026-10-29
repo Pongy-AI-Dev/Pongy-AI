@@ -45,8 +45,9 @@ const VOSK_STUB=`(function(){
   check(true,'wake listener did not reach the listening state');check(await page.evaluate(()=>window.__wakeMicRequests[0]?.audio?.channelCount?.ideal===1&&window.__wakeMicRequests[0].audio.noiseSuppression===true),'initial microphone request lost its audio constraints');check(await page.evaluate(()=>{const d=PongyWakeWord.diagnostics();return d.listening&&d.microphoneLive&&d.audioState==='running'}),'listening status has no live audio pipeline');check(await page.evaluate(()=>window.__wakeGrammar===null),'wake recognizer forces ordinary speech into a wake phrase');
   await page.locator('#langGrid button').filter({hasText:'Русский'}).click();await page.waitForFunction(()=>PongyWakeWord.diagnostics().language==='ru'&&PongyWakeWord.diagnostics().listening);check(true,'wake recognizer did not rearm in Russian');await page.locator('#langGrid button').filter({hasText:'English'}).click();await page.waitForFunction(()=>PongyWakeWord.diagnostics().language==='en'&&PongyWakeWord.diagnostics().listening);check(true,'wake recognizer did not rearm in English');await page.locator('#closeSettings').click();await page.waitForTimeout(350);
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000});
-  // Visible-tab trigger: the wake word starts voice input immediately.
+  // A partial brand match is not enough; the confirmed final wake starts capture.
   await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'эй понги'}}));
+  await page.waitForTimeout(150);check(!(await page.locator('#micBtn').evaluate(e=>e.classList.contains('recording'))),'partial brand triggered without endpoint/silence');await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('result',{result:{text:'эй понги'}}));
   await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
   check(true,'wake word did not start voice input while the tab was visible');
   await page.locator('#micBtn').click();await page.waitForFunction(()=>!document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
@@ -62,7 +63,7 @@ const VOSK_STUB=`(function(){
   await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:function(){return 'hidden'}});document.dispatchEvent(new Event('visibilitychange'));});
   await page.waitForFunction(()=>!!window.__pongyFakeRecognizer,null,{timeout:20000}); // the background listener stays armed while hidden
   await page.waitForTimeout(6200);const titleBefore=await page.title();
-  await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('result',{result:{text:'он ге'}}));
+  await page.evaluate(()=>window.__pongyFakeRecognizer.__emit('result',{result:{text:'Понги'}}));
   await page.waitForFunction(title=>document.title!==title,titleBefore,{timeout:5000});
   check(true,'hidden-tab trigger gave no raise signal');
   await page.waitForTimeout(800);
@@ -76,7 +77,7 @@ const VOSK_STUB=`(function(){
   await page.waitForFunction(()=>!document.getElementById('micBtn').classList.contains('recording'));
   check(true,'wake command was not automatically sent');
   await page.waitForTimeout(6200);
-  await page.evaluate(()=>{document.getElementById('userInput').value='';window.__pongyFakeRecognizer.__emit('partialresult',{result:{partial:'Понги'}})});
+  await page.evaluate(()=>{document.getElementById('userInput').value='';window.__pongyFakeRecognizer.__emit('result',{result:{text:'Понги'}})});
   await page.waitForFunction(()=>document.getElementById('micBtn').classList.contains('recording'),null,{timeout:20000});
   await page.waitForTimeout(10500);
   check(!(await page.locator('#micBtn').evaluate(el=>el.classList.contains('recording'))),'wake command capture did not stop after silence');
