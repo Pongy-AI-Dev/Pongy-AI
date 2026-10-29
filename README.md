@@ -128,4 +128,4 @@ Pongy AI начинался как веб-помощник для диалога
 
 © 2026 Pongy AI Dev. Pongy AI.
 
-Текущий дополнительный патч: [Motion и единый стиль](docs/PATCH-0.27.0-motion-style.md).
+Текущий дополнительный патч: [исправления Motion и настроек](docs/PATCH-0.27.0-motion-ci.md).
