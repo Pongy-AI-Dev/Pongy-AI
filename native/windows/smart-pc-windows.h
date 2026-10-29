@@ -9,7 +9,7 @@ static LRESULT CALLBACK smartProc(HWND w,UINT m,WPARAM a,LPARAM b){
 struct SmartReady:Handler<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>{HRESULT STDMETHODCALLTYPE Invoke(HRESULT result,ICoreWebView2Controller* c)override{
  if(FAILED(result)||!c||!smartWindow)return S_OK;smartController=c;c->AddRef();c->get_CoreWebView2(&smartView);RECT r;GetClientRect(smartWindow,&r);c->put_Bounds(r);
  ICoreWebView2Settings* settings=nullptr;smartView->get_Settings(&settings);if(settings){settings->put_AreHostObjectsAllowed(FALSE);settings->Release();}
- EventRegistrationToken token;auto message=new DesktopMessage;smartView->add_WebMessageReceived(message,&token);message->Release();auto navigation=new Navigation;smartView->add_NavigationStarting(navigation,&token);navigation->Release();auto popup=new Popup;smartView->add_NewWindowRequested(popup,&token);popup->Release();std::wstring script=nativeScript();smartView->AddScriptToExecuteOnDocumentCreated(script.c_str(),nullptr);smartView->Navigate(L"https://pongy-ai.devs.surf/smart-pc.html");return S_OK;
+ EventRegistrationToken token;auto message=new DesktopMessage;smartView->add_WebMessageReceived(message,&token);message->Release();auto navigation=new Navigation;smartView->add_NavigationStarting(navigation,&token);navigation->Release();auto popup=new Popup;smartView->add_NewWindowRequested(popup,&token);popup->Release();navigateWithBridge(smartView,L"https://pongy-ai.devs.surf/smart-pc.html",false);return S_OK;
 }};
 static void openSmartWindow(){
  if(smartWindow){ShowWindow(smartWindow,SW_RESTORE);SetForegroundWindow(smartWindow);return;}if(!smartEnvironment)return;
