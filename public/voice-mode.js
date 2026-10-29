@@ -54,6 +54,7 @@ function close(){
  for(var id of ['main','sidebar'])if($(id))$(id).inert=oldInert[id];labels();boundChat=null;boundAccount='';if(previousFocus?.isConnected)previousFocus.focus();
 }
 function open(){
+ if(root.PongySmartPanelOpen)return;
  recoveryCount=0;recordingSince=0;if(opened){close();return;}var s=ctx.snapshot();if(!s.ready)return;ctx.closeMenu();previousFocus=document.activeElement;boundAccount=s.account;boundChat=s.chatId;
  home=$('inputArea').parentNode;anchor=document.createComment('Pongy composer home');$('inputArea').before(anchor);$('voiceModeStage').appendChild($('inputArea'));
  for(var id of ['main','sidebar'])if($(id)){oldInert[id]=$(id).inert;$(id).inert=true;}

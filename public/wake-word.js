@@ -7,7 +7,7 @@
 var $=function(id){return document.getElementById(id)},tr=function(ru,en){return ctx&&ctx.lang&&ctx.lang()==='ru'?ru:en};
 var acoustic=root.PongyWakeAcoustic?.create({onWake:function(){if(!listening||!enabled()||learning||Date.now()<refractory||ctx?.voiceActive?.())return;refractory=Date.now()+6000;trigger('');}});
 var wakeTest=null;var permissionBlocked=false;var WAKE_KEY='pongy_wake_word';
-function enabled(){try{return root.localStorage.getItem(WAKE_KEY)==='on'}catch(e){return false}}
+function enabled(){if(root.PongySmartPanelOpen)return false;try{return root.localStorage.getItem(WAKE_KEY)==='on'}catch(e){return false}}
 function setEnabled(value){try{if(value)root.localStorage.setItem(WAKE_KEY,'on');else root.localStorage.removeItem(WAKE_KEY)}catch(e){}}
 // Match a wake prefix, never a substring in an unrelated sentence. The Russian
 // model lacks a reliable pronunciation for the product name. Known phonetic
