@@ -1645,7 +1645,7 @@ html[data-motion=reduced] #selectedSkillChip{animation:none!important}
 @keyframes ui-surface-in{from{opacity:0;clip-path:inset(6px 0 0 round 14px)}to{opacity:1;clip-path:none}}
 @keyframes ui-item-in{from{opacity:0}to{opacity:1}}
 @keyframes ui-work-breathe{0%,100%{opacity:1}50%{opacity:.65}}
-@media(prefers-reduced-motion:no-preference){
+@media all{
  html:not([data-motion=reduced]) :is(button,a,[role=button],[role=tab],summary){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),border-color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-fast) ease}
  html:not([data-motion=reduced]) :is(input:not([type=checkbox]):not([type=radio]),textarea,select){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),border-color var(--ui-fast) ease,box-shadow var(--ui-control) var(--ui-ease)}
  html:not([data-motion=reduced]) :is(.extension-card,.connection-row,.quick-skill-row,.note-card,.attachment-chip,.message-file-card,.plan-card,.support-card,.site-proposal,.activity-card){transition:background-color var(--ui-control) var(--ui-ease),border-color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-control) ease}
@@ -1665,3 +1665,16 @@ html[data-motion=reduced] #selectedSkillChip{animation:none!important}
 /* A low-power device keeps feedback but skips repeated activity effects. */
 html[data-render-budget=compact] :is(button[aria-busy=true],button.busy){animation:none!important}
 html[data-motion=reduced] :is(#composerMenu,.quick-skills,dialog,.extension-card,.quick-skill-row,.settings-section,button[aria-busy=true]){animation:none!important;transition:none!important}
+
+/* Compact action summaries: all steps and results stay readable. */
+.activity-card.work-entry{padding:calc(9px * var(--ui-scale,1));gap:calc(8px * var(--ui-scale,1))}
+.activity-card .activity-heading{min-height:calc(22px * var(--ui-scale,1))}
+.activity-card .activity-heading strong,.activity-card .activity-status{font-size:calc(12px * var(--ui-scale,1))}
+.activity-card .activity-detail{font-size:calc(13px * var(--ui-scale,1));line-height:1.45;margin-top:calc(4px * var(--ui-scale,1))}
+input:not([type=checkbox]):not([type=radio]),textarea,[contenteditable=true]{caret-color:var(--fg);cursor:text}
+html[data-motion=full][data-motion-explicit=true] :is(.overlay.open .modal-box,.confirm-modal.open .confirm-box,dialog[open]){animation:ui-surface-in var(--ui-surface) var(--ui-ease) both!important}
+html[data-motion=full][data-motion-explicit=true] :is(button,a,input,textarea,select){transition:background-color var(--ui-control) var(--ui-ease),color var(--ui-control) var(--ui-ease),border-color var(--ui-control) var(--ui-ease),box-shadow var(--ui-surface) var(--ui-ease),opacity var(--ui-fast) ease!important}
+.activity-card .activity-detail,.activity-card .code-check{font-size:calc(13px * var(--ui-scale,1));line-height:1.45;margin-top:calc(4px * var(--ui-scale,1))!important}
+.activity-card .activity-icon{width:calc(26px * var(--ui-scale,1));height:calc(26px * var(--ui-scale,1));flex-basis:calc(26px * var(--ui-scale,1))}
+.activity-card .activity-plan{font-size:calc(13px * var(--ui-scale,1));line-height:1.45;margin-top:calc(5px * var(--ui-scale,1))}
+.activity-card .activity-plan li+li{margin-top:calc(4px * var(--ui-scale,1))}

@@ -1,23 +1,21 @@
 {
   "version": "0.27.0",
   "ru": [
+    "Улучшены устойчивость голосового общения и сохранение настроек личного API.",
+    "Исправлены повторные уведомления и показ оценки на сайте.",
+    "Блоки действий стали компактнее, ответы — разнообразнее.",
+    "Улучшена работа настройки анимаций.",
     "Более плавные анимации элементов интерфейса и удобное закрытие списка навыков.",
     "Выровнены блоки навыков, улучшены открытие и анимация быстрого списка.",
-    "Улучшены голосовой ввод и работа с датами.",
-    "Добавлены навыки «Переводчик» и «Программист».",
-    "Быстрый выбор одного навыка прямо из меню чата.",
-    "Добавлен мелкий размер интерфейса, улучшены крупный размер и мобильная версия.",
-    "Обновлены маскот, кнопки, палитра и экраны состояния.",
-    "Упрощены уведомления о проверке почты."
+    "Улучшены голосовой ввод и работа с датами."
   ],
   "en": [
+    "Improved voice conversation reliability and personal API preference restoration.",
+    "Fixed repeated notifications and app-rating prompts on the website.",
+    "More compact activity cards and more varied replies.",
+    "Improved the animation preference.",
     "Smoother interface feedback and improved skill-list dismissal.",
     "Refined skill blocks and improved quick-list opening and animation.",
-    "Improved voice input and date handling.",
-    "Added Translator and Programmer skills.",
-    "Quickly choose one skill from the chat menu.",
-    "Added a compact interface size and improved larger and mobile layouts.",
-    "Refined the mascot, buttons, colour palette and status screens.",
-    "Simplified email-check error messages."
+    "Improved voice input and date handling."
   ]
 }

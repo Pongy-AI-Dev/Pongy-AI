@@ -117,5 +117,5 @@ function init(options){
   if(e.key==='Tab'){var list=[...stage.querySelectorAll('button,textarea,input,select,a[href]')].filter(el=>!el.disabled&&el.getClientRects().length);if(!list.length)return;if(e.shiftKey&&document.activeElement===list[0]){e.preventDefault();list.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===list.at(-1)){e.preventDefault();list[0].focus();}}
  },true);labels();new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 }
-root.PongyVoiceMode={init,active,close,pending,chunk,answer,pause,transcript,level,phase:function(){return phase}};
+root.PongyVoiceMode={silence:function(){recoveryCount=0;},init,active,close,pending,chunk,answer,pause,transcript,level,phase:function(){return phase}};
 })(window);
