@@ -1678,3 +1678,7 @@ html[data-motion=full][data-motion-explicit=true] :is(button,a,input,textarea,se
 .activity-card .activity-icon{width:calc(26px * var(--ui-scale,1));height:calc(26px * var(--ui-scale,1));flex-basis:calc(26px * var(--ui-scale,1))}
 .activity-card .activity-plan{font-size:calc(13px * var(--ui-scale,1));line-height:1.45;margin-top:calc(5px * var(--ui-scale,1))}
 .activity-card .activity-plan li+li{margin-top:calc(4px * var(--ui-scale,1))}
+
+.message-extension-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-bottom:7px;max-width:100%}.message-extension-badge{display:inline-flex;align-items:center;max-width:100%;overflow-wrap:anywhere;padding:5px 9px;border:1px solid var(--border);border-radius:9px;background:var(--accent-bg);color:var(--fg2);font-size:12px;line-height:1.3}.message-extension-badge[data-kind=skills]{color:var(--accent)}
+
+.message-extension-badge i{display:inline-flex;align-items:center;flex:none}.message-extension-badge svg{width:14px;height:14px}.message-extension-badge{display:inline-flex;align-items:center;gap:6px}

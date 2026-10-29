@@ -23,7 +23,7 @@ function wakeMatch(text){
  var custom=customWake(text);if(custom)return custom;
  var raw=String(text||'').trim().replace(/^[\s,.:!?…]+/,'').replace(/^(?:(?:эй|привет|слушай|hey|hello)[\s,.:!?…]+){1,2}/iu,'');
  var match=/^(понгиай|понгери|понджи|понги|понг|pongery|pongy|pongi|pong)(?=[\s,.:!?…]|$)/iu.exec(raw),ambiguous=false;
- if(!match){match=/^(он\s+ге|о\s+ге|онги|ольге)(?=[\s,.:!?…]|$)/iu.exec(raw);ambiguous=!!match;}
+ // Ordinary words/names are never built-in aliases; personal calibration is explicit.
  if(!match)return null;
  var rest=raw.slice(match[0].length).replace(/^[\s,.:!?…]+/,'').replace(/^(?:ai|аи|ии|эй ай)(?:[\s,.:!?…]+|$)/iu,'').trim();
  if(ambiguous&&rest&&!/^(?:открой|открыть|создай|создать|напомни|напомнить|покажи|расскажи|найди|напиши|скажи|включи|выключи|посчитай|сколько|как|что|почему|сделай|помоги|open|create|remind|show|find|write|tell|calculate)(?=\s|$)/iu.test(rest))return null;
@@ -37,7 +37,7 @@ function hasWake(text){return !!wakeMatch(text);}
 // rejected after ordinary recorded Russian speech produced false wake phrases.
 // Do not force unknown audio into a product name absent from the vocabulary.
 function status(state){lastStatus=state;var el=$('wakeWordHint');if(!el)return;var map={model:tr('Загружаю офлайн-модель распознавания…','Loading the offline recognition model…'),denied:tr('Нет доступа к микрофону — разрешите его, чтобы активация голосом работала.','Microphone access is blocked — allow it so voice activation can hear you.'),error:tr('Активация голосом остановлена из-за ошибки. Включите переключатель снова.','Voice activation stopped after an error. Toggle it back on to retry.'),waiting:tr('Жду разрешения на запуск звука — коснитесь экрана, и слушание включится.','Waiting for the browser to allow audio — tap the page and listening starts.'),listening:tr('Позовите Pongy','Call Pongy'),triggered:tr('Активация голосом: «Pongy» распознан.','Voice activation: “Pongy” detected.')};el.textContent=enabled()?(map[state]||''):'';}
-function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(acoustic?.info().learning)return;if(learning&&at<learning.until){learning.heard=lastHeard;return;}if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(match.ambiguous&&!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
+function handleText(text,final){if(!listening||!text)return;lastHeard=String(text).slice(0,500);var at=Date.now();if(acoustic?.info().learning)return;if(learning&&at<learning.until){learning.heard=lastHeard;return;}if(at<refractory){candidate=null;return;}var match=wakeMatch(text);if(!match){candidate=null;return;}if(!final){if(!candidate||candidate.text!==text)candidate={text:text,at:at};return;}candidate=null;refractory=at+6000;trigger(match.remainder);}
 // Some engines hold a short brand-name approximation in partial results without
 // emitting an endpoint. Confirm it only after stable text AND actual mic silence.
 function checkSilence(buffer){try{var samples=buffer.getChannelData(0),sum=0;for(var i=0;i<samples.length;i++)sum+=samples[i]*samples[i];var at=Date.now();if(Math.sqrt(sum/Math.max(1,samples.length))>.012)lastLoudAt=at;if(candidate&&at-candidate.at>=1200&&at-lastLoudAt>=800)handleText(candidate.text,true);}catch(e){}}

@@ -1,21 +1,21 @@
 {
   "version": "0.27.0",
   "ru": [
+    "Улучшена работа навыков и плагинов, их блоки сохраняются с сообщениями.",
+    "Расход дневного лимита зависит от сложности запроса; технические ошибки не расходуют его.",
+    "Исправлена загрузка голосового распознавания, уменьшены ложные срабатывания зова.",
+    "Улучшены устойчивость ответов и сохранение отзывов.",
     "Улучшены устойчивость голосового общения и сохранение настроек личного API.",
     "Исправлены повторные уведомления и показ оценки на сайте.",
-    "Блоки действий стали компактнее, ответы — разнообразнее.",
-    "Улучшена работа настройки анимаций.",
-    "Более плавные анимации элементов интерфейса и удобное закрытие списка навыков.",
-    "Выровнены блоки навыков, улучшены открытие и анимация быстрого списка.",
-    "Улучшены голосовой ввод и работа с датами."
+    "Блоки действий стали компактнее, ответы — разнообразнее."
   ],
   "en": [
+    "Improved skills and plugins, with selections saved alongside messages.",
+    "Daily usage reflects request complexity; technical failures do not consume it.",
+    "Fixed speech-model loading and reduced false wake detections.",
+    "Improved response reliability and feedback storage.",
     "Improved voice conversation reliability and personal API preference restoration.",
     "Fixed repeated notifications and app-rating prompts on the website.",
-    "More compact activity cards and more varied replies.",
-    "Improved the animation preference.",
-    "Smoother interface feedback and improved skill-list dismissal.",
-    "Refined skill blocks and improved quick-list opening and animation.",
-    "Improved voice input and date handling."
+    "More compact activity cards and more varied replies."
   ]
 }
