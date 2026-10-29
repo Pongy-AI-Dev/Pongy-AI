@@ -32,7 +32,7 @@ test('motion and checkbox preferences survive partial updates, a new session and
 
 function preferenceQueueFixture(){
  const source=fs.readFileSync('public/app.js','utf8'),start=source.indexOf('var preferenceTimer,'),end=source.indexOf('function save(k,v)',start),requests=[],disk=new Map(),account='queue@example.test';
- const context=vm.createContext({document:{hidden:false},authEpoch:1,currentUser:{email:account},sessionValidated:true,chatAccount:()=>account,load:()=>null,localStorage:{removeItem:key=>disk.delete(key)},syncError:()=>{},api:async(url,options)=>{requests.push({url,body:options.body});return{ok:true};}});
+ const context=vm.createContext({AbortController,document:{hidden:false},authEpoch:1,currentUser:{email:account},sessionValidated:true,chatAccount:()=>account,load:()=>null,localStorage:{removeItem:key=>disk.delete(key)},syncError:()=>{},api:async(url,options)=>{requests.push({url,body:options.body});return{ok:true};}});
  vm.runInContext(source.slice(start,end),context);const stage=(version,memory)=>{context.preferenceOutbox[account]={version,body:{memory}};disk.set('pongy_preferences_pending:'+account,version);};
  return{context,requests,disk,account,stage,flush:()=>vm.runInContext('flushPreferences()',context)};
 }
@@ -52,4 +52,11 @@ test('queued preference work checks lifecycle and account again before starting 
 });
 test('failed preference writes reject the caller and retain the exact pending version',async()=>{
  const q=preferenceQueueFixture();q.stage('v1',false);q.context.api=async()=>{throw Object.assign(Error('fixture unavailable'),{status:503});};await assert.rejects(q.flush(),/fixture unavailable/);assert.equal(q.context.preferenceOutbox[q.account].version,'v1');assert.equal(q.disk.size,1);q.context.api=async()=>({ok:true});await q.flush();assert.equal(q.disk.size,0);
+});
+
+ test('in-flight preference request is cancelled at navigation without losing the durable version',async()=>{
+ const q=preferenceQueueFixture();q.stage('pending',true);let began;q.context.api=(url,options)=>new Promise((resolve,reject)=>{began=true;options.signal.addEventListener('abort',()=>reject(Object.assign(Error('cancelled'),{name:'AbortError'})),{once:true});});const pending=q.flush();while(!began)await new Promise(r=>setImmediate(r));q.context.preferencePageUnloading=true;vm.runInContext('cancelPreferenceRequest()',q.context);await assert.rejects(pending,e=>e.name==='AbortError');assert.equal(q.disk.size,1);assert.equal(q.context.preferenceOutbox[q.account].version,'pending');assert.equal(q.context.preferenceRequestController,null);q.context.preferencePageUnloading=false;q.context.api=async()=>({ok:true});await q.flush();assert.equal(q.disk.size,0);
+});
+ test('late successful preference response after cancellation cannot acknowledge a newer draft',async()=>{
+ const q=preferenceQueueFixture();q.stage('old',true);let finish;q.context.api=()=>new Promise(r=>finish=r);const pending=q.flush();while(!finish)await new Promise(r=>setImmediate(r));vm.runInContext('cancelPreferenceRequest()',q.context);q.stage('new',false);finish({ok:true});await pending;assert.equal(q.disk.size,1);assert.equal(q.context.preferenceOutbox[q.account].version,'new');q.context.api=async()=>({ok:true});await q.flush();assert.equal(q.disk.size,0);
 });
