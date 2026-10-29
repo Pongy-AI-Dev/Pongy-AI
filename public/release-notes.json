@@ -1,6 +1,7 @@
 {
   "version": "0.27.0",
   "ru": [
+    "Выровнены блоки навыков, улучшены открытие и анимация быстрого списка.",
     "Улучшены голосовой ввод и работа с датами.",
     "Добавлены навыки «Переводчик» и «Программист».",
     "Быстрый выбор одного навыка прямо из меню чата.",
@@ -9,6 +10,7 @@
     "Упрощены уведомления о проверке почты."
   ],
   "en": [
+    "Refined skill blocks and improved quick-list opening and animation.",
     "Improved voice input and date handling.",
     "Added Translator and Programmer skills.",
     "Quickly choose one skill from the chat menu.",

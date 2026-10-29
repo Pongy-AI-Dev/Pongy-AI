@@ -1612,3 +1612,30 @@ html[data-motion=reduced] :is(dialog[open],#skillBuilder,button.speaking,button[
 
 #authError[data-kind=restricted]{padding:calc(18px * var(--ui-scale,1));border:1px solid var(--border);border-radius:calc(16px * var(--ui-scale,1));background:color-mix(in srgb,var(--accent) 6%,var(--bg));color:var(--fg)!important;line-height:1.6}
 #authError[data-kind=restricted]::before{content:'!';display:grid;place-items:center;margin:0 auto 10px;width:30px;height:30px;border:1.5px solid var(--accent);border-radius:50%;color:var(--accent);font-weight:650}
+
+/* Shared, aligned composer blocks and an independently focusable skill submenu. */
+:is(#composerMode,#selectedSkillChip).skill-chip{display:inline-flex;box-sizing:border-box;flex:0 1 auto;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:calc(7px * var(--ui-scale,1));min-height:calc(36px * var(--ui-scale,1));max-width:100%;width:auto;margin:0;padding:calc(4px * var(--ui-scale,1)) calc(5px * var(--ui-scale,1)) calc(4px * var(--ui-scale,1)) calc(10px * var(--ui-scale,1));border:calc(1px * var(--ui-scale,1)) solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:calc(9px * var(--ui-scale,1));background:color-mix(in srgb,var(--accent) 10%,var(--bg2));color:var(--accent);font-size:calc(12px * var(--ui-scale,1));line-height:1.4;box-shadow:inset 0 1px 0 #ffffff12}
+:is(#composerMode,#selectedSkillChip).skill-chip>i{display:grid;place-items:center;flex:0 0 calc(18px * var(--ui-scale,1));width:calc(18px * var(--ui-scale,1));height:calc(18px * var(--ui-scale,1));line-height:1}
+:is(#composerMode,#selectedSkillChip).skill-chip>i svg{display:block;width:100%;height:100%}
+:is(#composerMode,#selectedSkillChip).skill-chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:calc(20px * var(--ui-scale,1))}
+:is(#composerMode,#selectedSkillChip).skill-chip>button{display:grid;place-items:center;position:static;align-self:center;flex:0 0 calc(26px * var(--ui-scale,1));box-sizing:border-box;width:calc(26px * var(--ui-scale,1));height:calc(26px * var(--ui-scale,1));min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:calc(6px * var(--ui-scale,1));background:transparent;color:inherit;line-height:1;opacity:1}
+:is(#composerMode,#selectedSkillChip).skill-chip>button svg{display:block;width:calc(15px * var(--ui-scale,1));height:calc(15px * var(--ui-scale,1));pointer-events:none}
+.composer-skills-row{display:flex;align-items:stretch;width:100%;border-radius:calc(10px * var(--ui-scale,1));min-height:calc(44px * var(--ui-scale,1))}
+.composer-skills-row:hover,.composer-skills-row:focus-within{background:var(--hover)}
+.composer-skills-row>#composer-skills{display:flex;align-items:center;gap:calc(12px * var(--ui-scale,1));flex:1;min-width:0;padding:calc(10px * var(--ui-scale,1));text-align:left;border-radius:calc(10px * var(--ui-scale,1));font-size:calc(13px * var(--ui-scale,1));line-height:1.4}
+.composer-skills-row>.skills-submenu-arrow{display:grid;place-items:center;flex:0 0 calc(40px * var(--ui-scale,1));width:calc(40px * var(--ui-scale,1));min-width:0;margin:0;padding:0;border:0;border-radius:calc(9px * var(--ui-scale,1));color:var(--fg2);background:transparent;cursor:pointer;pointer-events:auto}
+.skills-submenu-arrow svg{pointer-events:none;transition:transform .2s ease}
+.skills-submenu-arrow[aria-expanded=true] svg{transform:translateX(2px);color:var(--accent)}
+.quick-skills{box-sizing:border-box;max-width:calc(100vw - 24px);transform-origin:top left;animation:none}
+.quick-skills[data-side=left]{transform-origin:top right}.quick-skills[data-side=above]{transform-origin:bottom left}
+.quick-skills-status{margin:0;padding:12px;font-size:13px;color:var(--fg2)}
+.quick-skill-row{border-radius:calc(10px * var(--ui-scale,1));transition:background-color .2s ease}.quick-skill-row:hover{background:var(--hover)}
+.quick-skill-row>span{min-width:0;overflow-wrap:anywhere}.quick-skill-row>button{flex-shrink:0}
+@keyframes skill-menu-enter{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes skill-menu-exit{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(4px) scale(.98)}}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) .quick-skills:not([hidden]){animation:skill-menu-enter .24s cubic-bezier(.2,.8,.2,1) both}html:not([data-motion=reduced]) .quick-skills.is-closing:not([hidden]){animation:skill-menu-exit .16s ease-in both}}
+html[data-motion=reduced] .quick-skills{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.quick-skills,.skills-submenu-arrow svg{animation:none!important;transition:none!important}}
+@media(pointer:coarse){:is(#composerMode,#selectedSkillChip).skill-chip{min-height:calc(40px * var(--ui-scale,1))}:is(#composerMode,#selectedSkillChip).skill-chip>button{flex-basis:calc(30px * var(--ui-scale,1));width:calc(30px * var(--ui-scale,1));height:calc(30px * var(--ui-scale,1))}}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) #selectedSkillChip{animation:skill-appear .24s ease-out both}}
+html[data-motion=reduced] #selectedSkillChip{animation:none!important}
