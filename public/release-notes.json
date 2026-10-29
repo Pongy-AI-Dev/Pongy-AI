@@ -1,6 +1,7 @@
 {
   "version": "0.27.0",
   "ru": [
+    "Улучшено скачивание видео Motion и сохранение настроек.",
     "Добавлен Motion: анимации из кода и локальный экспорт видео WebM.",
     "Ответы стали менее шаблонными, приветствия — разнообразнее.",
     "Выровнены кнопки и блоки дополнений; улучшены плавные переходы и состояния фокуса.",
@@ -10,6 +11,7 @@
     "Улучшены устойчивость ответов и сохранение отзывов."
   ],
   "en": [
+    "Improved Motion video downloads and settings persistence.",
     "Added Motion: code-driven animation with local WebM video export.",
     "Less formulaic replies and more varied greetings.",
     "Aligned controls and extension blocks, with smoother transitions and clearer keyboard focus.",
