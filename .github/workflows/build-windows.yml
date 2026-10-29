@@ -1,0 +1,36 @@
+name: Build Windows installer (manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install official build tools
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.3537.50/microsoft.web.webview2.1.0.3537.50.nupkg' -OutFile "$env:RUNNER_TEMP\webview.zip"
+          Expand-Archive "$env:RUNNER_TEMP\webview.zip" "$env:RUNNER_TEMP\webview-sdk"
+          dotnet tool install --tool-path "$env:RUNNER_TEMP\wix-tools" wix --version 5.0.2
+          if ($LASTEXITCODE -ne 0) { throw 'WiX installation failed' }
+      - name: Build unsigned installer
+        shell: pwsh
+        run: |
+          ./native/windows/build.ps1 -WebView2SdkPath "$env:RUNNER_TEMP\webview-sdk" -WixPath "$env:RUNNER_TEMP\wix-tools\wix.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          $file = 'public/downloads/Pongy-AI-0.27.0-windows-x64.msi'
+          if (-not (Test-Path $file)) { throw 'Installer missing' }
+          (Get-FileHash $file -Algorithm SHA256).Hash + '  ' + (Split-Path $file -Leaf) | Set-Content "$file.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pongy-AI-0.27.0-windows-unsigned
+          if-no-files-found: error
+          path: |
+            public/downloads/Pongy-AI-0.27.0-windows-x64.msi
+            public/downloads/Pongy-AI-0.27.0-windows-x64.msi.sha256
