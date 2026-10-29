@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const {withRateLimit}=createRequire(import.meta.url)('./ui-rate-limit.cjs');
+const response=(status,...args)=>({status:()=>status,headers:()=>({'retry-after':args.length?args[0]:'1'})});
+test('UI backoff repeats only a real 429 and honours Retry-After',async()=>{let calls=0;const waits=[];const r=await withRateLimit(async()=>response(++calls===1?429:200,'2'),async ms=>waits.push(ms));assert.equal(r.status(),200);assert.equal(calls,2);assert.deepEqual(waits,[3000]);});
+test('UI backoff does not retry authentication failures or server errors',async()=>{for(const status of [200,401,403,500,503]){let calls=0;const r=await withRateLimit(async()=>{calls++;return response(status)},async()=>assert.fail('unexpected delay'));assert.equal(r.status(),status);assert.equal(calls,1);}});
+test('UI backoff is bounded and does not mask repeated rate limits',async()=>{let calls=0;await assert.rejects(withRateLimit(async()=>{calls++;return response(429)},async()=>{}),/persisted/);assert.equal(calls,2);});
+test('UI backoff rejects missing, malformed and excessive retry delays',async()=>{for(const value of [undefined,'','-1','1.5','61','NaN','Wed, 21 Oct 2030'])await assert.rejects(withRateLimit(async()=>response(429,value),async()=>assert.fail('invalid delay used')),/Invalid or excessive/);});
+test('UI backoff propagates network failures without an unbounded retry',async()=>{let calls=0;await assert.rejects(withRateLimit(async()=>{calls++;throw new Error('network failed')},async()=>assert.fail('unexpected delay')),/network failed/);assert.equal(calls,1);});
