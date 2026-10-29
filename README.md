@@ -127,3 +127,5 @@ Pongy AI начинался как веб-помощник для диалога
 Для GitHub OAuth App укажите callback-адрес API `/auth/github/callback`. Идентификатор и секрет приложения храните только в переменных окружения Render. Для входа через Google используйте настроенный в проекте OAuth-клиент Firebase.
 
 © 2026 Pongy AI Dev. Pongy AI.
+
+Текущий дополнительный патч: [Motion и единый стиль](docs/PATCH-0.27.0-motion-style.md).
