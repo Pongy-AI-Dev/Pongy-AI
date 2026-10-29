@@ -1,3 +1,6 @@
+import {createSubscriptions} from './lib/subscriptions.js';
+import {createBilling} from './lib/billing.js';
+import {smartCommand} from './lib/smart-pc.js';
 import {timeInstruction} from './lib/request-time.js';
 import {mailFailure} from './lib/mail.js';
 import {speechConfigured,createLocalSpeech} from './lib/speech.js';
@@ -76,9 +79,9 @@ const moduleRoot=path.dirname(fileURLToPath(import.meta.url));
 const asyncRoute=fn=>(req,res,next)=>Promise.resolve(fn(req,res,next)).catch(next);
 const emailValue=value=>typeof value==='string'&&value.trim().length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())?value.trim().toLowerCase():null;
 const validPassword=value=>typeof value==='string'&&value.length>=8&&Buffer.byteLength(value,'utf8')<=72;
-const publicUser=u=>({id:u.id,email:u.email,nickname:u.nickname||'',avatar:u.avatar||'',subscription_until:u.subscription_until||0,developer:isDeveloper(u)});
+const publicUser=u=>({id:u.id,email:u.email,nickname:u.nickname||'',avatar:u.avatar||'',subscription_until:u.subscription_until||0,smart_pc_until:u.smart_pc_until||0,developer:isDeveloper(u)});
 export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=fetch,mailTransportFactory,webReader=readPage,now=Date.now,checkMx=async email=>{try{return (await dns.promises.resolveMx(email.split('@')[1])).length>0;}catch{return false;}}}={}){
- config.imageGenerationEnabled=config.imageGenerationEnabled===true&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||String(config.imageModel||'').endsWith(':free'));config.paidModelsEnabled=false; // Paid Plus entitlements are not active.
+ config.imageGenerationEnabled=config.imageGenerationEnabled===true&&(config.imageProvider==='pollinations'||config.imageProvider==='cloudflare'&&cloudflareImageConfigured(config)||String(config.imageModel||'').endsWith(':free'));config.paidModelsEnabled=false; // Paid model routing stays disabled; a product grant never opts into provider billing.
  fs.mkdirSync(path.dirname(config.databasePath),{recursive:true,mode:0o700});
  const db=new Database(config.databasePath);db.pragma('journal_mode = WAL');db.pragma('foreign_keys = ON');db.pragma('busy_timeout = 5000');
  db.exec(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,email TEXT UNIQUE NOT NULL,password TEXT,nickname TEXT DEFAULT '',avatar TEXT DEFAULT '',subscription_until INTEGER DEFAULT 0,google_id TEXT DEFAULT '',email_verified INTEGER DEFAULT 0,token_version INTEGER DEFAULT 0,created_at INTEGER DEFAULT (strftime('%s','now')*1000));
@@ -98,6 +101,8 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  db.exec('CREATE TABLE IF NOT EXISTS feedback(id TEXT PRIMARY KEY,user_id INTEGER,user_email TEXT DEFAULT \'\',rating INTEGER NOT NULL,created_at INTEGER NOT NULL,sent_at INTEGER)');
  for(const [column,type] of [['attempts','INTEGER NOT NULL DEFAULT 0'],['last_attempt','INTEGER'],['last_error',"TEXT NOT NULL DEFAULT ''"],['next_attempt','INTEGER NOT NULL DEFAULT 0']])if(!db.prepare('PRAGMA table_info(feedback)').all().some(c=>c.name===column))db.exec('ALTER TABLE feedback ADD COLUMN '+column+' '+type);
  mountCloudflareBudget(config,db,now);
+ const subscriptions=createSubscriptions({db,now});
+ const billing=createBilling({db,config,subscriptions,fetchImpl,now});
  const control=createSiteControl({db,now});
  const store=new CloudStore(config,fetchImpl);
  const authMailer=createMailer({config,fetchImpl,transportFactory:mailTransportFactory});
@@ -403,6 +408,17 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  const developer=(req,res,next)=>isDeveloper(req.user)?next():res.status(403).json({error:'Verified developer account required',code:'DEVELOPER_REQUIRED'});
  app.get('/api/admin/feedback-delivery',auth,developer,(req,res)=>{res.set('Cache-Control','no-store');res.json({configured:authMailer.configured,provider:authMailer.provider,recipient:FEEDBACK_EMAIL,pending:db.prepare('SELECT COUNT(*) n FROM feedback WHERE sent_at IS NULL').get().n,accepted:db.prepare('SELECT COUNT(*) n FROM feedback WHERE sent_at IS NOT NULL').get().n,lastFailure:db.prepare("SELECT last_error code,last_attempt time,next_attempt nextAttempt FROM feedback WHERE last_error<>'' AND sent_at IS NULL ORDER BY last_attempt DESC LIMIT 1").get()||null});});
  app.post('/api/admin/feedback-delivery/retry',auth,developer,reminderEmailLimit,asyncRoute(async(req,res)=>{db.prepare('UPDATE feedback SET next_attempt=0 WHERE sent_at IS NULL').run();await deliverFeedback();res.json({ok:true,configured:authMailer.configured,pending:db.prepare('SELECT COUNT(*) n FROM feedback WHERE sent_at IS NULL').get().n});}));
+ const productLimit=rateLimit({windowMs:60000,max:30,standardHeaders:'draft-7',legacyHeaders:false});
+ app.get('/api/products',auth,asyncRoute(async(req,res)=>{await billing.reconcile(req.user.id);res.set('Cache-Control','no-store').json(subscriptions.get(req.user.id));}));
+ app.get('/api/billing/catalog',auth,asyncRoute(async(req,res)=>res.set('Cache-Control','no-store').json(await billing.catalog(req.query.locale==='ru'?'ru':'en'))));
+ app.post('/api/billing/orders',auth,productLimit,asyncRoute(async(req,res)=>{res.set('Cache-Control','no-store').json(await billing.create(req.user.id,req.body?.product,req.body?.locale));}));
+ app.get('/api/billing/orders/:id',auth,productLimit,asyncRoute(async(req,res)=>{res.set('Cache-Control','no-store').json(await billing.check(req.user.id,req.params.id));}));
+ app.get('/api/admin/products',auth,developer,(req,res)=>{const email=emailValue(req.query.email);if(!email)return res.status(400).json({error:'Enter a valid recipient email'});const u=db.prepare('SELECT id FROM users WHERE email=?').get(email);if(!u)return res.status(404).json({error:'Recipient account not found'});res.set('Cache-Control','no-store').json(subscriptions.get(u.id));});
+ app.post('/api/admin/products',auth,developer,productLimit,(req,res,next)=>{try{const email=emailValue(req.body?.email);if(!email||!['grant','revoke'].includes(req.body?.action))return res.status(400).json({error:'Invalid product request'});const u=db.prepare('SELECT id FROM users WHERE email=?').get(email);if(!u)return res.status(404).json({error:'Recipient account not found'});res.json(subscriptions.mutate({userId:u.id,actorId:req.user.id,product:req.body.product,term:req.body.term,until:req.body.until,revoke:req.body.action==='revoke'}));}catch(e){next(e);}});
+ app.post('/api/smart-pc/command',auth,productLimit,(req,res,next)=>{try{if(!subscriptions.get(req.user.id).smart_pc.active)return res.status(403).json({error:'Smart PC subscription expired',code:'SMART_PC_EXPIRED'});const action=smartCommand(req.body?.text);if(!action)return res.json({status:'chat'});if(['clarify','unsupported'].includes(action.kind))return res.json({status:action.kind,action});res.set('Cache-Control','no-store').json({status:'action',action,lease:subscriptions.lease(req.user.id,action)});}catch(e){next(e);}});
+ // Single-use, 15-second capability. The Windows host validates it independently over TLS.
+ // No cookies or CORS exception: this bearer is never a general account session.
+ app.post('/api/smart-pc/verify',productLimit,(req,res,next)=>{try{const item=subscriptions.consume(req.body?.lease);if(!item)return res.status(403).type('text').send('denied');const user=db.prepare('SELECT * FROM users WHERE id=?').get(item.userId);control.assertUser(user);if(config.maintenanceMode||control.state().disabled||control.state().maintenance)return res.status(503).type('text').send('denied');const {kind,value}=item.action;if(!(kind==='open'&&['youtube','notepad','calculator','explorer','max'].includes(value)||kind==='volume'&&['up','down','mute'].includes(value)||kind==='brightness'&&['up','down'].includes(value)))return res.status(403).type('text').send('denied');res.set('Cache-Control','no-store').type('text').send('pongy-smart-v1\n'+kind+'\n'+value);}catch(e){next(e);}});
  app.get('/api/admin/control',auth,developer,(req,res)=>res.json({...control.state(),environmentMaintenance:config.maintenanceMode,blocked:control.list(),scans:control.scans()}));
  app.put('/api/admin/control',auth,developer,(req,res,next)=>{try{res.json({...control.update(req.body),environmentMaintenance:config.maintenanceMode});}catch(e){next(e);}});
  app.post('/api/admin/blacklist',auth,developer,(req,res,next)=>{try{control.block(req.body?.email);res.json({blocked:control.list()});}catch(e){next(e);}});
