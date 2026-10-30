@@ -1,3 +1,5 @@
+/* Pongy: persistent public speech-model archive cache (no audio or credentials). */
+(function(){const networkFetch=self.fetch.bind(self);self.fetch=async function(input,options){let url;try{url=new URL(typeof input==='string'?input:input.url,self.location.href);}catch{return networkFetch(input,options);}if(!/\/speech-models\/small-(?:ru-0\.22|en-us-0\.15)\.tar\.gz$/.test(url.pathname)||options?.method&&options.method!=='GET'||!self.caches)return networkFetch(input,options);let cache;try{cache=await caches.open('pongy-speech-archives-v1');const saved=await cache.match(url.href);if(saved?.ok)return saved;}catch{}const response=await networkFetch(input,options);if(response.ok&&cache)try{await cache.put(url.href,response.clone());}catch{}return response;};})();
 /* rollup-plugin-web-worker-loader */
 var worker_code = (function (exports) {
     'use strict';
