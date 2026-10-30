@@ -26,7 +26,7 @@ static std::string verifySmartLease(const std::wstring& lease){
  #ifndef PONGY_SMART_API_HOST
  #define PONGY_SMART_API_HOST L"pongy-server.onrender.com"
  #endif
- HINTERNET session=WinHttpOpen(L"PongySmartPC/0.27.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0);if(!session)return "";
+ HINTERNET session=WinHttpOpen(L"PongySmartPC/0.28.2",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0);if(!session)return "";
  WinHttpSetTimeouts(session,3000,3000,3000,5000);
  HINTERNET connection=WinHttpConnect(session,PONGY_SMART_API_HOST,INTERNET_DEFAULT_HTTPS_PORT,0);
  HINTERNET request=connection?WinHttpOpenRequest(connection,L"POST",L"/api/smart-pc/verify",nullptr,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE):nullptr;
