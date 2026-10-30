@@ -1,23 +1,23 @@
 {
-  "version": "0.27.0",
+  "version": "0.28.2",
   "ru": [
-    "Улучшено скачивание видео Motion и сохранение настроек.",
-    "Добавлен Motion: анимации из кода и локальный экспорт видео WebM.",
-    "Ответы стали менее шаблонными, приветствия — разнообразнее.",
-    "Выровнены кнопки и блоки дополнений; улучшены плавные переходы и состояния фокуса.",
-    "Улучшена работа навыков и плагинов, их блоки сохраняются с сообщениями.",
-    "Расход дневного лимита зависит от сложности запроса; технические ошибки не расходуют его.",
-    "Исправлена загрузка голосового распознавания, уменьшены ложные срабатывания зова.",
-    "Улучшены устойчивость ответов и сохранение отзывов."
+    "Публичные политика, условия, страница о сервисе и правильная почта поддержки.",
+    "Motion: настоящий контейнер MKV (Matroska), локальная сборка без перекодирования.",
+    "Сохранение выбранных режимов ИИ и модели в настройках аккаунта.",
+    "Улучшены сенсорное меню навыков, мобильные вложения и компактные блоки ошибок.",
+    "Продление Plus в последние три дня: 120 ₽ вместо 190 ₽ при настроенной оплате.",
+    "Motion: анимированные стикмены, сцены до 120 секунд и MP4 в поддерживаемых браузерах.",
+    "Локальное сохранение архивов речевых моделей и более подробная выборка кадров видео.",
+    "Улучшены переключение настроенных провайдеров, очередь запросов и оформление API."
   ],
   "en": [
-    "Improved Motion video downloads and settings persistence.",
-    "Added Motion: code-driven animation with local WebM video export.",
-    "Less formulaic replies and more varied greetings.",
-    "Aligned controls and extension blocks, with smoother transitions and clearer keyboard focus.",
-    "Improved skills and plugins, with selections saved alongside messages.",
-    "Daily usage reflects request complexity; technical failures do not consume it.",
-    "Fixed speech-model loading and reduced false wake detections.",
-    "Improved response reliability and feedback storage."
+    "Public privacy policy, terms, about page and corrected support contact.",
+    "Motion: actual Matroska MKV container, remuxed locally without re-encoding.",
+    "Account preferences retain selected AI modes and model settings.",
+    "Improved touch skill menus, mobile attachments and compact error cards.",
+    "Plus renewal in the last three days: RUB 120 instead of 190 when billing is configured.",
+    "Motion: articulated stickmen, scenes up to 120 seconds and MP4 in supported browsers.",
+    "Persistent speech archive caching and more detailed video frame sampling.",
+    "Improved configured-provider fallback, request queues and API presentation."
   ]
 }

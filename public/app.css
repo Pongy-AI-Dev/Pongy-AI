@@ -494,7 +494,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:calc(13px * var(--ui-scale,1));color:var(--fg2);line-height:1.7;margin:calc(12px * var(--ui-scale,1)) 0 calc(18px * var(--ui-scale,1))}.checkout-summary{font-size:calc(16px * var(--ui-scale,1));line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:calc(32px * var(--ui-scale,1));width:calc(32px * var(--ui-scale,1));height:calc(32px * var(--ui-scale,1));min-width:calc(32px * var(--ui-scale,1));min-height:calc(32px * var(--ui-scale,1))}}
 
-:root{--pongy-build:"0.27.0"}
+:root{--pongy-build:"0.28.2"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:calc(22px * var(--ui-scale,1));bottom:calc(16px * var(--ui-scale,1));width:calc(42px * var(--ui-scale,1));height:calc(42px * var(--ui-scale,1));min-width:calc(42px * var(--ui-scale,1));min-height:calc(42px * var(--ui-scale,1));display:flex;align-items:center;justify-content:center;border:calc(1px * var(--ui-scale,1)) solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 calc(4px * var(--ui-scale,1)) calc(18px * var(--ui-scale,1)) #0002;z-index:8;}
@@ -1531,7 +1531,7 @@ html[data-motion=reduced] :is(dialog,.extensions-dialog,.extension-detail,#skill
 
 .file-visual .upload-ring{width:100%;height:100%;padding:calc(4px * var(--ui-scale,1))}.message-file-card .file-visual>small{position:absolute;bottom:calc(2px * var(--ui-scale,1));right:calc(2px * var(--ui-scale,1));max-width:calc(32px * var(--ui-scale,1));font-size:calc(7px * var(--ui-scale,1));line-height:1.1;background:var(--bg2);border-radius:calc(3px * var(--ui-scale,1));padding:calc(1px * var(--ui-scale,1))}.attachment-preview-open .file-visual>small{font-size:calc(8px * var(--ui-scale,1))}
 
-/* 0.27.0 composer/editor hotfix: stable control centres, no moving hit targets. */
+/* 0.28.2 composer/editor hotfix: stable control centres, no moving hit targets. */
 .input-box{align-items:center}
 .input-box>button{align-self:center;margin-block:0;padding:0;line-height:1}
 .input-box>button>svg{display:block;flex-shrink:0;margin:auto}
@@ -1735,3 +1735,45 @@ body.dark .product-dialog .primary,body.dark #personalApiSave{color:var(--bg)}
 .response-recovery{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 14px;margin:10px 0;border:1px solid var(--border);border-radius:14px;background:var(--bg2);color:var(--fg2);font-size:13px;line-height:1.5}
 .response-recovery-action{font:inherit;min-height:36px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;color:var(--accent);background:transparent;cursor:pointer;transition:background-color .18s ease,transform .18s ease}
 .response-recovery-action:hover:not(:disabled){background:var(--bg3);transform:translateY(-1px)}.response-recovery-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.response-recovery-action:disabled{opacity:.5;cursor:default}@media(prefers-reduced-motion:reduce){.response-recovery-action{transition:none;transform:none!important}}
+
+/* 0.28: bounded layout, one icon, shared colour and accessible motion. */
+#downloadAppTop::before{content:none!important;display:none!important}
+#downloadAppTop>span{display:inline-flex;flex:0 0 auto;color:inherit}
+#downloadAppTop svg{display:block;fill:none;width:19px;height:19px;color:inherit}
+:where(.settings-section,.connections-dialog,.product-dialog,.message-content){line-height:1.55;text-wrap:pretty}
+:where(.settings-section,dialog) :is(h2,h3){line-height:1.25;letter-spacing:-.015em;text-wrap:balance}
+:where(.settings-field,.connection-copy,.message-file-label){min-width:0}
+.api-key-card{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--bg2);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.api-key-card>h3,.api-key-card>#apiKeyStatus,.api-key-details{flex:1 1 100%;margin:0}
+.api-key-details{padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;min-width:0;max-width:100%;box-sizing:border-box;background:var(--bg);border-radius:10px;font-size:12px;line-height:1.7;user-select:text}
+.api-key-card button{flex:1 1 auto;min-height:40px}
+#accountEmail{color:var(--fg2);cursor:text}
+.renewal-price{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center}
+.renewal-price del{color:var(--fg2);font-size:15px;text-decoration-thickness:2px;opacity:.7}
+.renewal-price strong{color:var(--accent);font-size:28px;letter-spacing:-.03em}
+.renewal-badge{font-size:12px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-weight:600}
+.response-recovery{width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;padding:8px 10px;gap:8px;font-size:12px;margin:8px 0;border-radius:11px;line-height:1.4;min-height:0!important}
+.response-recovery>span{flex:1 1 140px;min-width:0}.response-recovery-action{min-height:32px;padding:5px 10px;flex:0 0 auto;font-size:12px}
+.attachment-list,.message-file-card,.attachment-chip,#attachmentPreview{box-sizing:border-box;min-width:0;max-width:100%}
+.message-file-card{width:100%;overflow:hidden}.message-file-card>.attachment-chip{min-width:0;flex:1 1 0;overflow:hidden}.message-file-label{overflow:hidden}.message-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.message-file-card>:is(.attachment-open,.attachment-download){flex:0 0 32px;width:32px;min-width:32px}.attachment-preview-open{min-width:0;max-width:100%}.attachment-preview-open>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+#voiceModeStage #voiceModeOrb{--orb-a:color-mix(in srgb,var(--accent) 22%,white);--orb-b:var(--accent);--orb-c:color-mix(in srgb,var(--accent) 65%,black)}
+#voiceModeStage #voiceModeOrb .voice-orb-surface::before{background:conic-gradient(transparent,color-mix(in srgb,var(--accent) 60%,white),transparent,var(--accent),transparent)}
+#voiceModeStage #voiceModeOrb .voice-orb-surface::after{background:radial-gradient(ellipse at 30% 20%,#ffffff80,transparent 40%),radial-gradient(ellipse at 75% 75%,var(--accent),transparent 55%)}
+#voiceModeStage #voiceModeOrb .voice-orb-halo{background:radial-gradient(circle,color-mix(in srgb,var(--accent) 25%,transparent),transparent 68%)}
+#voiceModeStage #voiceModeOrb .voice-orb-wave{border-color:var(--accent)}
+@media(max-width:600px){
+ .message{min-width:0;max-width:100%}.message-content{min-width:0;overflow-wrap:anywhere}.attachment-list{width:100%;gap:6px}.message-file-card{border-radius:11px}.message-file-card .attachment-chip{padding:8px;gap:7px}.message-file-name{font-size:12px}.message-file-details{font-size:10px}
+ #attachmentPreview{gap:6px}#attachmentPreview>.attachment-chip{max-width:100%;min-width:0}#attachmentPreview .file-excerpt{display:none}
+ .response-recovery{max-width:100%;padding:7px 9px;font-size:12px}.response-recovery-action{min-height:34px}
+ .smart-pc-top span{display:none}.smart-pc-top{padding:7px!important;min-width:36px!important;width:36px!important}.smart-pc-top svg{width:26px!important}
+ #topbar{padding-top:max(8px,env(safe-area-inset-top));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+ #composer{padding-bottom:max(8px,env(safe-area-inset-bottom))}#main{min-height:0;height:100dvh;max-height:100dvh}
+}
+@media(prefers-reduced-motion:no-preference){html:not([data-motion=reduced]) :is(.api-key-card,.response-recovery,.connection-row,.message-file-card){animation:ui-item-in 220ms var(--ui-ease) both}html:not([data-motion=reduced]) :is(.api-key-card button,.connection-row button,.settings-field input,.settings-field select){transition:background-color 180ms ease,border-color 180ms ease,box-shadow 220ms ease}html:not([data-motion=reduced]) .activity-card[data-state=running] .activity-icon{animation:ui-work-breathe 1.8s ease-in-out infinite}}
+html[data-motion=reduced] :is(.api-key-card,.response-recovery,.connection-row,.message-file-card,.activity-icon){animation:none!important;transition:none!important}
+
+/* Entitlement controls must remain hidden even when their component sets display:flex. */
+#sidebarPlus[hidden],.plus-action[hidden],#upgradeBtn[hidden]{display:none!important}
+
+.legal-links{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;padding:3px 8px;font-size:11px;line-height:1.4;flex-shrink:0}.legal-links a{color:var(--fg2);text-decoration:underline;text-underline-offset:3px}.legal-links a:hover,.legal-links a:focus-visible{color:var(--accent)}
