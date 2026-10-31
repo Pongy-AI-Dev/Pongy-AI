@@ -25,7 +25,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   await page.route('**/api/notifications',route=>route.abort());
   await page.reload();await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
   await page.locator('#notificationsBtn').click();await page.locator('#notificationsModal.open').waitFor();
-  if(await page.locator('.notification-row').count()!==5)throw Error('saved notifications were not restored after reload');
+  if(await page.locator('.notification-row').count()!==7)throw Error('saved notifications and expansion were not restored after reload');
   await page.locator('#notificationsBtn').click();await page.waitForFunction(()=>!document.querySelector('#notificationsModal').classList.contains('open'));
   if(errors.length)throw Error('browser errors: '+errors.join('; '));
   console.log('Notification popover toggle, dismissal and importance ordering passed.');

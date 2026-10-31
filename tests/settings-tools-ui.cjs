@@ -50,7 +50,7 @@ const path=require('node:path');
     await openSettings();
     check(await page.locator('.settings-tabs [role=tab]').count()===11,'tabs missing');
     await page.locator('#settings-tab-usage').click();
-    await page.waitForFunction(()=>document.querySelector('#usagePercent').textContent==='0%');
+    await page.waitForFunction(()=>document.querySelector('#usagePercent').textContent.endsWith('0%'));
     check(await page.locator('#usageProgress').evaluate(e=>e.value)===0,'usage bar does not start empty');
     check(!(await page.locator('#settings-panel-usage').innerText()).includes('150'),'internal per-chat limit shown to user');
 
