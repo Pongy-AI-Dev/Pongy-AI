@@ -1,0 +1,68 @@
+{
+  "version": "0.29.1",
+  "unit": {
+    "passed": 788,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "engine": "Chromium",
+    "focusedSuites": [
+      {
+        "suite": "tests/update-029-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 18090
+      },
+      {
+        "suite": "tests/products-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 13691
+      },
+      {
+        "suite": "tests/preferences-persistence-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 10868
+      },
+      {
+        "suite": "tests/notifications-popover-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5790
+      },
+      {
+        "suite": "tests/legal-pages-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 3220
+      }
+    ],
+    "full64SuitesRerun": false,
+    "continuousFeedAndCameraAssertions": 22
+  },
+  "storageTests": {
+    "count": 8,
+    "realHttp": true,
+    "firestore": "controlled REST fixture, not production",
+    "replacementSqlite": "entirely new empty database with changed numeric user ID"
+  },
+  "native": {
+    "androidSourceVersion": "0.29.1",
+    "androidVersionCode": 291,
+    "newApkBuilt": false,
+    "newMsiBuilt": false,
+    "androidOriginalCertificateRequired": true
+  },
+  "activationRequired": [
+    "PONGY_PRODUCT_SERVICE_ACCOUNT_JSON and server-only Firestore access",
+    "Migrate existing trusted database before losing its disk",
+    "Run native workflows and verify/publish actual installers"
+  ]
+}
