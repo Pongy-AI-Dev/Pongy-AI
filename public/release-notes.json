@@ -1,23 +1,19 @@
 {
-  "version": "0.28.2",
+  "version": "0.29.0",
   "ru": [
-    "Публичные политика, условия, страница о сервисе и правильная почта поддержки.",
-    "Motion: настоящий контейнер MKV (Matroska), локальная сборка без перекодирования.",
-    "Сохранение выбранных режимов ИИ и модели в настройках аккаунта.",
-    "Улучшены сенсорное меню навыков, мобильные вложения и компактные блоки ошибок.",
-    "Продление Plus в последние три дня: 120 ₽ вместо 190 ₽ при настроенной оплате.",
-    "Motion: анимированные стикмены, сцены до 120 секунд и MP4 в поддерживаемых браузерах.",
-    "Локальное сохранение архивов речевых моделей и более подробная выборка кадров видео.",
-    "Улучшены переключение настроенных провайдеров, очередь запросов и оформление API."
+    "Камера в режиме маскота: кадр отправляется вместе с вашим вопросом",
+    "Локальное распознавание речи в поддерживаемых аудио и видео",
+    "Выданная подписка и уведомление появляются без перезагрузки",
+    "Сохранение использования подключений, модели, мышления и уведомлений",
+    "Новые панели API/MCP, компактные ошибки и адаптивное оформление",
+    "Для сохранности серверной базы требуется постоянное хранилище"
   ],
   "en": [
-    "Public privacy policy, terms, about page and corrected support contact.",
-    "Motion: actual Matroska MKV container, remuxed locally without re-encoding.",
-    "Account preferences retain selected AI modes and model settings.",
-    "Improved touch skill menus, mobile attachments and compact error cards.",
-    "Plus renewal in the last three days: RUB 120 instead of 190 when billing is configured.",
-    "Motion: articulated stickmen, scenes up to 120 seconds and MP4 in supported browsers.",
-    "Persistent speech archive caching and more detailed video frame sampling.",
-    "Improved configured-provider fallback, request queues and API presentation."
+    "Camera in mascot mode: a frame is sent with your question",
+    "Local speech transcription for supported audio and video",
+    "Subscription grants and notices update without reloading",
+    "Persistent connection application, model, reasoning and notification choices",
+    "Refined API/MCP panels, compact recovery cards and responsive layout",
+    "Durable server storage is required to retain the database"
   ]
 }

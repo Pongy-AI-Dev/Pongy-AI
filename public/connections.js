@@ -1,43 +1,526 @@
-(function(){'use strict';
-const $=id=>document.getElementById(id),ru=()=>document.documentElement.lang.startsWith('ru'),tr=(a,b)=>ru()?a:b,api=((window.PONGY_CONFIG&&window.PONGY_CONFIG.apiUrl)||location.origin).replace(/\/+$/,'');
-let cacheAccount='',cachedServices=[],cacheTime=0;
-function account(){return window.PongyAppSession?.user()?.email||'';}
-function remember(list){cacheAccount=account();cachedServices=list;cacheTime=Date.now();services=list;}
-function cached(){return cacheAccount===account()&&Date.now()-cacheTime<300000?cachedServices:[];}
-let services=[],serial=0,busy=false,selected=null,previousFocus=null,settingsEpoch=0;
-const dialog=document.createElement('dialog');dialog.id='connectionsDialog';dialog.className='connections-dialog';dialog.setAttribute('aria-labelledby','connectionsTitle');
-const cross='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
-dialog.innerHTML='<header><h2 id="connectionsTitle"></h2><button type="button" id="connectionsClose" class="icon-btn">'+cross+'</button></header><div id="connectionsStatus" role="status" aria-live="polite"></div><div id="connectionsCatalog"></div><section id="connectionDetails" hidden></section><footer id="connectionsPrivacy"></footer>';document.body.append(dialog);
-function node(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
-function message(code){return ({CONNECTION_SETUP_REQUIRED:tr('Подключение ещё не настроено владельцем сайта.','The site owner has not configured this connection yet.'),CONNECTION_RECONNECT:tr('Доступ отклонён. Подключитесь заново.','Access was rejected. Please reconnect.'),CONNECTION_STATE:tr('Сеанс подключения истёк или аккаунт изменился. Начните заново.','The connection expired or the account changed. Start again.'),CONNECTION_CANCELLED:tr('Подключение отменено.','Connection cancelled.'),CONNECTION_SCOPE:tr('Сервис не выдал необходимые разрешения чтения.','The required read permissions were not granted.'),CONNECTION_SESSION_REQUIRED:tr('Войдите в Pongy заново и повторите подключение. Проверьте, разрешены ли cookie сайта и сервера.','Sign in to Pongy again and reconnect. Check that site and server cookies are allowed.'),CONNECTION_UNAVAILABLE:tr('Подключение временно недоступно. Повторите позже.','Connection is temporarily unavailable. Try again later.')})[code]||tr('Не удалось подключиться. Попробуйте ещё раз.','Could not connect. Please try again.');}
-function status(text,error=false){$('connectionsStatus').textContent=text;$('connectionsStatus').classList.toggle('error',error);$('connectionsStatus').setAttribute('role',error?'alert':'status');}
-async function request(path,options={}){const expected=serial,owner=account();const response=await fetch(api+'/api/connections'+path,{credentials:'include',...options,headers:{'Content-Type':'application/json',...(owner?{'X-Pongy-Account':owner}:{}),...options.headers}});if(expected!==serial||owner!==account())throw Error('CONNECTION_CANCELLED');let data;try{data=await response.json();}catch{throw Error('CONNECTION_UPSTREAM');}if(expected!==serial||owner!==account())throw Error('CONNECTION_CANCELLED');if(!response.ok)throw Error(response.status===401?'CONNECTION_SESSION_REQUIRED':data.code||'CONNECTION_UPSTREAM');if(Array.isArray(data.services))remember(data.services);return data;}
-const descriptions={github:['Чтение репозиториев и файлов. Запись в код не выполняется. OAuth repo может давать более широкие права у GitHub — проверьте экран разрешений.','Read repositories and files. Pongy does not write code. GitHub repo OAuth can grant broader provider permissions; review the consent screen.'],'google-drive':['Поиск файлов и чтение документов. Без изменений и удаления.','Find files and read documents. No edits or deletion.'],gmail:['Поиск и чтение писем. Без отправки и удаления.','Find and read mail. No sending or deletion.'],'google-calendar':['Чтение событий основного календаря. Без создания и изменений.','Read primary-calendar events. No creation or edits.'],slack:['Чтение доступных публичных каналов. Без личных сообщений и отправки.','Read accessible public channels. No DMs or posting.']};
-const icons={github:'<path d="M9 19c-4 1-4-2-5-2m10 4v-3.5c0-1 .1-1.4-.5-2 3-.3 6-1.5 6-5.5 0-1.2-.4-2.3-1.2-3.2.1-.8.1-2.1-.3-3.1-1.4 0-2.4.7-3.1 1.2a12 12 0 0 0-6 0C8.2 4.4 7.2 3.7 5.8 3.7c-.4 1-.4 2.3-.3 3.1-.8.9-1.2 2-1.2 3.2 0 4 3 5.2 6 5.5-.6.6-.5 1-.5 2V21"/>','google-drive':'<path d="m9 3 6 0 7 12-3 6H5l-3-6L9 3Z"/><path d="m9 3 10 18M15 3 5 21M2 15h20"/>',gmail:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/>','google-calendar':'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>',slack:'<path d="M8 3v13m8-8v13M3 8h13M8 16h13"/><circle cx="4" cy="16" r="1"/><circle cx="16" cy="4" r="1"/>'};
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id),
+    ru = () => document.documentElement.lang.startsWith("ru"),
+    tr = (a, b) => (ru() ? a : b),
+    api = (
+      (window.PONGY_CONFIG && window.PONGY_CONFIG.apiUrl) ||
+      location.origin
+    ).replace(/\/+$/, "");
+  let cacheAccount = "",
+    cachedServices = [],
+    cacheTime = 0;
+  function account() {
+    return window.PongyAppSession?.user()?.email || "";
+  }
+  function remember(list) {
+    cacheAccount = account();
+    cachedServices = list;
+    cacheTime = Date.now();
+    services = list;
+  }
+  function cached() {
+    return cacheAccount === account() && Date.now() - cacheTime < 300000
+      ? cachedServices
+      : [];
+  }
+  let services = [],
+    serial = 0,
+    busy = false,
+    selected = null,
+    previousFocus = null,
+    settingsEpoch = 0;
+  const dialog = document.createElement("dialog");
+  dialog.id = "connectionsDialog";
+  dialog.className = "connections-dialog";
+  dialog.setAttribute("aria-labelledby", "connectionsTitle");
+  const cross =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+  dialog.innerHTML =
+    '<header><h2 id="connectionsTitle"></h2><button type="button" id="connectionsClose" class="icon-btn">' +
+    cross +
+    '</button></header><div id="connectionsStatus" role="status" aria-live="polite"></div><div id="connectionsCatalog"></div><section id="connectionDetails" hidden></section><footer id="connectionsPrivacy"></footer>';
+  document.body.append(dialog);
+  function node(tag, text, cls) {
+    const e = document.createElement(tag);
+    if (text !== undefined) e.textContent = text;
+    if (cls) e.className = cls;
+    return e;
+  }
+  function message(code) {
+    return (
+      {
+        CONNECTION_DISABLED:tr("Включите использование сервиса в подключениях", "Enable this service in Connections"),
+        CONNECTION_SETUP_REQUIRED: tr(
+          "Подключение ещё не настроено владельцем сайта.",
+          "The site owner has not configured this connection yet.",
+        ),
+        CONNECTION_RECONNECT: tr(
+          "Доступ отклонён. Подключитесь заново.",
+          "Access was rejected. Please reconnect.",
+        ),
+        CONNECTION_STATE: tr(
+          "Сеанс подключения истёк или аккаунт изменился. Начните заново.",
+          "The connection expired or the account changed. Start again.",
+        ),
+        CONNECTION_CANCELLED: tr(
+          "Подключение отменено.",
+          "Connection cancelled.",
+        ),
+        CONNECTION_SCOPE: tr(
+          "Сервис не выдал необходимые разрешения чтения.",
+          "The required read permissions were not granted.",
+        ),
+        CONNECTION_SESSION_REQUIRED: tr(
+          "Войдите в Pongy заново и повторите подключение. Проверьте, разрешены ли cookie сайта и сервера.",
+          "Sign in to Pongy again and reconnect. Check that site and server cookies are allowed.",
+        ),
+        CONNECTION_UNAVAILABLE: tr(
+          "Подключение временно недоступно. Повторите позже.",
+          "Connection is temporarily unavailable. Try again later.",
+        ),
+      }[code] ||
+      tr(
+        "Не удалось подключиться. Попробуйте ещё раз.",
+        "Could not connect. Please try again.",
+      )
+    );
+  }
+  function status(text, error = false) {
+    $("connectionsStatus").textContent = text;
+    $("connectionsStatus").classList.toggle("error", error);
+    $("connectionsStatus").setAttribute("role", error ? "alert" : "status");
+  }
+  async function request(path, options = {}) {
+    const expected = serial,
+      owner = account();
+    const response = await fetch(api + "/api/connections" + path, {
+      credentials: "include",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(owner ? { "X-Pongy-Account": owner } : {}),
+        ...options.headers,
+      },
+    });
+    if (expected !== serial || owner !== account())
+      throw Error("CONNECTION_CANCELLED");
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw Error("CONNECTION_UPSTREAM");
+    }
+    if (expected !== serial || owner !== account())
+      throw Error("CONNECTION_CANCELLED");
+    if (!response.ok)
+      throw Error(
+        response.status === 401
+          ? "CONNECTION_SESSION_REQUIRED"
+          : data.code || "CONNECTION_UPSTREAM",
+      );
+    if (Array.isArray(data.services)) remember(data.services);
+    return data;
+  }
+  const descriptions = {
+    github: [
+      "Чтение репозиториев и файлов. Запись в код не выполняется. OAuth repo может давать более широкие права у GitHub — проверьте экран разрешений.",
+      "Read repositories and files. Pongy does not write code. GitHub repo OAuth can grant broader provider permissions; review the consent screen.",
+    ],
+    "google-drive": [
+      "Поиск файлов и чтение документов. Без изменений и удаления.",
+      "Find files and read documents. No edits or deletion.",
+    ],
+    gmail: [
+      "Поиск и чтение писем. Без отправки и удаления.",
+      "Find and read mail. No sending or deletion.",
+    ],
+    "google-calendar": [
+      "Чтение событий основного календаря. Без создания и изменений.",
+      "Read primary-calendar events. No creation or edits.",
+    ],
+    slack: [
+      "Чтение доступных публичных каналов. Без личных сообщений и отправки.",
+      "Read accessible public channels. No DMs or posting.",
+    ],
+  };
+  const icons = {
+    github:
+      '<path d="M9 19c-4 1-4-2-5-2m10 4v-3.5c0-1 .1-1.4-.5-2 3-.3 6-1.5 6-5.5 0-1.2-.4-2.3-1.2-3.2.1-.8.1-2.1-.3-3.1-1.4 0-2.4.7-3.1 1.2a12 12 0 0 0-6 0C8.2 4.4 7.2 3.7 5.8 3.7c-.4 1-.4 2.3-.3 3.1-.8.9-1.2 2-1.2 3.2 0 4 3 5.2 6 5.5-.6.6-.5 1-.5 2V21"/>',
+    "google-drive":
+      '<path d="m9 3 6 0 7 12-3 6H5l-3-6L9 3Z"/><path d="m9 3 10 18M15 3 5 21M2 15h20"/>',
+    gmail:
+      '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/>',
+    "google-calendar":
+      '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>',
+    slack:
+      '<path d="M8 3v13m8-8v13M3 8h13M8 16h13"/><circle cx="4" cy="16" r="1"/><circle cx="16" cy="4" r="1"/>',
+  };
 
-function labels(){const b=$('addConnections');if(b)b.querySelector('span').textContent=tr('Подключения','Connections');$('connectionsTitle').textContent=tr('Подключения','Connections');$('connectionsClose').setAttribute('aria-label',tr('Закрыть','Close'));$('connectionsPrivacy').textContent=tr('Только чтение · Данные по запросу передаются выбранному ИИ.','Read only · Requested data is shared with your selected AI.');if(dialog.open){if(selected)details(selected);else render();}if($('settingsConnectionsTitle'))$('settingsConnectionsTitle').textContent=tr('Подключённые приложения','Connected apps');if($('settingsConnectionsHint'))$('settingsConnectionsHint').textContent=tr('Выберите сервис и разрешите Pongy доступ.','Choose a service and authorize Pongy.');}
-function rows(catalog,list,choose){catalog.replaceChildren();for(const s of list){const row=node('div',undefined,'connection-row'),icon=node('span',undefined,'connection-icon');icon.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(icons[s.id]||'')+'</svg>';const text=node('div',undefined,'connection-copy');text.append(node('strong',s.name));if(s.connected)text.append(node('small',tr('Подключено','Connected')+(s.label?' · '+s.label:'')));const add=node('button',undefined,'connection-add');add.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="'+(s.connected?'m5 12 4 4L19 6':'M12 5v14M5 12h14')+'"/></svg>';add.type='button';add.dataset.service=s.id;add.setAttribute('aria-label',(s.connected?tr('Управление ','Manage '):tr('Подключить ','Connect '))+s.name);add.onclick=()=>choose(s);row.append(icon,text,add);catalog.append(row);}}
-function render(){selected=null;$('connectionDetails').hidden=true;$('connectionsCatalog').hidden=false;rows($('connectionsCatalog'),services,details);}
-function details(s){selected=s;$('connectionsCatalog').hidden=true;const panel=$('connectionDetails');panel.hidden=false;panel.replaceChildren();const back=node('button',tr('← Все сервисы','← All services'),'connection-back');back.type='button';back.onclick=()=>{status('');render();};panel.append(back,node('h3',s.name),node('p',tr(...descriptions[s.id])));
- if(s.connected){const disconnect=node('button',tr('Отключить','Disconnect'),'connection-secondary');disconnect.type='button';disconnect.onclick=()=>{disconnect.textContent=tr('Подтвердить отключение','Confirm disconnect');disconnect.onclick=()=>perform(async()=>{const d=await request('/'+s.id,{method:'DELETE'});services=d.services;status(tr('Отключено от Pongy.','Disconnected from Pongy.'));render();void refreshSettings();});};panel.append(disconnect,node('p',tr('Разрешения у самого сервиса можно отозвать в его настройках.','You can also revoke provider permissions in that service’s settings.')));}
- else if(s.oauthAvailable){const oauth=node('button',tr('Подключить через ','Connect with ')+s.name,'connection-primary');oauth.type='button';oauth.onclick=()=>perform(async()=>{const d=await request('/'+s.id+'/start',{method:'POST',body:'{}'}),u=new URL(d.url);if(!['github.com','accounts.google.com','slack.com'].includes(u.hostname)||u.protocol!=='https:')throw Error('CONNECTION_UPSTREAM');const state=u.searchParams.get('state');if(!state||!d.browser)throw Error('CONNECTION_STATE');sessionStorage.setItem('pongy_connection:'+state,JSON.stringify({browser:d.browser,service:s.id,expires:Date.now()+600000}));location.assign(u.href);});panel.append(oauth);}
- else panel.append(node('p',message('CONNECTION_SETUP_REQUIRED'),'connection-setup'));back.focus();}
-async function perform(fn){if(busy)return;const expected=serial;busy=true;dialog.setAttribute('aria-busy','true');const buttons=[...dialog.querySelectorAll('button,input')];buttons.forEach(b=>b.disabled=true);try{await fn();}catch(e){if(dialog.open&&expected===serial)status(message(e.message),true);}finally{busy=false;dialog.removeAttribute('aria-busy');buttons.forEach(b=>b.disabled=false);}}
-async function open(service){if(dialog.open)return;previousFocus=document.activeElement;services=cached();selected=null;$('connectionsCatalog').replaceChildren();$('connectionsCatalog').hidden=false;$('connectionDetails').hidden=true;$('connectionDetails').replaceChildren();labels();dialog.showModal();$('connectionsClose').focus();if(services.length){render();status('');}else status(tr('Загрузка…','Loading…'));const id=++serial;try{const d=await request('');if(id!==serial||!dialog.open)return;services=d.services;render();if(typeof service==='string'){const s=services.find(s=>s.id===service);if(s)details(s);}const p=new URLSearchParams(location.search);status(p.get('connection')==='connected'?tr('Сервис подключён.','Service connected.'):p.get('connection_error')?message(p.get('connection_error')):'',p.get('connection')==='error');}catch(e){if(id===serial)status(message(e.message),true);}}
-function restoreFocus(){if(previousFocus?.isConnected&&!previousFocus.closest('[inert]'))previousFocus.focus();}
-function close(){serial++;dialog.close();$('connectionDetails').replaceChildren();restoreFocus();}
-async function refreshSettings(){const catalog=$('settingsConnectionsCatalog');if(!catalog)return;const token=++settingsEpoch;const hint=$('settingsConnectionsStatus');const previous=cached();if(previous.length){rows(catalog,previous,s=>open(s.id));hint.textContent='';}else hint.textContent=tr('Загрузка…','Loading…');try{const data=await request('');if(token!==settingsEpoch||$('authScreen').classList.contains('show'))return;rows(catalog,data.services,s=>open(s.id));hint.textContent='';}catch(e){if(token===settingsEpoch)hint.textContent=message(e.message);}}
-function mount(){const p=$('settings-panel-connections');if(!p||$('settingsConnectionsCatalog'))return;const title=node('h3');title.id='settingsConnectionsTitle';const hint=node('p');hint.id='settingsConnectionsHint';const msg=node('p');msg.id='settingsConnectionsStatus';msg.setAttribute('role','status');const list=node('div');list.id='settingsConnectionsCatalog';p.append(title,hint,msg,list);}
-$('connectionsClose').onclick=close;dialog.addEventListener('close',restoreFocus);dialog.addEventListener('cancel',()=>{serial++;$('connectionDetails').replaceChildren();});
-const b=node('button');b.id='addConnections';b.type='button';b.innerHTML='<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m10 13 4-4m-6 6-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 3 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg></i><span></span>';$('composerMenu').append(b);b.onclick=()=>{$('composerMenu').hidden=true;$('attachBtn').setAttribute('aria-expanded','false');open();};
-new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});new MutationObserver(()=>{if($('authScreen').classList.contains('show')){settingsEpoch++;cacheAccount='';cachedServices=[];cacheTime=0;$('settingsConnectionsCatalog')?.replaceChildren();if(dialog.open){services=[];close();}}}).observe($('authScreen'),{attributes:true,attributeFilter:['class']});mount();labels();
-async function finishReturn(){
- const match=location.hash.match(/^#connection_return=([A-Za-z0-9_-]+)$/);if(!match)return;
- history.replaceState(null,'',location.pathname+location.search);
- let data,proof;try{data=JSON.parse(atob(match[1].replace(/-/g,'+').replace(/_/g,'/')));const key='pongy_connection:'+data.state;proof=JSON.parse(sessionStorage.getItem(key)||'null');sessionStorage.removeItem(key);if(!proof||proof.service!==data.service||proof.expires<Date.now())throw Error('CONNECTION_STATE');}catch{await open();status(message('CONNECTION_STATE'),true);return;}
- let tries=0;const timer=setInterval(async()=>{if($('userInput').disabled){if(++tries>60){clearInterval(timer);await open();status(message('CONNECTION_SESSION_REQUIRED'),true);}return;}clearInterval(timer);await open();try{const result=await request('/'+data.service+'/finish',{method:'POST',body:JSON.stringify({...data,browser:proof.browser})});services=result.services;render();status(tr('Сервис подключён.','Service connected.'));void refreshSettings();}catch(e){status(message(e.message),true);}},250);
-}
-void finishReturn();
-if(new URLSearchParams(location.search).has('connection')){let tries=0;const timer=setInterval(()=>{if(!$('userInput').disabled){clearInterval(timer);open().finally(()=>{const url=new URL(location.href);url.searchParams.delete('connection');url.searchParams.delete('connection_error');history.replaceState(null,'',url.pathname+url.search+url.hash);});}else if(++tries>60)clearInterval(timer);},500);}
-window.PongyConnections={open,close,refreshSettings};window.addEventListener('pongy-session-ready',()=>{void refreshSettings();});if(account())void refreshSettings();
+  function labels() {
+    const b = $("addConnections");
+    if (b)
+      b.querySelector("span").textContent = tr("Подключения", "Connections");
+    $("connectionsTitle").textContent = tr("Подключения", "Connections");
+    $("connectionsClose").setAttribute("aria-label", tr("Закрыть", "Close"));
+    $("connectionsPrivacy").textContent = tr(
+      "Только чтение · Данные по запросу передаются выбранному ИИ.",
+      "Read only · Requested data is shared with your selected AI.",
+    );
+    if (dialog.open) {
+      if (selected) details(selected);
+      else render();
+    }
+    if ($("settingsConnectionsTitle"))
+      $("settingsConnectionsTitle").textContent = tr(
+        "Подключённые приложения",
+        "Connected apps",
+      );
+    if ($("settingsConnectionsHint"))
+      $("settingsConnectionsHint").textContent = tr(
+        "Выберите сервис и разрешите Pongy доступ.",
+        "Choose a service and authorize Pongy.",
+      );
+  }
+  function rows(catalog, list, choose) {
+    catalog.replaceChildren();
+    for (const s of list) {
+      const row = node("div", undefined, "connection-row"),
+        icon = node("span", undefined, "connection-icon");
+      icon.innerHTML =
+        '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        (icons[s.id] || "") +
+        "</svg>";
+      const text = node("div", undefined, "connection-copy");
+      text.append(node("strong", s.name));
+      if (s.connected)
+        text.append(
+          node(
+            "small",
+            tr("Подключено", "Connected") + (s.label ? " · " + s.label : ""),
+          ),
+        );
+      const add = node("button", undefined, "connection-add");
+      add.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="' +
+        (s.connected ? "m5 12 4 4L19 6" : "M12 5v14M5 12h14") +
+        '"/></svg>';
+      add.type = "button";
+      add.dataset.service = s.id;
+      add.setAttribute(
+        "aria-label",
+        (s.connected
+          ? tr("Управление ", "Manage ")
+          : tr("Подключить ", "Connect ")) + s.name,
+      );
+      add.onclick = () => choose(s);
+      row.append(icon, text, add);
+      catalog.append(row);
+    }
+  }
+  function render() {
+    selected = null;
+    $("connectionDetails").hidden = true;
+    $("connectionsCatalog").hidden = false;
+    rows($("connectionsCatalog"), services, details);
+  }
+  function details(s) {
+    selected = s;
+    $("connectionsCatalog").hidden = true;
+    const panel = $("connectionDetails");
+    panel.hidden = false;
+    panel.replaceChildren();
+    const back = node(
+      "button",
+      tr("← Все сервисы", "← All services"),
+      "connection-back",
+    );
+    back.type = "button";
+    back.onclick = () => {
+      status("");
+      render();
+    };
+    panel.append(
+      back,
+      node("h3", s.name),
+      node("p", tr(...descriptions[s.id])),
+    );
+    if (s.connected) {
+      const applied=node('button',s.applied!==false?tr('Используется в чате','Used in chat'):tr('Не используется в чате','Not used in chat'),'connection-apply');
+      applied.type='button';applied.setAttribute('role','switch');applied.setAttribute('aria-checked',String(s.applied!==false));
+      applied.onclick=()=>perform(async()=>{const d=await request('/'+s.id+'/applied',{method:'PUT',body:JSON.stringify({enabled:s.applied===false})});const updated=d.services.find(item=>item.id===s.id);if(updated)details(updated);void refreshSettings();});
+      panel.append(applied,node('p',tr('Pongy читает данные только по вашему запросу','Pongy reads data only when you request it'),'settings-hint'));
+      const disconnect = node(
+        "button",
+        tr("Отключить", "Disconnect"),
+        "connection-secondary",
+      );
+      disconnect.type = "button";
+      disconnect.onclick = () => {
+        disconnect.textContent = tr(
+          "Подтвердить отключение",
+          "Confirm disconnect",
+        );
+        disconnect.onclick = () =>
+          perform(async () => {
+            const d = await request("/" + s.id, { method: "DELETE" });
+            services = d.services;
+            status(tr("Отключено от Pongy.", "Disconnected from Pongy."));
+            render();
+            void refreshSettings();
+          });
+      };
+      panel.append(
+        disconnect,
+        node(
+          "p",
+          tr(
+            "Разрешения у самого сервиса можно отозвать в его настройках.",
+            "You can also revoke provider permissions in that service’s settings.",
+          ),
+        ),
+      );
+    } else if (s.oauthAvailable) {
+      const oauth = node(
+        "button",
+        tr("Подключить через ", "Connect with ") + s.name,
+        "connection-primary",
+      );
+      oauth.type = "button";
+      oauth.onclick = () =>
+        perform(async () => {
+          const d = await request("/" + s.id + "/start", {
+              method: "POST",
+              body: "{}",
+            }),
+            u = new URL(d.url);
+          if (
+            !["github.com", "accounts.google.com", "slack.com"].includes(
+              u.hostname,
+            ) ||
+            u.protocol !== "https:"
+          )
+            throw Error("CONNECTION_UPSTREAM");
+          const state = u.searchParams.get("state");
+          if (!state || !d.browser) throw Error("CONNECTION_STATE");
+          sessionStorage.setItem(
+            "pongy_connection:" + state,
+            JSON.stringify({
+              browser: d.browser,
+              service: s.id,
+              expires: Date.now() + 600000,
+            }),
+          );
+          location.assign(u.href);
+        });
+      panel.append(oauth);
+    } else
+      panel.append(
+        node("p", message("CONNECTION_SETUP_REQUIRED"), "connection-setup"),
+      );
+    back.focus();
+  }
+  async function perform(fn) {
+    if (busy) return;
+    const expected = serial;
+    busy = true;
+    dialog.setAttribute("aria-busy", "true");
+    const buttons = [...dialog.querySelectorAll("button,input")];
+    buttons.forEach((b) => (b.disabled = true));
+    try {
+      await fn();
+    } catch (e) {
+      if (dialog.open && expected === serial) status(message(e.message), true);
+    } finally {
+      busy = false;
+      dialog.removeAttribute("aria-busy");
+      buttons.forEach((b) => (b.disabled = false));
+    }
+  }
+  async function open(service) {
+    if (dialog.open) return;
+    previousFocus = document.activeElement;
+    services = cached();
+    selected = null;
+    $("connectionsCatalog").replaceChildren();
+    $("connectionsCatalog").hidden = false;
+    $("connectionDetails").hidden = true;
+    $("connectionDetails").replaceChildren();
+    labels();
+    dialog.showModal();
+    $("connectionsClose").focus();
+    if (services.length) {
+      render();
+      status("");
+    } else status(tr("Загрузка…", "Loading…"));
+    const id = ++serial;
+    try {
+      const d = await request("");
+      if (id !== serial || !dialog.open) return;
+      services = d.services;
+      render();
+      if (typeof service === "string") {
+        const s = services.find((s) => s.id === service);
+        if (s) details(s);
+      }
+      const p = new URLSearchParams(location.search);
+      status(
+        p.get("connection") === "connected"
+          ? tr("Сервис подключён.", "Service connected.")
+          : p.get("connection_error")
+            ? message(p.get("connection_error"))
+            : "",
+        p.get("connection") === "error",
+      );
+    } catch (e) {
+      if (id === serial) status(message(e.message), true);
+    }
+  }
+  function restoreFocus() {
+    if (previousFocus?.isConnected && !previousFocus.closest("[inert]"))
+      previousFocus.focus();
+  }
+  function close() {
+    serial++;
+    dialog.close();
+    $("connectionDetails").replaceChildren();
+    restoreFocus();
+  }
+  async function refreshSettings() {
+    const catalog = $("settingsConnectionsCatalog");
+    if (!catalog) return;
+    const token = ++settingsEpoch;
+    const hint = $("settingsConnectionsStatus");
+    const previous = cached();
+    if (previous.length) {
+      rows(catalog, previous, (s) => open(s.id));
+      hint.textContent = "";
+    } else hint.textContent = tr("Загрузка…", "Loading…");
+    try {
+      const data = await request("");
+      if (token !== settingsEpoch || $("authScreen").classList.contains("show"))
+        return;
+      rows(catalog, data.services, (s) => open(s.id));
+      hint.textContent = "";
+    } catch (e) {
+      if (token === settingsEpoch) hint.textContent = message(e.message);
+    }
+  }
+  function mount() {
+    const p = $("settings-panel-connections");
+    if (!p || $("settingsConnectionsCatalog")) return;
+    const title = node("h3");
+    title.id = "settingsConnectionsTitle";
+    const hint = node("p");
+    hint.id = "settingsConnectionsHint";
+    const msg = node("p");
+    msg.id = "settingsConnectionsStatus";
+    msg.setAttribute("role", "status");
+    const list = node("div");
+    list.id = "settingsConnectionsCatalog";
+    p.append(title, hint, msg, list);
+  }
+  $("connectionsClose").onclick = close;
+  dialog.addEventListener("close", restoreFocus);
+  dialog.addEventListener("cancel", () => {
+    serial++;
+    $("connectionDetails").replaceChildren();
+  });
+  const b = node("button");
+  b.id = "addConnections";
+  b.type = "button";
+  b.innerHTML =
+    '<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m10 13 4-4m-6 6-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 3 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg></i><span></span>';
+  $("composerMenu").append(b);
+  b.onclick = () => {
+    $("composerMenu").hidden = true;
+    $("attachBtn").setAttribute("aria-expanded", "false");
+    open();
+  };
+  new MutationObserver(labels).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["lang"],
+  });
+  new MutationObserver(() => {
+    if ($("authScreen").classList.contains("show")) {
+      settingsEpoch++;
+      cacheAccount = "";
+      cachedServices = [];
+      cacheTime = 0;
+      $("settingsConnectionsCatalog")?.replaceChildren();
+      if (dialog.open) {
+        services = [];
+        close();
+      }
+    }
+  }).observe($("authScreen"), { attributes: true, attributeFilter: ["class"] });
+  mount();
+  labels();
+  async function finishReturn() {
+    const match = location.hash.match(/^#connection_return=([A-Za-z0-9_-]+)$/);
+    if (!match) return;
+    history.replaceState(null, "", location.pathname + location.search);
+    let data, proof;
+    try {
+      data = JSON.parse(atob(match[1].replace(/-/g, "+").replace(/_/g, "/")));
+      const key = "pongy_connection:" + data.state;
+      proof = JSON.parse(sessionStorage.getItem(key) || "null");
+      sessionStorage.removeItem(key);
+      if (
+        !proof ||
+        proof.service !== data.service ||
+        proof.expires < Date.now()
+      )
+        throw Error("CONNECTION_STATE");
+    } catch {
+      await open();
+      status(message("CONNECTION_STATE"), true);
+      return;
+    }
+    let tries = 0;
+    const timer = setInterval(async () => {
+      if ($("userInput").disabled) {
+        if (++tries > 60) {
+          clearInterval(timer);
+          await open();
+          status(message("CONNECTION_SESSION_REQUIRED"), true);
+        }
+        return;
+      }
+      clearInterval(timer);
+      await open();
+      try {
+        const result = await request("/" + data.service + "/finish", {
+          method: "POST",
+          body: JSON.stringify({ ...data, browser: proof.browser }),
+        });
+        services = result.services;
+        render();
+        status(tr("Сервис подключён.", "Service connected."));
+        void refreshSettings();
+      } catch (e) {
+        status(message(e.message), true);
+      }
+    }, 250);
+  }
+  void finishReturn();
+  if (new URLSearchParams(location.search).has("connection")) {
+    let tries = 0;
+    const timer = setInterval(() => {
+      if (!$("userInput").disabled) {
+        clearInterval(timer);
+        open().finally(() => {
+          const url = new URL(location.href);
+          url.searchParams.delete("connection");
+          url.searchParams.delete("connection_error");
+          history.replaceState(null, "", url.pathname + url.search + url.hash);
+        });
+      } else if (++tries > 60) clearInterval(timer);
+    }, 500);
+  }
+  window.PongyConnections = { open, close, refreshSettings };
+  window.addEventListener("pongy-session-ready", () => {
+    void refreshSettings();
+  });
+  if (account()) void refreshSettings();
 })();

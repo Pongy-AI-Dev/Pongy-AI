@@ -47,7 +47,7 @@ function listen(){
  var token=++generation;clearReply();ctx.stopSpeaking();state('connecting');ctx.startListening();
  setTimeout(function(){if(opened&&token===generation&&phase==='connecting'&&!ctx.snapshot().recording)pause(tr('Микрофон пока не запущен. Проверьте разрешение или сообщение под полем ввода.','The microphone has not started. Check its permission or the help below.'));},190000);
 }
-function close(){
+function close(){root.PongyLiveCamera?.close();
  if(!opened)return;opened=false;++generation;clearReply();clearInterval(timer);ctx.closeMenu();ctx.stopListening();ctx.stopSpeaking();
  if(anchor?.parentNode)anchor.replaceWith($('inputArea'));else home?.appendChild($('inputArea'));
  $('voiceModeStage').hidden=true;document.body.classList.remove('voice-mode');
@@ -114,9 +114,9 @@ function init(options){
  root.addEventListener('pagehide',close);
  document.addEventListener('keydown',function(e){
   if(!opened||ctx.snapshot().blocked)return;
-  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}
+  if(e.key==='Escape'&&root.PongyLiveCamera?.active()){e.preventDefault();e.stopImmediatePropagation();root.PongyLiveCamera.close();return;}if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}
   if(e.key==='Tab'){var list=[...stage.querySelectorAll('button,textarea,input,select,a[href]')].filter(el=>!el.disabled&&el.getClientRects().length);if(!list.length)return;if(e.shiftKey&&document.activeElement===list[0]){e.preventDefault();list.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===list.at(-1)){e.preventDefault();list[0].focus();}}
  },true);labels();new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 }
-root.PongyVoiceMode={silence:function(){recoveryCount=0;},init,active,close,pending,chunk,answer,pause,transcript,level,phase:function(){return phase}};
+root.PongyVoiceMode={silence:function(){recoveryCount=0;},init,active,resume:listen,close,pending,chunk,answer,pause,transcript,level,phase:function(){return phase}};
 })(window);

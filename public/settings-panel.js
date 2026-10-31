@@ -1,100 +1,1982 @@
-(function(root){'use strict';var ctx,active='main',own=false,scanRunning=false,epoch=0,account='',statusTimer,lastRefresh=0,restoreBusy=false,autoRestored=0,refreshApiKeyStatus=()=>{},refreshMcpStatus=()=>{};const translated=new Map();var translations=new Map();
-let adminBusy=false,adminRequest=0,adminState={disabled:false,maintenance:false};const $=id=>document.getElementById(id),tr=(r,e)=>{const value=ctx.lang()==='ru'?r:e;translations.set(value,[r,e]);return value;},tabs={main:['Главная','General'],account:['Аккаунт','Account'],interface:['Интерфейс','Appearance'],tools:['API и MCP','API & MCP'],connections:['Подключения','Connections'],plugins:['Плагины','Plugins'],skills:['Навыки','Skills'],usage:['Использование','Usage'],subscription:['Подписка','Subscription'],beta:['Бета-функции','Beta features'],developer:['Разработчик','Developer']};
-function node(tag,text,cls){const n=document.createElement(tag);if(text!==undefined){n.textContent=text;if(translations.has(text))translated.set(n,translations.get(text));}if(cls)n.className=cls;return n;}
-// Browser autofill is account-scoped obfuscation, not encryption. Requests use HTTPS; server storage uses AES-GCM.
-function apiAccount(){try{return String(ctx?.user()?.email||'').toLowerCase()}catch(e){return ''}}
-function apiSalt(){try{return localStorage.getItem('pongy_device_id')||'pongy' }catch(e){return 'pongy'}}
-function apiEncode(value){const source=String(value||''),salt=apiSalt()+'|'+apiAccount();let mixed='';for(let i=0;i<source.length;i++)mixed+=String.fromCharCode(source.charCodeAt(i)^salt.charCodeAt(i%salt.length));try{const bytes=new TextEncoder().encode(mixed);let binary='';bytes.forEach(b=>{binary+=String.fromCharCode(b)});return btoa(binary)}catch(e){return ''}}
-function apiDecode(value){try{const binary=atob(String(value||'')),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0)),mixed=new TextDecoder().decode(bytes),salt=apiSalt()+'|'+apiAccount();let out='';for(let i=0;i<mixed.length;i++)out+=String.fromCharCode(mixed.charCodeAt(i)^salt.charCodeAt(i%salt.length));return out}catch(e){return ''}}
-function apiLocal(suffix,value){const account=apiAccount();if(!account)return null;const key='pongy_api_'+suffix+':'+account;try{if(value===undefined)return localStorage.getItem(key);if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value));}catch(e){}return null}
-function readStoredKey(){const raw=apiLocal('key');return raw?apiDecode(raw):''}
-function writeStoredKey(value){if(!apiAccount())return;if(value)apiLocal('key',apiEncode(value));else apiLocal('key',null)}
-function readApiMeta(){try{const raw=apiLocal('meta');return raw?JSON.parse(raw):null}catch(e){return null}}
-function readConsent(){return apiLocal('consent')==='1'}
-function writeConsent(value){apiLocal('consent',value?'1':null)}
-function writeApiMeta(value){try{apiLocal('meta',value?JSON.stringify(value):null)}catch(e){}}
-let apiRevealTimer=0,apiDirty=false,apiRevision=0,modelsRequest=0;
-function dirtyApi(){apiDirty=true;apiRevision++;const meta=readApiMeta()||{};writeApiMeta({...meta,draft:true});const save=$('personalApiSave');if(save)save.hidden=false;const status=$('personalApiStatus');if(status)status.textContent=tr('Черновик сохранён на устройстве. Для применения нажмите «Проверить и подключить».','Draft saved on this device. Select Validate & connect to apply it.');}
-function clearApiModels(){modelsRequest++;const model=$('personalApiModel');delete model.dataset.loading;model.disabled=true;model.replaceChildren(node('option',tr('Сначала загрузите модели','Load models first')));$('personalApiModelOwner').textContent='';const load=$('personalApiLoadModels');if(load)load.disabled=false;}
+(function (root) {
+  "use strict";
+  var ctx,
+    active = "main",
+    own = false,
+    scanRunning = false,
+    epoch = 0,
+    account = "",
+    statusTimer,
+    lastRefresh = 0,
+    restoreBusy = false,
+    autoRestored = 0,
+    refreshApiKeyStatus = () => {},
+    refreshMcpStatus = () => {};
+  const translated = new Map();
+  var translations = new Map();
+  let adminBusy = false,
+    adminRequest = 0,
+    adminState = { disabled: false, maintenance: false };
+  const $ = (id) => document.getElementById(id),
+    tr = (r, e) => {
+      const value = ctx.lang() === "ru" ? r : e;
+      translations.set(value, [r, e]);
+      return value;
+    },
+    tabs = {
+      main: ["Главная", "General"],
+      account: ["Аккаунт", "Account"],
+      interface: ["Интерфейс", "Appearance"],
+      tools: ["API и MCP", "API & MCP"],
+      connections: ["Подключения", "Connections"],
+      plugins: ["Плагины", "Plugins"],
+      skills: ["Навыки", "Skills"],
+      usage: ["Использование", "Usage"],
+      subscription: ["Подписка", "Subscription"],
+      beta: ["Бета-функции", "Beta features"],
+      developer: ["Разработчик", "Developer"],
+    };
+  function node(tag, text, cls) {
+    const n = document.createElement(tag);
+    if (text !== undefined) {
+      n.textContent = text;
+      if (translations.has(text)) translated.set(n, translations.get(text));
+    }
+    if (cls) n.className = cls;
+    return n;
+  }
+  // Browser autofill is account-scoped obfuscation, not encryption. Requests use HTTPS; server storage uses AES-GCM.
+  function apiAccount() {
+    try {
+      return String(ctx?.user()?.email || "").toLowerCase();
+    } catch (e) {
+      return "";
+    }
+  }
+  function apiSalt() {
+    try {
+      return localStorage.getItem("pongy_device_id") || "pongy";
+    } catch (e) {
+      return "pongy";
+    }
+  }
+  function apiEncode(value) {
+    const source = String(value || ""),
+      salt = apiSalt() + "|" + apiAccount();
+    let mixed = "";
+    for (let i = 0; i < source.length; i++)
+      mixed += String.fromCharCode(
+        source.charCodeAt(i) ^ salt.charCodeAt(i % salt.length),
+      );
+    try {
+      const bytes = new TextEncoder().encode(mixed);
+      let binary = "";
+      bytes.forEach((b) => {
+        binary += String.fromCharCode(b);
+      });
+      return btoa(binary);
+    } catch (e) {
+      return "";
+    }
+  }
+  function apiDecode(value) {
+    try {
+      const binary = atob(String(value || "")),
+        bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0)),
+        mixed = new TextDecoder().decode(bytes),
+        salt = apiSalt() + "|" + apiAccount();
+      let out = "";
+      for (let i = 0; i < mixed.length; i++)
+        out += String.fromCharCode(
+          mixed.charCodeAt(i) ^ salt.charCodeAt(i % salt.length),
+        );
+      return out;
+    } catch (e) {
+      return "";
+    }
+  }
+  function apiLocal(suffix, value) {
+    const account = apiAccount();
+    if (!account) return null;
+    const key = "pongy_api_" + suffix + ":" + account;
+    try {
+      if (value === undefined) return localStorage.getItem(key);
+      if (value === null) localStorage.removeItem(key);
+      else
+        localStorage.setItem(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value),
+        );
+    } catch (e) {}
+    return null;
+  }
+  function readStoredKey() {
+    const raw = apiLocal("key");
+    return raw ? apiDecode(raw) : "";
+  }
+  function writeStoredKey(value) {
+    if (!apiAccount()) return;
+    if (value) apiLocal("key", apiEncode(value));
+    else apiLocal("key", null);
+  }
+  function readApiMeta() {
+    try {
+      const raw = apiLocal("meta");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function readConsent() {
+    return apiLocal("consent") === "1";
+  }
+  function writeConsent(value) {
+    apiLocal("consent", value ? "1" : null);
+  }
+  function writeApiMeta(value) {
+    try {
+      apiLocal("meta", value ? JSON.stringify(value) : null);
+    } catch (e) {}
+  }
+  let apiRevealTimer = 0,
+    apiDirty = false,
+    apiRevision = 0,
+    modelsRequest = 0;
+  function dirtyApi() {
+    apiDirty = true;
+    apiRevision++;
+    const meta = readApiMeta() || {};
+    writeApiMeta({ ...meta, draft: true });
+    const save = $("personalApiSave");
+    if (save) save.hidden = false;
+    const status = $("personalApiStatus");
+    if (status)
+      status.textContent = tr(
+        "Черновик сохранён на устройстве. Для применения нажмите «Проверить и подключить».",
+        "Draft saved on this device. Select Validate & connect to apply it.",
+      );
+  }
+  function clearApiModels() {
+    modelsRequest++;
+    const model = $("personalApiModel");
+    delete model.dataset.loading;
+    model.disabled = true;
+    model.replaceChildren(
+      node("option", tr("Сначала загрузите модели", "Load models first")),
+    );
+    $("personalApiModelOwner").textContent = "";
+    const load = $("personalApiLoadModels");
+    if (load) load.disabled = false;
+  }
 
-// After a re-login the activation restores itself: the browser still holds the key, provider
-// and model, so the same validated connect request is repeated once without the user noticing.
-async function autoRestoreConnection(accountId){// Retries are throttled: a redeploy that loses server data must not permanently drop the personal API.
-if(apiDirty||restoreBusy||Date.now()-autoRestored<300000)return;autoRestored=Date.now();const key=readStoredKey(),meta=readApiMeta();if(!key||!meta||meta.draft===true||typeof meta.provider!=='string'||typeof meta.model!=='string'||!meta.model||!readConsent())return;restoreBusy=true;const token=epoch,revision=apiRevision,output=$('personalApiStatus');try{output.textContent=tr('Восстанавливаю подключение личного API…','Restoring the personal API connection…');const provider=$('personalApiProvider');if(provider&&[...provider.options].some(o=>o.value===meta.provider))provider.value=meta.provider;if(Array.isArray(meta.models)&&meta.models.length)fillModels(meta.models,meta.model);const v=await ctx.api('/api/user-api',{method:'PUT',body:{provider:meta.provider,model:meta.model,key,consent:true}});if(token!==epoch||revision!==apiRevision)return;showApi(v);await usage();if(v.connected)ctx.notify(tr('Подключение личного API восстановлено','Personal API connection restored'));}catch(e){if(token===epoch&&revision===apiRevision)output.textContent=tr('Не удалось восстановить подключение личного API: ','Could not restore the personal API connection: ')+e.message;}finally{restoreBusy=false;}}
-function hideApiKey(){clearTimeout(apiRevealTimer);apiRevealTimer=0;const input=$('personalApiKey'),eye=$('personalApiToggle');if(input)input.type='password';if(eye){eye.classList.remove('revealed');eye.setAttribute('aria-pressed','false');const label=tr('Показать ключ на 3 секунды','Show the key for 3 seconds');eye.setAttribute('aria-label',label);eye.title=label}}
-function revealApiKey(){const input=$('personalApiKey'),eye=$('personalApiToggle');if(!input)return;clearTimeout(apiRevealTimer);input.type='text';if(eye){eye.classList.add('revealed');eye.setAttribute('aria-pressed','true');const label=tr('Скрыть ключ','Hide the key');eye.setAttribute('aria-label',label);eye.title=label}apiRevealTimer=setTimeout(hideApiKey,3000)}
-function storedKeyForField(){return readStoredKey()}
-function fillModels(items,selected){const model=$('personalApiModel'),hint=$('personalApiModelOwner');if(!model||!Array.isArray(items)||model.dataset.loading==='true')return;model.replaceChildren();for(const item of items){if(!item||typeof item.id!=='string')continue;const option=node('option');option.value=item.id;option.label=item.owner?item.id+' — '+item.owner:item.id;option.dataset.owner=typeof item.owner==='string'?item.owner:'';model.append(option)}if(!model.options.length){model.disabled=true;model.append(node('option',tr('Сначала загрузите модели','Load models first')));return}model.disabled=false;if(selected&&[...model.options].some(o=>o.value===selected))model.value=selected;const option=model.selectedOptions[0],owner=option?.dataset.owner||'';if(hint)hint.textContent=owner?tr('Разработчик по данным провайдера: ','Developer reported by provider: ')+owner:tr('Провайдер не указал разработчика этой модели.','The provider did not report this model’s developer.')}
-function button(text,fn){const n=node('button',text,'settings-action');n.type='button';n.onclick=fn;return n;}function paragraph(parent,r,e){const n=node('p',tr(r,e),'settings-hint');parent.append(n);return n;}function field(parent,label,type='text'){const l=node('label',label,'settings-field'),input=node('input');input.className='inp';input.type=type;l.append(input);parent.append(l);return input;}
-function syncSettingsTabs(reveal=false){const strip=document.querySelector('#settingsModal .settings-tabs'),selected=$('settings-tab-'+active);if(!strip||!selected)return;const indicator=strip.querySelector('.settings-tab-indicator');if(indicator){indicator.style.width=selected.offsetWidth+'px';indicator.style.transform='translateX('+selected.offsetLeft+'px)';}if(reveal&&strip.clientWidth){const visible=[...strip.querySelectorAll('[role=tab]')].filter(el=>!el.hidden),left=selected===visible[0]?0:selected.offsetLeft-8,right=selected===visible[visible.length-1]?strip.scrollWidth:selected.offsetLeft+selected.offsetWidth+8;if(left<strip.scrollLeft)strip.scrollLeft=Math.max(0,left);else if(right>strip.scrollLeft+strip.clientWidth)strip.scrollLeft=right-strip.clientWidth;}const shell=strip.parentElement,back=shell.querySelector('.settings-tabs-prev'),next=shell.querySelector('.settings-tabs-next');if(!back||!next)return;back.setAttribute('aria-label',tr('Предыдущие разделы','Previous sections'));next.setAttribute('aria-label',tr('Следующие разделы','Next sections'));const overflow=strip.scrollWidth>shell.clientWidth+1;back.hidden=next.hidden=!overflow;back.disabled=strip.scrollLeft<=1;next.disabled=strip.scrollLeft+strip.clientWidth>=strip.scrollWidth-1;}
-function selectTab(id){const previous=active;if(scanRunning&&id!=='developer'||id==='beta'&&!ctx.beta())return;active=id;if(id==='plugins'||id==='skills')void root.PongyExtensions?.mount(id);if(id==='usage')void usage();if(id==='connections')void root.PongyConnections?.refreshSettings();if(id==='developer'&&previous!==id)void admin();Object.keys(tabs).forEach(key=>{$('settings-tab-'+key).setAttribute('aria-selected',String(key===id));$('settings-tab-'+key).tabIndex=key===id?0:-1;$('settings-panel-'+key).hidden=key!==id;});syncSettingsTabs(true);}
-function move(id,panel,whole){let n=$(id);if(n){if(whole)n=n.parentElement;$('settings-panel-'+panel).append(n);}}
-function lock(value){own=value;document.documentElement.dataset.userApi=String(value);for(const id of ['agentBtn','smartBtn','searchBtn']){const n=$(id);if(n){n.disabled=value;n.setAttribute('aria-disabled',String(value));n.title=value?tr('Недоступно при подключённом личном API','Unavailable while a personal API is connected'):'';}}document.querySelectorAll('[data-beta-only]').forEach(n=>n.hidden=!ctx.beta());}
-function syncBetaTab(){const enabled=ctx.beta();$('settings-tab-beta').hidden=!enabled;$('settings-panel-beta').hidden=!enabled||active!=='beta';if(!enabled&&active==='beta')selectTab('main');}
-function setup(){const body=$('settingsModal').querySelector('.modal-body'),strip=node('div',undefined,'settings-tabs');strip.setAttribute('role','tablist');strip.setAttribute('aria-label',tr('Разделы настроек','Settings sections'));strip.id='settingsTabs';const shell=node('div',undefined,'settings-tabs-shell');function arrow(dir){const b=node('button',undefined,'settings-tabs-arrow '+(dir<0?'settings-tabs-prev':'settings-tabs-next'));b.type='button';b.setAttribute('aria-controls',strip.id);b.setAttribute('aria-label',tr(dir<0?'Предыдущие разделы':'Следующие разделы',dir<0?'Previous sections':'Next sections'));b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="'+(dir<0?'m14 6-6 6 6 6':'m10 6 6 6-6 6')+'"/></svg>';b.onclick=()=>strip.scrollBy({left:dir*Math.max(160,strip.clientWidth*.75),behavior:document.documentElement.dataset.motion==='reduced'?'auto':'smooth'});return b;}shell.append(arrow(-1),strip,arrow(1));body.before(shell);strip.addEventListener('scroll',()=>syncSettingsTabs(false),{passive:true});strip.addEventListener('wheel',e=>{if(e.ctrlKey||Math.abs(e.deltaX)>=Math.abs(e.deltaY)||strip.scrollWidth<=strip.clientWidth)return;const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?strip.clientWidth:1),before=strip.scrollLeft;strip.scrollLeft+=delta;syncSettingsTabs(false);if(strip.scrollLeft!==before)e.preventDefault();},{passive:false});new ResizeObserver(()=>syncSettingsTabs(true)).observe(strip);new MutationObserver(()=>requestAnimationFrame(()=>syncSettingsTabs(false))).observe(strip,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['hidden']});new MutationObserver(()=>{if($('settingsModal').classList.contains('open'))requestAnimationFrame(()=>syncSettingsTabs(true));}).observe($('settingsModal'),{attributes:true,attributeFilter:['class']});Object.entries(tabs).forEach(([id,label])=>{const b=button(tr(...label),()=>selectTab(id));b.id='settings-tab-'+id;b.setAttribute('role','tab');b.setAttribute('aria-controls','settings-panel-'+id);b.tabIndex=id==='main'?0:-1;strip.append(b);const panel=node('section',undefined,'settings-section');panel.id='settings-panel-'+id;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);body.append(panel);});$('settings-panel-beta').append(node('p',tr('Здесь появятся новые функции для тестирования','New features for testing will appear here'),'beta-empty-state'));strip.prepend(node('span',undefined,'settings-tab-indicator'));strip.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;const list=[...strip.querySelectorAll('[role=tab]')].filter(n=>!n.hidden),idx=list.indexOf(document.activeElement),next=e.key==='Home'?0:e.key==='End'?list.length-1:(idx+(e.key==='ArrowRight'?1:-1)+list.length)%list.length;e.preventDefault();list[next].click();list[next].focus();};root.addEventListener('resize',()=>selectTab(active),{passive:true});
- const beta=node('label',undefined,'display-option'),txt=node('span',tr('Режим бета-тестирования','Beta testing mode')),check=node('input');check.id='betaFunctions';check.type='checkbox';check.className='display-switch';check.setAttribute('role','switch');check.checked=ctx.beta();check.onchange=()=>{ctx.beta(check.checked);syncBetaTab();if(check.checked)selectTab('beta');lock(own);};beta.append(txt,check);const betaBox=node('div',undefined,'beta-setting-option');betaBox.append(beta);$('settings-panel-interface').append(betaBox);syncBetaTab();
- move('downloadAppSettings','main');move('developerBadge','account');move('langLabel','interface',true);move('themeLabel','interface',true);move('motionPreference','interface',true);move('voicePreferenceSetting','interface');move('displayPreferences','interface');move('wakeWordSetting','interface');move('answerNotifications','account',true);move('notificationChannels','account');move('memoryToggle','main',true);move('nickLabel','account',true);move('subscriptionLabel','subscription',true);body.querySelector('.local-history-card')&&$('settings-panel-main').append(body.querySelector('.local-history-card'));body.querySelector('.support-link')&&$('settings-panel-main').append(body.querySelector('.support-link'));move('logoutBtnSettings','account');move('settingsAppVersion','main');
- const emailLabel=node('label',tr('Почта аккаунта','Account email'),'settings-field'),emailField=node('input');emailField.id='accountEmail';emailField.type='email';emailField.readOnly=true;emailField.className='inp';emailField.autocomplete='off';emailField.value=ctx.user()?.email||'';emailLabel.append(emailField);$('nickInput')?.closest('div')?.after(emailLabel);if(!emailLabel.isConnected)$('settings-panel-account').insertBefore(emailLabel,$('logoutBtnSettings'));
- const voice=$('voiceGender');$('voiceGenderLabel').textContent=tr('Голос озвучивания','Spoken reply voice');$('voiceGenderHint').textContent='';$('voiceGenderHint').hidden=true;voice.value=ctx.voiceGender()==='female'?'female':'male';voice.onchange=()=>ctx.setVoiceGender(voice.value==='female'?'female':'male');
- const speechLabel=node('label',tr('Язык голосового ввода','Voice input language'),'settings-field');const speechSelect=node('select');speechSelect.id='speechInputLanguage';speechSelect.className='inp';for(const [value,r,e]of [['auto','Как язык интерфейса','Same as interface'],['ru-RU','Русский','Russian'],['en-US','Английский','English']]){const option=node('option',tr(r,e));option.value=value;speechSelect.append(option);}try{speechSelect.value=localStorage.getItem('pongy_speech_language')||'auto';}catch{}speechSelect.onchange=()=>{root.stopVoice?.();try{if(speechSelect.value==='auto')localStorage.removeItem('pongy_speech_language');else localStorage.setItem('pongy_speech_language',speechSelect.value);}catch{}};speechLabel.append(speechSelect);$('voicePreferenceSetting').after(speechLabel);
- apiPanel();usagePanel();developerPanel();selectTab('main');
- const sub=$('settings-panel-subscription');paragraph(sub,'Pongy Plus открывает расширенные возможности сервиса:','Pongy Plus unlocks extended service capabilities:');const benefits=node('ul',undefined,'plus-benefits');for(const [r,e]of [['Доступ к дополнительным моделям при их подключении','Access to additional models when enabled'],['Увеличенный дневной лимит запросов','A higher daily request limit'],['Более длинный контекст чата и большие вложения','Longer chat context and larger attachments'],['Приоритет обработки запросов','Priority request processing'],['Приоритетная поддержка','Priority support']])benefits.append(node('li',tr(r,e)));sub.append(benefits);sub.append(button('Plus',()=>ctx.subscribe()));sub.lastChild.classList.add('plus-action');
- new MutationObserver(()=>{for(const [n,pair]of translated){if(n.isConnected){if(n.tagName==='LABEL'&&n.querySelector('input,select,textarea')){if(n.firstChild.nodeType===3)n.firstChild.textContent=tr(...pair);}else n.textContent=tr(...pair);}}for(const [id,labels]of Object.entries(tabs))$('settings-tab-'+id).textContent=tr(...labels);$('voiceGenderLabel').textContent=tr('Голос озвучивания','Spoken reply voice');$('voiceGenderHint').textContent='';$('voiceGenderHint').hidden=true;$('voiceGender').options[0].textContent=tr('Мужской','Male');$('voiceGender').options[1].textContent=tr('Женский','Female');refresh();siteState();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-}
-function apiPanel(){
- const p=$('settings-panel-tools');p.append(node('h3','API'));paragraph(p,'Подключите ключ одного из поддерживаемых провайдеров. Каталог не охватывает все сервисы: доступность моделей и сведения об их разработчике зависят от ответа API провайдера. Ключ отправляется только на официальный endpoint выбранного провайдера и хранится зашифрованным.','Connect an API key from a supported provider. This catalog does not cover every service; model availability and developer details depend on the provider API. Keys are sent only to the selected provider’s official endpoint and stored encrypted.');
- const provider=node('select');provider.id='personalApiProvider';provider.className='inp';provider.setAttribute('aria-label',tr('Провайдер','Provider'));provider.disabled=true;p.append(provider);
- const keyField=node('label',tr('API-ключ','API key'),'settings-field'),keyWrap=node('div',undefined,'api-key-field'),key=node('input'),keyEye=node('button');key.className='inp';key.type='password';key.id='personalApiKey';key.autocomplete='new-password';key.spellcheck=false;key.maxLength=512;keyEye.type='button';keyEye.id='personalApiToggle';keyEye.className='api-key-eye';keyEye.setAttribute('aria-pressed','false');keyEye.setAttribute('aria-controls','personalApiKey');keyEye.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="api-eye-pupil" cx="12" cy="12" r="3"/><path class="api-eye-slash" pathLength="1" d="M3 3 21 21"/></svg>';keyEye.onclick=function(event){event.preventDefault();if(key.type==='text')hideApiKey();else revealApiKey()};keyWrap.append(key,keyEye);keyField.append(keyWrap);p.append(keyField);hideApiKey();
- const modelLabel=node('label',tr('Модель','Model'),'settings-field'),model=node('select');model.id='personalApiModel';model.className='inp';model.disabled=true;model.append(node('option',tr('Сначала загрузите модели','Load models first')));modelLabel.append(model);p.append(modelLabel);
- const ownerHint=node('p',undefined,'settings-hint');ownerHint.id='personalApiModelOwner';p.append(ownerHint);
- const output=node('p',undefined,'settings-hint');output.id='personalApiStatus';output.setAttribute('role','status');p.append(output);
- const loadModels=button(tr('Загрузить модели','Load models'),async()=>{const token=epoch,request=++modelsRequest,selectedProvider=provider.value,enteredKey=key.value.trim();const current=()=>token===epoch&&request===modelsRequest&&provider.value===selectedProvider&&key.value.trim()===enteredKey;loadModels.disabled=true;model.dataset.loading='true';output.textContent=tr('Запрашиваем список моделей у провайдера…','Requesting the provider model list…');ownerHint.textContent='';try{const result=await ctx.api('/api/user-api/models',{method:'POST',body:{provider:selectedProvider,key:enteredKey}});if(!current())return;if(!Array.isArray(result.models)||result.models.length>1000)throw Error(tr('Провайдер вернул некорректный список моделей.','The provider returned an invalid model list.'));model.replaceChildren();for(const item of result.models){if(!item||typeof item.id!=='string')continue;const option=node('option');option.value=item.id;option.label=item.owner?item.id+' — '+item.owner:item.id;option.dataset.owner=typeof item.owner==='string'?item.owner:'';model.append(option);}if(!model.options.length)throw Error(tr('Провайдер не предоставил доступных моделей.','The provider did not return any available models.'));model.value=model.options[0].value;model.disabled=false;showOwner();dirtyApi();writeApiMeta({...readApiMeta(),provider:provider.value,model:model.value,models:[...model.options].map(o=>({id:o.value,owner:o.dataset.owner||''}))});output.textContent=tr('Модели загружены: ','Models loaded: ')+model.options.length;}catch(e){if(current()){model.disabled=true;output.textContent=e.message;}}finally{if(current()){loadModels.disabled=false;delete model.dataset.loading;}}});
- loadModels.id='personalApiLoadModels';loadModels.disabled=true;p.append(loadModels);
- function showOwner(){const selected=model.selectedOptions[0],owner=selected?.dataset.owner||'';ownerHint.textContent=owner?tr('Разработчик по данным провайдера: ','Developer reported by provider: ')+owner:tr('Провайдер не указал разработчика этой модели.','The provider did not report this model’s developer.');}
- model.onchange=()=>{dirtyApi();showOwner();writeApiMeta({...readApiMeta(),provider:provider.value,model:model.value,models:[...model.options].map(o=>({id:o.value,owner:o.dataset.owner||''}))})};
- provider.onchange=()=>{const saved=readApiMeta();clearApiModels();if(saved&&saved.provider===provider.value&&Array.isArray(saved.models)&&saved.models.length)fillModels(saved.models,saved.model);else{key.value='';writeStoredKey('');writeConsent(false);$('personalApiConsent').checked=false;writeApiMeta({provider:provider.value,model:'',models:[]});}dirtyApi();hideApiKey();};
- key.addEventListener('input',()=>{if(readStoredKey()===key.value.trim())return;writeStoredKey(key.value.trim());clearApiModels();writeApiMeta({...readApiMeta(),provider:provider.value,model:'',models:[]});dirtyApi();});
- key.addEventListener('change',()=>writeStoredKey(key.value.trim()));
- const keyHint=paragraph(p,'Используйте API-ключ из кабинета выбранного сервиса. Ключ не включается в URL; на сервере он хранится зашифрованным, а копия для автозаполнения остаётся только в этом браузере.','Use an API key from the selected provider dashboard. The key is never put in a URL; the server stores it encrypted and an autofill copy stays only in this browser.');keyHint.id='personalApiKeyHint';
- const consent=node('label',undefined,'memory-setting'),c=node('input');c.type='checkbox';c.id='personalApiConsent';c.checked=readConsent();c.onchange=()=>{writeConsent(c.checked);dirtyApi();};consent.append(c,node('span',tr('Разрешаю обращения к моему провайдеру и принимаю его возможную оплату.','Allow requests to my provider and accept any provider charges.')));p.append(consent);
- const save=button(tr('Проверить и подключить','Validate & connect'),async()=>{const token=epoch,revision=apiRevision,body={provider:provider.value,model:model.value.trim(),key:key.value.trim(),consent:c.checked};save.disabled=true;try{const v=await ctx.api('/api/user-api',{method:'PUT',body});if(token!==epoch||revision!==apiRevision)return;writeConsent(body.consent);writeStoredKey(body.key);apiDirty=false;showApi(v);await usage();}catch(e){if(token===epoch)output.textContent=e.message;}finally{if(token===epoch)save.disabled=false;}}),remove=button(tr('Отключить ключ','Disconnect key'),async()=>{const token=epoch,revision=apiRevision;remove.disabled=true;try{const v=await ctx.api('/api/user-api',{method:'DELETE'});if(token!==epoch||revision!==apiRevision)return;clearApiModels();writeStoredKey('');writeApiMeta(null);writeConsent(false);c.checked=false;key.value='';apiDirty=false;hideApiKey();showApi(v);await usage();}catch(e){if(token===epoch)output.textContent=e.message;}finally{if(token===epoch)remove.disabled=false;}});save.id='personalApiSave';remove.id='personalApiRemove';p.append(save,remove);paragraph(p,'Личный API использует только выбранную текстовую модель. Pongy не получает сведения о тарифах, балансе или лимитах провайдера. Генерация изображений личным ключом пока не поддерживается.','Personal API uses only the selected text model. Pongy cannot see your provider’s plan, balance or quotas. Image generation with personal keys is not supported yet.');
- mcpPanel(p);
-}
-function mcpPanel(parent){
- // The API section below shares the existing API heading.paragraph(parent,'Создайте личный Pongy API Key для подключения внешних агентов. API совместим с OpenAI Chat Completions; используйте адрес endpoint и ключ как Bearer-токен. Ключ действует от имени вашего аккаунта и расходует его лимиты.','Create a personal Pongy API Key to connect external agents. The API is compatible with OpenAI Chat Completions; use the endpoint and key as a Bearer token. The key acts as your account and uses its limits.');
- const apiStatus=node('p','','settings-hint'),apiKey=node('code'),apiEndpointText=node('code'),apiDetails=node('pre'),apiCreate=button(tr('Создать API-ключ','Create API key'),async()=>{apiCreate.disabled=true;try{const data=await ctx.api('/api/api-key',{method:'POST'});apiKey.textContent=data.token;apiEndpointText.textContent=data.endpoint;apiStatus.textContent=tr('Ключ создан. Скопируйте и сохраните его сейчас: повторно секрет не показывается.','Key created. Copy and save it now; the secret will not be shown again.');apiRevoke.hidden=false;apiCopy.hidden=false;apiCreate.textContent=tr('Создать новый API Key','Create new API Key');}catch(error){apiStatus.textContent=error.message;}finally{apiCreate.disabled=false;}}),apiCopy=button(tr('Копировать API Key','Copy API Key'),async()=>{try{await navigator.clipboard.writeText(apiKey.textContent);ctx.notify(tr('API Key скопирован','API Key copied'));}catch{ctx.notify(tr('Не удалось скопировать API Key','Could not copy API Key'));}}),apiRevoke=button(tr('Отозвать API Key','Revoke API Key'),async()=>{apiRevoke.disabled=true;try{await ctx.api('/api/api-key',{method:'DELETE'});apiKey.textContent='';apiStatus.textContent=tr('API Key отозван.','API Key revoked.');apiRevoke.hidden=true;apiCopy.hidden=true;apiCreate.textContent=tr('Создать API-ключ','Create API key');}catch(error){apiStatus.textContent=error.message;}finally{apiRevoke.disabled=false;}});
- apiDetails.className='api-key-details';apiStatus.id='apiKeyStatus';apiStatus.setAttribute('role','status');apiKey.id='apiKeyValue';apiEndpointText.id='apiKeyEndpoint';apiCreate.id='apiKeyCreate';apiCopy.id='apiKeyCopy';apiRevoke.id='apiKeyRevoke';apiCreate.classList.add('api-key-primary');apiKey.textContent=tr('Нажмите «Create API Key», чтобы выпустить личный ключ.','Select Create API Key to generate a personal key.');apiEndpointText.textContent='';apiDetails.append(node('span',tr('Endpoint: ','Endpoint: ')),apiEndpointText,node('br'),node('span',tr('API Key: ','API Key: ')),apiKey);const keyCard=node('section',undefined,'api-key-card');keyCard.setAttribute('aria-label',tr('Личный API-ключ','Personal API key'));keyCard.append(node('h3',tr('Личный API-ключ','Personal API key')),apiStatus,apiDetails,apiCreate,apiCopy,apiRevoke);parent.append(keyCard);apiCopy.hidden=true;apiRevoke.hidden=true;apiCreate.disabled=!ctx.user();apiRevoke.disabled=!ctx.user();
- refreshApiKeyStatus=async()=>{const token=epoch,user=ctx.user();apiCreate.disabled=!user;apiRevoke.disabled=!user;if(!user){apiStatus.textContent=tr('Войдите в аккаунт, чтобы создать API Key.','Sign in to create an API Key.');apiEndpointText.textContent='';apiRevoke.hidden=true;return;}try{const data=await ctx.api('/api/api-key');if(token!==epoch)return;if(data.connected){apiStatus.textContent=tr('API Key уже создан. Создайте новый, чтобы заменить его, или отзовите текущий.','An API Key already exists. Create a new one to replace it, or revoke the current key.');apiEndpointText.textContent=data.endpoint;apiCreate.textContent=tr('Создать новый API Key','Create new API Key');apiRevoke.hidden=false;}else{apiStatus.textContent=tr('API Key не создан.','No API Key has been created.');apiEndpointText.textContent='';apiRevoke.hidden=true;}}catch(error){if(token===epoch)apiStatus.textContent=error.message;}};
- parent.append(node('h3','MCP'));paragraph(parent,'Подключите внешний MCP-клиент к Pongy AI. Токен даёт доступ к инструменту ask_pongy от имени вашего аккаунта и учитывается в его лимитах. OpenAgent — приложение-агент, а не подтверждённый API-провайдер моделей, поэтому отдельным провайдером здесь не отображается.','Connect an external MCP client to Pongy AI. The token grants the ask_pongy tool access as your account and uses its limits. OpenAgent is an agent application, not a verified model API provider, so it is not listed as a separate provider.');
- const status=node('p','','settings-hint'),secret=node('code'),pre=node('pre'),copy=button(tr('Копировать конфигурацию','Copy config'),async()=>{try{await navigator.clipboard.writeText(secret.textContent);ctx.notify(tr('Конфигурация скопирована','Configuration copied'));}catch{ctx.notify(tr('Не удалось скопировать конфигурацию','Could not copy configuration'));}}),create=button(tr('Создать токен','Create token'),async()=>{create.disabled=true;try{const data=await ctx.api('/api/mcp/token',{method:'POST'});secret.textContent=JSON.stringify({mcpServers:{pongy:{url:data.endpoint,headers:{Authorization:'Bearer '+data.token}}}},null,2);status.textContent=tr('Токен создан. Скопируйте конфигурацию сейчас: секрет повторно не показывается.','Token created. Copy the configuration now; the secret will not be shown again.');create.textContent=tr('Создать новый токен','Create new token');revoke.hidden=false;copy.hidden=false;}catch(error){status.textContent=error.message;}finally{create.disabled=false;}}),revoke=button(tr('Отозвать токен','Revoke token'),async()=>{revoke.disabled=true;try{await ctx.api('/api/mcp/token',{method:'DELETE'});secret.textContent='';status.textContent=tr('Токен отозван.','Token revoked.');revoke.hidden=true;copy.hidden=true;create.textContent=tr('Создать токен','Create token');}catch(error){status.textContent=error.message;}finally{revoke.disabled=false;}});
- create.id='mcpCreateToken';revoke.id='mcpRevokeToken';copy.id='mcpCopyConfig';status.id='mcpTokenStatus';secret.id='mcpConfig';
- secret.textContent=tr('Сначала создайте токен подключения.','Create a connection token first.');pre.append(copy,secret);parent.append(status,pre,create,revoke);revoke.hidden=true;copy.hidden=true;create.disabled=!ctx.user();revoke.disabled=!ctx.user();
- refreshMcpStatus=async()=>{const token=epoch,user=ctx.user();create.disabled=!user;revoke.disabled=!user;if(!user){status.textContent=tr('Войдите в аккаунт, чтобы настроить подключение MCP.','Sign in to configure MCP.');revoke.hidden=true;return;}try{const data=await ctx.api('/api/mcp/token');if(token!==epoch)return;if(data.connected){status.textContent=tr('Подключение настроено. Создайте новый токен, чтобы показать конфигурацию, либо отзовите текущий.','Connection is configured. Create a new token to reveal its configuration, or revoke the current token.');create.textContent=tr('Создать новый токен','Create new token');revoke.hidden=false;}else{status.textContent=tr('Подключение не настроено.','Connection is not configured.');revoke.hidden=true;}}catch(error){if(token===epoch)status.textContent=error.message;}};
- refreshMcpStatus();
-}
-function loadProviderCatalog(){const provider=$('personalApiProvider'),output=$('personalApiStatus');if(!ctx.user()||provider.dataset.loading==='true'||provider.dataset.loaded==='true')return;provider.dataset.loading='true';const token=epoch;ctx.api('/api/user-api/providers').then(data=>{if(token!==epoch)return;if(!Array.isArray(data.providers)||!data.providers.length)throw Error(tr('Каталог провайдеров недоступен.','The provider catalog is unavailable.'));provider.replaceChildren(...data.providers.map(item=>{const option=node('option',item.name);option.value=item.id;return option;}));provider.disabled=false;$('personalApiLoadModels').disabled=false;provider.dataset.loaded='true';const meta=readApiMeta();if(meta&&meta.provider)restoreApiSelection(meta.provider,meta.model);}).catch(e=>{if(token===epoch)output.textContent=e.message;}).finally(()=>{if(token===epoch)provider.dataset.loading='false';});}
-function showApi(v){const connected=v.connected===true;lock(connected);$('personalApiRemove').hidden=!connected;if(apiDirty){$('personalApiStatus').textContent=tr('Черновик сохранён на устройстве. Для применения нажмите «Проверить и подключить».','Draft saved on this device. Select Validate & connect to apply it.');$('personalApiSave').hidden=false;const meta=readApiMeta();if(meta?.provider)restoreApiSelection(meta.provider,meta.model);return;}$('personalApiStatus').textContent=v.unavailable?tr('Сохранённый ключ временно недоступен. Проверьте серверный секрет шифрования или подключите ключ повторно.','The saved key is unavailable. Check the server encryption secret or reconnect the key.'):connected?tr('Подключено: ','Connected: ')+(v.providerName||v.provider)+' · '+v.model:tr('Личный API не подключён','No personal API connected');$('personalApiSave').hidden=connected;$('personalApiRemove').hidden=!connected;const keyInput=$('personalApiKey');if(keyInput&&!keyInput.value){const stored=storedKeyForField();if(stored)keyInput.value=stored}if(keyInput){keyInput.placeholder=connected?tr('Ключ сохранён на сервере','Key saved on server'):tr('API-ключ','API key');keyInput.dataset.saved=String(connected);}if(connected&&v.provider){$('personalApiConsent').checked=v.consent===true;writeConsent(v.consent===true);const meta=readApiMeta();writeApiMeta({provider:v.provider,model:v.model,models:Array.isArray(v.models)&&v.models.length?v.models:(meta&&meta.provider===v.provider&&Array.isArray(meta.models)&&meta.models.length?meta.models:[{id:v.model,owner:v.providerName||v.provider}])});restoreApiSelection(v.provider,v.model)}else if(!connected){const meta=readApiMeta();if(meta&&meta.provider)restoreApiSelection(meta.provider,meta.model)}}
-function restoreApiSelection(providerId,modelId){const provider=$('personalApiProvider'),meta=readApiMeta();if(!provider||!providerId)return;if([...provider.options].some(o=>o.value===providerId))provider.value=providerId;if(meta&&meta.provider===providerId&&Array.isArray(meta.models)&&meta.models.length)fillModels(meta.models,modelId||meta.model)}
-function usagePanel(){const p=$('settings-panel-usage');paragraph(p,'Шкала заполняется по мере использования общего ресурса Pongy.','This bar fills up as the shared Pongy allowance is used.');const row=node('div',undefined,'usage-row');const bar=node('progress');bar.id='usageProgress';bar.max=100;bar.setAttribute('aria-label',tr('Использование общего ресурса Pongy','Shared Pongy allowance usage'));row.append(bar);const percent=node('p',undefined,'settings-hint');percent.id='usagePercent';row.append(percent);p.append(row);for(const id of ['usageReset','usageHint']){const n=node('p',undefined,'settings-hint');n.id=id;p.append(n);}}
-async function usage(){if(!ctx.user())return;const token=epoch;try{const s=await ctx.api('/api/service-status');if(token!==epoch)return;const own=s.dailyUnlimited===true||s.userApi?.connected===true,remaining=Number(s.dailyRemainingPercent);if(!own&&(!Number.isFinite(remaining)||remaining<0||remaining>100))throw Error(tr('Не удалось получить состояние общего ресурса Pongy.','Could not retrieve the shared Pongy allowance status.'));const used=own?0:Math.max(0,Math.min(100,Math.round(100-remaining)));$('usageProgress').value=used;$('usageProgress').removeAttribute('aria-disabled');$('settings-panel-usage').dataset.state=s.aiUnavailable?'unavailable':used>=100?'exhausted':'normal';$('usagePercent').textContent=used+'%';$('usageReset').textContent=s.dailyReset?tr('Обновление лимита: ','Limit resets: ')+new Date(s.dailyReset).toLocaleString(ctx.lang()==='ru'?'ru-RU':'en-US'):'';$('usageHint').replaceChildren();if(!own&&used>=100){const upgrade=button(tr('Упс! Весь сегодняшний дневной лимит был исчерпан. Перейдите на тариф Plus для разблокировки лимита!','Oops! Today’s daily limit is used up. Switch to Plus to unlock the limit!'),()=>ctx.subscribe());upgrade.onclick=()=>ctx.subscribe();$('usageHint').append(upgrade);return;}$('usageHint').textContent=own?tr('Личный API или активный Plus: дневной лимит Free не применяется.','Personal API or active Plus: the Free daily cap does not apply.'):'';}catch(e){$('usageHint').textContent=e.message;}}
-function developerPanel(){const p=$('settings-panel-developer'),open=button(tr('Проверка','Check'),()=>{open.focus();dialog.showModal()});open.id='adminCheckButton';p.append(open);const dialog=node('dialog');dialog.id='adminCheckDialog';dialog.className='admin-check-dialog';dialog.setAttribute('aria-labelledby','adminCheckTitle');const title=node('h2',tr('Выберите тип проверки','Choose a check'));title.id='adminCheckTitle';const close=button(tr('Закрыть','Close'),()=>dialog.close());const choices=node('div',undefined,'grid2');for(const [mode,r,e]of [['standard','Обычный тест','Standard test'],['full','Полное сканирование','Full local scan']])choices.append(button(tr(r,e),()=>{dialog.close();startScan(mode)}));dialog.append(title,paragraph(dialog,'Проверка локальных компонентов и синтаксиса. Не заменяет полный CI, аудит безопасности или проверку внешних сервисов.','Local component and syntax diagnostics. Not a replacement for full CI, security auditing or external service tests.'),choices,close);document.body.append(dialog);
- for(const [id,r,e]of [['disabled','Остановить работу сайта','Disable site'],['maintenance','Технические работы','Maintenance']]){const label=node('label',undefined,'display-option'),input=node('input');input.type='checkbox';input.id='admin-'+id;input.className='display-switch';input.setAttribute('role','switch');input.onchange=saveAdmin;label.append(node('span',tr(r,e)),input);p.append(label);}
- const progress=node('progress');progress.id='adminScanProgress';progress.max=1;progress.value=0;progress.hidden=true;p.append(progress,node('p','', 'settings-hint'));progress.nextSibling.id='adminScanCount';progress.nextSibling.hidden=true;const reports=node('div');reports.id='adminReports';p.append(reports);
- const hint=paragraph(p,'Эти ограничения применяются к обычным пользователям. Подтверждённые разработчики сохраняют доступ, чтобы можно было снова включить сайт. Изменения сохраняются в базе этого сервера.','Restrictions apply to regular users. Verified developers retain access so they can reopen the site. Changes are stored in this server’s database.');hint.id='adminControlHint';const output=node('p','','admin-control-status');output.id='adminControlStatus';output.setAttribute('role','status');output.setAttribute('aria-live','polite');p.append(output);const email=field(p,tr('Почта для чёрного списка','Email to block'),'email');email.id='adminBlockEmail';const block=button(tr('Заблокировать','Block'),async()=>{if(!email.reportValidity()||!email.value.trim()){adminMessage(tr('Укажите корректную почту.','Enter a valid email.'),true);return;}const ok=await mutateAdmin('/api/admin/blacklist','POST',{email:email.value.trim().toLowerCase()});if(ok){email.value='';$('adminBlacklist').parentElement.open=true;}});block.id='adminBlockButton';p.append(block);const details=node('details'),summary=node('summary',tr('Чёрный список','Blacklist')),list=node('div');list.id='adminBlacklist';details.append(summary,list);p.append(details);}
-function adminMessage(text,error=false){const el=$('adminControlStatus');if(!el)return;el.textContent=text;el.dataset.error=String(error);}
-function adminLock(value){adminBusy=value;for(const id of ['admin-disabled','admin-maintenance','adminBlockEmail','adminBlockButton'])if($(id))$(id).disabled=value;$('adminBlacklist')?.querySelectorAll('button').forEach(b=>b.disabled=value);}
-function applyAdminState(v){adminState={disabled:v.disabled===true,maintenance:v.maintenance===true};$('admin-disabled').checked=adminState.disabled;$('admin-maintenance').checked=adminState.maintenance;const forced=v.environmentMaintenance===true;$('adminControlHint').textContent=forced?tr('Сервер запущен с MAINTENANCE_MODE=true: режим обслуживания нельзя отключить здесь. Разработчики сохраняют доступ.','The server uses MAINTENANCE_MODE=true: maintenance cannot be disabled here. Developers retain access.'):tr('Ограничения действуют для обычных пользователей. Подтверждённые разработчики сохраняют доступ для управления сайтом. Состояние хранится в базе этого сервера.','Restrictions apply to regular users. Verified developers retain management access. State is stored in this server’s database.');}
-async function saveAdmin(){if(adminBusy)return;const desired={disabled:$('admin-disabled').checked,maintenance:$('admin-maintenance').checked},previous={...adminState};const ok=await mutateAdmin('/api/admin/control','PUT',desired);if(!ok){$('admin-disabled').checked=previous.disabled;$('admin-maintenance').checked=previous.maintenance;}}
-async function mutateAdmin(url,method,body){if(adminBusy)return false;const token=epoch;++adminRequest;adminLock(true);adminMessage(tr('Сохраняю…','Saving…'));try{await ctx.api(url,{method,body});if(token!==epoch)return false;await admin(true);if(token!==epoch)return false;adminMessage(tr('Изменения сохранены и подтверждены сервером.','Changes saved and confirmed by the server.'));void siteState();return true;}catch(e){if(token===epoch)adminMessage(e.message,true);return false;}finally{if(token===epoch)adminLock(false);}}
-async function admin(force=false){if(!ctx.user()?.developer||adminBusy&&!force)return;const token=epoch,request=++adminRequest;try{const v=await ctx.api('/api/admin/control');if(token!==epoch||request!==adminRequest||adminBusy&&!force)return;applyAdminState(v);$('adminBlacklist').replaceChildren();for(const b of v.blocked){const row=node('div',undefined,'admin-block-row');row.append(node('span',b.email+' · '+new Date(b.blockedAt).toLocaleString(ctx.lang())),button(tr('Исключить','Unblock'),async()=>{await mutateAdmin('/api/admin/blacklist','DELETE',{email:b.email});}));$('adminBlacklist').append(row);}if(!v.blocked.length)$('adminBlacklist').append(node('p',tr('Список пуст','No blocked accounts'),'settings-hint'));$('adminReports').replaceChildren();for(const scan of v.scans)report(scan);}catch(e){if(token===epoch&&request===adminRequest)adminMessage(e.message,true);if(force)throw e;}}
-function report(v){const box=node('details'),summary=node('summary',tr('Проверка','Scan')+' · '+new Date(v.finishedAt||v.startedAt).toLocaleString(ctx.lang())),code=node('pre'),logs=v.checks.map(c=>(c.ok?'PASS':'FAIL')+' — '+c.name).join('\n'),a=node('a',tr('Скачать отчёт .md','Download .md report'));const badge=node('span');badge.className='scan-status';badge.setAttribute('aria-label',v.running?tr('В процессе','Running'):v.ok?tr('Успешно','Passed'):tr('Есть ошибки','Errors found'));badge.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="'+(v.running?'M6 12h12':v.ok?'m5 12 4 4L19 6':'m6 6 12 12M18 6 6 18')+'"/></svg>';summary.prepend(badge);a.href='#';a.onclick=async e=>{e.preventDefault();try{const value=await ctx.api('/api/admin/scans/'+encodeURIComponent(v.id));download('Pongy-AI-scan-'+v.id+'.md','# Pongy AI\n\n'+new Date(value.finishedAt||value.startedAt).toISOString()+'\n\n'+value.passed+'/'+value.total+' checks passed.\n\n'+value.checks.map(c=>(c.ok?'PASS':'FAIL')+' — '+c.name).join('\n')+'\n\nScope: local diagnostics, not full CI or a security audit.\n');}catch(error){ctx.notify(error.message);}};code.append(button(tr('Копировать','Copy'),()=>navigator.clipboard.writeText(logs).catch(()=>{})),node('code',logs));box.append(summary,a,code);$('adminReports').append(box);}
-function download(name,text){const url=URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'})),a=node('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
-async function startScan(mode){if(scanRunning)return;scanRunning=true;$('adminCheckButton').setAttribute('aria-busy','true');$('adminCheckButton').disabled=true;$('adminScanProgress').hidden=false;$('adminScanCount').hidden=false;$('adminScanProgress').value=0;$('adminScanCount').textContent='';const modal=$('settingsModal'),close=$('closeSettings'),previous=close.disabled;close.disabled=true;modal.dataset.scanning='true';const guard=e=>{if(scanRunning&&(e.key==='Escape'||e.target===modal||e.target===close)){e.preventDefault();e.stopImmediatePropagation();}};modal.addEventListener('click',guard,true);document.addEventListener('keydown',guard,true);try{let v=await ctx.api('/api/admin/scans',{method:'POST',body:{mode}});for(;;){$('adminScanProgress').max=v.total||1;$('adminScanProgress').value=v.completed;$('adminScanCount').textContent=v.passed+' / '+v.total+' '+tr('тестов прошли проверку','checks passed');if(!v.running)break;await new Promise(r=>setTimeout(r,1500));v=await ctx.api('/api/admin/scans/'+encodeURIComponent(v.id));}await admin();}catch(e){ctx.notify(e.message);}finally{scanRunning=false;$('adminCheckButton').removeAttribute('aria-busy');$('adminCheckButton').disabled=false;close.disabled=previous;delete modal.dataset.scanning;modal.removeEventListener('click',guard,true);document.removeEventListener('keydown',guard,true);}}
-async function refresh(){const user=ctx.user(),id=user?.email||'';if($('accountEmail'))$('accountEmail').value=id;if(account!==id){account=id;epoch++;apiRevision++;apiDirty=readApiMeta()?.draft===true;clearApiModels();const provider=$('personalApiProvider');provider.disabled=true;provider.replaceChildren();delete provider.dataset.loaded;delete provider.dataset.loading;$('personalApiSave').disabled=false;$('personalApiRemove').disabled=false;++adminRequest;adminLock(false);adminMessage('');lastRefresh=0;autoRestored=0;siteState();$('personalApiKey').value=readStoredKey();$('personalApiConsent').checked=readConsent();hideApiKey();$('betaFunctions').checked=ctx.beta();syncBetaTab();lock(false);void refreshApiKeyStatus();void refreshMcpStatus();}const keyField=$('personalApiKey');if(keyField&&!keyField.value){const stored=readStoredKey();if(stored)keyField.value=stored}const dev=!!user?.developer;$('settings-tab-developer').hidden=!dev;if(!dev&&active==='developer')selectTab('main');if(!user)return;loadProviderCatalog();if(Date.now()-lastRefresh<12000)return;lastRefresh=Date.now();const token=epoch;await Promise.all([ctx.api('/api/user-api').then(v=>{if(token!==epoch)return;showApi(v);if(!v.connected&&!v.unavailable&&id)void autoRestoreConnection(id);}).catch(e=>{if(token===epoch)$('personalApiStatus').textContent=e.message;}),usage(),dev?admin():Promise.resolve()]);}
-async function siteState(){try{const response=await fetch('/api/site-state',{cache:'no-store'});if(!response.ok)return;const value=await response.json(),user=ctx.user(),closed=(value.disabled||value.maintenance)&&!user?.developer;let box=$('siteControlScreen');if(!box){box=node('section');box.id='siteControlScreen';box.setAttribute('role','alert');box.hidden=true;const icon=node('span');icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v6"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/></svg>';box.append(icon,node('h1'),button(tr('Вход разработчика','Developer sign-in'),()=>{box.hidden=true;box.dataset.login='true';}));document.body.append(box);}if(!closed){box.hidden=true;delete box.dataset.login;return;}box.querySelector('h1').textContent=value.disabled?tr('Внимание! На данный момент сайт отключен. Попробуйте посетить нас позднее!','Attention! The site is currently disabled. Please try again later!'):tr('Извините, сейчас этот сервис недоступен. На сайте ведутся технические работы!','Sorry, this service is unavailable during maintenance.');box.querySelector('button').hidden=!!user;if(box.dataset.login!=='true'||user)box.hidden=false;}catch{}}
-function init(options){ctx=options;setup();window.addEventListener('pongy-session-ready',()=>{void refresh();});siteState();setInterval(siteState,30000);let last='';statusTimer=setInterval(()=>{const id=ctx.user()?.email||'';if(id!==last){last=id;refresh();}if($('settingsModal').classList.contains('open'))usage();},15000);refresh();}
-// Watchdog: re-check the personal API while the session is live. A silent server-side loss
-// (redeploy with a stable encryption secret) can be repaired from a validated browser copy.
-setInterval(function(){if(!ctx||!ctx.ready()||restoreBusy)return;var id=ctx.account();if(!id)return;ctx.api('/api/user-api').then(function(v){if(v&&v.connected!==true&&!v.unavailable&&ctx.account()===id)autoRestoreConnection(id)}).catch(function(){})},120000);
-root.PongySettings={init,refresh,refreshUsage:usage,checkSite:siteState,syncPreferences(){if(!ctx)return;$('betaFunctions').checked=ctx.beta();syncBetaTab();$('voiceGender').value=ctx.voiceGender();},syncVoiceGender(){if(ctx)$('voiceGender').value=ctx.voiceGender();},reset(){if(!ctx)return;account='';epoch++;apiRevision++;apiDirty=false;modelsRequest++;autoRestored=0;clearApiModels();$('personalApiProvider').replaceChildren();delete $('personalApiProvider').dataset.loaded;delete $('personalApiProvider').dataset.loading;$('personalApiKey').value='';$('personalApiConsent').checked=false;$('adminReports').textContent='';$('adminBlacklist').textContent='';$('adminBlockEmail').value='';$('settings-tab-developer').hidden=true;selectTab('main');lock(false);$('personalApiSave').hidden=false;$('personalApiRemove').hidden=true;$('personalApiStatus').textContent='';$('personalApiKey').placeholder=tr('API-ключ','API key');$('personalApiKey').dataset.saved='false';hideApiKey();}};
+  // After a re-login the activation restores itself: the browser still holds the key, provider
+  // and model, so the same validated connect request is repeated once without the user noticing.
+  async function autoRestoreConnection(accountId) {
+    // Retries are throttled: a redeploy that loses server data must not permanently drop the personal API.
+    if (apiDirty || restoreBusy || Date.now() - autoRestored < 300000) return;
+    autoRestored = Date.now();
+    const key = readStoredKey(),
+      meta = readApiMeta();
+    if (
+      !key ||
+      !meta ||
+      meta.draft === true ||
+      typeof meta.provider !== "string" ||
+      typeof meta.model !== "string" ||
+      !meta.model ||
+      !readConsent()
+    )
+      return;
+    restoreBusy = true;
+    const token = epoch,
+      revision = apiRevision,
+      output = $("personalApiStatus");
+    try {
+      output.textContent = tr(
+        "Восстанавливаю подключение личного API…",
+        "Restoring the personal API connection…",
+      );
+      const provider = $("personalApiProvider");
+      if (
+        provider &&
+        [...provider.options].some((o) => o.value === meta.provider)
+      )
+        provider.value = meta.provider;
+      if (Array.isArray(meta.models) && meta.models.length)
+        fillModels(meta.models, meta.model);
+      const v = await ctx.api("/api/user-api", {
+        method: "PUT",
+        body: {
+          provider: meta.provider,
+          model: meta.model,
+          key,
+          consent: true,
+        },
+      });
+      if (token !== epoch || revision !== apiRevision) return;
+      showApi(v);
+      await usage();
+      if (v.connected)
+        ctx.notify(
+          tr(
+            "Подключение личного API восстановлено",
+            "Personal API connection restored",
+          ),
+        );
+    } catch (e) {
+      if (token === epoch && revision === apiRevision)
+        output.textContent =
+          tr(
+            "Не удалось восстановить подключение личного API: ",
+            "Could not restore the personal API connection: ",
+          ) + e.message;
+    } finally {
+      restoreBusy = false;
+    }
+  }
+  function hideApiKey() {
+    clearTimeout(apiRevealTimer);
+    apiRevealTimer = 0;
+    const input = $("personalApiKey"),
+      eye = $("personalApiToggle");
+    if (input) input.type = "password";
+    if (eye) {
+      eye.classList.remove("revealed");
+      eye.setAttribute("aria-pressed", "false");
+      const label = tr(
+        "Показать ключ на 3 секунды",
+        "Show the key for 3 seconds",
+      );
+      eye.setAttribute("aria-label", label);
+      eye.title = label;
+    }
+  }
+  function revealApiKey() {
+    const input = $("personalApiKey"),
+      eye = $("personalApiToggle");
+    if (!input) return;
+    clearTimeout(apiRevealTimer);
+    input.type = "text";
+    if (eye) {
+      eye.classList.add("revealed");
+      eye.setAttribute("aria-pressed", "true");
+      const label = tr("Скрыть ключ", "Hide the key");
+      eye.setAttribute("aria-label", label);
+      eye.title = label;
+    }
+    apiRevealTimer = setTimeout(hideApiKey, 3000);
+  }
+  function storedKeyForField() {
+    return readStoredKey();
+  }
+  function fillModels(items, selected) {
+    const model = $("personalApiModel"),
+      hint = $("personalApiModelOwner");
+    if (!model || !Array.isArray(items) || model.dataset.loading === "true")
+      return;
+    model.replaceChildren();
+    for (const item of items) {
+      if (!item || typeof item.id !== "string") continue;
+      const option = node("option");
+      option.value = item.id;
+      option.label = item.owner ? item.id + " — " + item.owner : item.id;
+      option.dataset.owner = typeof item.owner === "string" ? item.owner : "";
+      model.append(option);
+    }
+    if (!model.options.length) {
+      model.disabled = true;
+      model.append(
+        node("option", tr("Сначала загрузите модели", "Load models first")),
+      );
+      return;
+    }
+    model.disabled = false;
+    if (selected && [...model.options].some((o) => o.value === selected))
+      model.value = selected;
+    const option = model.selectedOptions[0],
+      owner = option?.dataset.owner || "";
+    if (hint)
+      hint.textContent = owner
+        ? tr(
+            "Разработчик по данным провайдера: ",
+            "Developer reported by provider: ",
+          ) + owner
+        : tr(
+            "Провайдер не указал разработчика этой модели.",
+            "The provider did not report this model’s developer.",
+          );
+  }
+  function button(text, fn) {
+    const n = node("button", text, "settings-action");
+    n.type = "button";
+    n.onclick = fn;
+    return n;
+  }
+  function paragraph(parent, r, e) {
+    const n = node("p", tr(r, e), "settings-hint");
+    parent.append(n);
+    return n;
+  }
+  function field(parent, label, type = "text") {
+    const l = node("label", label, "settings-field"),
+      input = node("input");
+    input.className = "inp";
+    input.type = type;
+    l.append(input);
+    parent.append(l);
+    return input;
+  }
+  function syncSettingsTabs(reveal = false) {
+    const strip = document.querySelector("#settingsModal .settings-tabs"),
+      selected = $("settings-tab-" + active);
+    if (!strip || !selected) return;
+    const indicator = strip.querySelector(".settings-tab-indicator");
+    if (indicator) {
+      indicator.style.width = selected.offsetWidth + "px";
+      indicator.style.transform = "translateX(" + selected.offsetLeft + "px)";
+    }
+    if (reveal && strip.clientWidth) {
+      const visible = [...strip.querySelectorAll("[role=tab]")].filter(
+          (el) => !el.hidden,
+        ),
+        left = selected === visible[0] ? 0 : selected.offsetLeft - 8,
+        right =
+          selected === visible[visible.length - 1]
+            ? strip.scrollWidth
+            : selected.offsetLeft + selected.offsetWidth + 8;
+      if (left < strip.scrollLeft) strip.scrollLeft = Math.max(0, left);
+      else if (right > strip.scrollLeft + strip.clientWidth)
+        strip.scrollLeft = right - strip.clientWidth;
+    }
+    const shell = strip.parentElement,
+      back = shell.querySelector(".settings-tabs-prev"),
+      next = shell.querySelector(".settings-tabs-next");
+    if (!back || !next) return;
+    back.setAttribute(
+      "aria-label",
+      tr("Предыдущие разделы", "Previous sections"),
+    );
+    next.setAttribute("aria-label", tr("Следующие разделы", "Next sections"));
+    const overflow = strip.scrollWidth > shell.clientWidth + 1;
+    back.hidden = next.hidden = !overflow;
+    back.disabled = strip.scrollLeft <= 1;
+    next.disabled =
+      strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 1;
+  }
+  function selectTab(id) {
+    const previous = active;
+    if ((scanRunning && id !== "developer") || (id === "beta" && !ctx.beta()))
+      return;
+    active = id;
+    if (id === "plugins" || id === "skills")
+      void root.PongyExtensions?.mount(id);
+    if (id === "usage") void usage();
+    if (id === "connections") void root.PongyConnections?.refreshSettings();
+    if (id === "developer" && previous !== id) void admin();
+    Object.keys(tabs).forEach((key) => {
+      $("settings-tab-" + key).setAttribute(
+        "aria-selected",
+        String(key === id),
+      );
+      $("settings-tab-" + key).tabIndex = key === id ? 0 : -1;
+      $("settings-panel-" + key).hidden = key !== id;
+    });
+    syncSettingsTabs(true);
+  }
+  function move(id, panel, whole) {
+    let n = $(id);
+    if (n) {
+      if (whole) n = n.parentElement;
+      $("settings-panel-" + panel).append(n);
+    }
+  }
+  function lock(value) {
+    own = value;
+    document.documentElement.dataset.userApi = String(value);
+    for (const id of ["agentBtn", "smartBtn", "searchBtn"]) {
+      const n = $(id);
+      if (n) {
+        n.disabled = value;
+        n.setAttribute("aria-disabled", String(value));
+        n.title = value
+          ? tr(
+              "Недоступно при подключённом личном API",
+              "Unavailable while a personal API is connected",
+            )
+          : "";
+      }
+    }
+    document
+      .querySelectorAll("[data-beta-only]")
+      .forEach((n) => (n.hidden = !ctx.beta()));
+  }
+  function syncBetaTab() {
+    const enabled = ctx.beta();
+    $("settings-tab-beta").hidden = !enabled;
+    $("settings-panel-beta").hidden = !enabled || active !== "beta";
+    if (!enabled && active === "beta") selectTab("main");
+  }
+  function setup() {
+    const body = $("settingsModal").querySelector(".modal-body"),
+      strip = node("div", undefined, "settings-tabs");
+    strip.setAttribute("role", "tablist");
+    strip.setAttribute(
+      "aria-label",
+      tr("Разделы настроек", "Settings sections"),
+    );
+    strip.id = "settingsTabs";
+    const shell = node("div", undefined, "settings-tabs-shell");
+    function arrow(dir) {
+      const b = node(
+        "button",
+        undefined,
+        "settings-tabs-arrow " +
+          (dir < 0 ? "settings-tabs-prev" : "settings-tabs-next"),
+      );
+      b.type = "button";
+      b.setAttribute("aria-controls", strip.id);
+      b.setAttribute(
+        "aria-label",
+        tr(
+          dir < 0 ? "Предыдущие разделы" : "Следующие разделы",
+          dir < 0 ? "Previous sections" : "Next sections",
+        ),
+      );
+      b.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="' +
+        (dir < 0 ? "m14 6-6 6 6 6" : "m10 6 6 6-6 6") +
+        '"/></svg>';
+      b.onclick = () =>
+        strip.scrollBy({
+          left: dir * Math.max(160, strip.clientWidth * 0.75),
+          behavior:
+            document.documentElement.dataset.motion === "reduced"
+              ? "auto"
+              : "smooth",
+        });
+      return b;
+    }
+    shell.append(arrow(-1), strip, arrow(1));
+    body.before(shell);
+    strip.addEventListener("scroll", () => syncSettingsTabs(false), {
+      passive: true,
+    });
+    strip.addEventListener(
+      "wheel",
+      (e) => {
+        if (
+          e.ctrlKey ||
+          Math.abs(e.deltaX) >= Math.abs(e.deltaY) ||
+          strip.scrollWidth <= strip.clientWidth
+        )
+          return;
+        const delta =
+            e.deltaY *
+            (e.deltaMode === 1
+              ? 16
+              : e.deltaMode === 2
+                ? strip.clientWidth
+                : 1),
+          before = strip.scrollLeft;
+        strip.scrollLeft += delta;
+        syncSettingsTabs(false);
+        if (strip.scrollLeft !== before) e.preventDefault();
+      },
+      { passive: false },
+    );
+    new ResizeObserver(() => syncSettingsTabs(true)).observe(strip);
+    new MutationObserver(() =>
+      requestAnimationFrame(() => syncSettingsTabs(false)),
+    ).observe(strip, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["hidden"],
+    });
+    new MutationObserver(() => {
+      if ($("settingsModal").classList.contains("open"))
+        requestAnimationFrame(() => syncSettingsTabs(true));
+    }).observe($("settingsModal"), {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    Object.entries(tabs).forEach(([id, label]) => {
+      const b = button(tr(...label), () => selectTab(id));
+      b.id = "settings-tab-" + id;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-controls", "settings-panel-" + id);
+      b.tabIndex = id === "main" ? 0 : -1;
+      strip.append(b);
+      const panel = node("section", undefined, "settings-section");
+      panel.id = "settings-panel-" + id;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", b.id);
+      body.append(panel);
+    });
+    $("settings-panel-beta").append(
+      node(
+        "p",
+        tr(
+          "Здесь появятся новые функции для тестирования",
+          "New features for testing will appear here",
+        ),
+        "beta-empty-state",
+      ),
+    );
+    strip.prepend(node("span", undefined, "settings-tab-indicator"));
+    strip.onkeydown = (e) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      const list = [...strip.querySelectorAll("[role=tab]")].filter(
+          (n) => !n.hidden,
+        ),
+        idx = list.indexOf(document.activeElement),
+        next =
+          e.key === "Home"
+            ? 0
+            : e.key === "End"
+              ? list.length - 1
+              : (idx + (e.key === "ArrowRight" ? 1 : -1) + list.length) %
+                list.length;
+      e.preventDefault();
+      list[next].click();
+      list[next].focus();
+    };
+    root.addEventListener("resize", () => selectTab(active), { passive: true });
+    const beta = node("label", undefined, "display-option"),
+      txt = node("span", tr("Режим бета-тестирования", "Beta testing mode")),
+      check = node("input");
+    check.id = "betaFunctions";
+    check.type = "checkbox";
+    check.className = "display-switch";
+    check.setAttribute("role", "switch");
+    check.checked = ctx.beta();
+    check.onchange = () => {
+      ctx.beta(check.checked);
+      syncBetaTab();
+      if (check.checked) selectTab("beta");
+      lock(own);
+    };
+    beta.append(txt, check);
+    const betaBox = node("div", undefined, "beta-setting-option");
+    betaBox.append(beta);
+    $("settings-panel-interface").append(betaBox);
+    syncBetaTab();
+    move("downloadAppSettings", "main");
+    move("developerBadge", "account");
+    move("langLabel", "interface", true);
+    move("themeLabel", "interface", true);
+    move("motionPreference", "interface", true);
+    move("voicePreferenceSetting", "interface");
+    move("displayPreferences", "interface");
+    move("wakeWordSetting", "interface");
+    move("answerNotifications", "account", true);
+    move("notificationChannels", "account");
+    move("memoryToggle", "main", true);
+    move("nickLabel", "account", true);
+    move("subscriptionLabel", "subscription", true);
+    body.querySelector(".local-history-card") &&
+      $("settings-panel-main").append(
+        body.querySelector(".local-history-card"),
+      );
+    body.querySelector(".support-link") &&
+      $("settings-panel-main").append(body.querySelector(".support-link"));
+    move("logoutBtnSettings", "account");
+    move("settingsAppVersion", "main");
+    const emailLabel = node(
+        "label",
+        tr("Почта аккаунта", "Account email"),
+        "settings-field",
+      ),
+      emailField = node("input");
+    emailField.id = "accountEmail";
+    emailField.type = "email";
+    emailField.readOnly = true;
+    emailField.className = "inp";
+    emailField.autocomplete = "off";
+    emailField.value = ctx.user()?.email || "";
+    emailLabel.append(emailField);
+    $("nickInput")?.closest("div")?.after(emailLabel);
+    if (!emailLabel.isConnected)
+      $("settings-panel-account").insertBefore(
+        emailLabel,
+        $("logoutBtnSettings"),
+      );
+    const voice = $("voiceGender");
+    $("voiceGenderLabel").textContent = tr(
+      "Голос озвучивания",
+      "Spoken reply voice",
+    );
+    $("voiceGenderHint").textContent = "";
+    $("voiceGenderHint").hidden = true;
+    voice.value = ctx.voiceGender() === "female" ? "female" : "male";
+    voice.onchange = () =>
+      ctx.setVoiceGender(voice.value === "female" ? "female" : "male");
+    const speechLabel = node(
+      "label",
+      tr("Язык голосового ввода", "Voice input language"),
+      "settings-field",
+    );
+    const speechSelect = node("select");
+    speechSelect.id = "speechInputLanguage";
+    speechSelect.className = "inp";
+    for (const [value, r, e] of [
+      ["auto", "Как язык интерфейса", "Same as interface"],
+      ["ru-RU", "Русский", "Russian"],
+      ["en-US", "Английский", "English"],
+    ]) {
+      const option = node("option", tr(r, e));
+      option.value = value;
+      speechSelect.append(option);
+    }
+    try {
+      speechSelect.value =
+        localStorage.getItem("pongy_speech_language") || "auto";
+    } catch {}
+    speechSelect.onchange = () => {
+      root.stopVoice?.();
+      try {
+        if (speechSelect.value === "auto")
+          localStorage.removeItem("pongy_speech_language");
+        else localStorage.setItem("pongy_speech_language", speechSelect.value);
+      } catch {}
+    };
+    speechLabel.append(speechSelect);
+    $("voicePreferenceSetting").after(speechLabel);
+    apiPanel();
+    usagePanel();
+    developerPanel();
+    selectTab("main");
+    const sub = $("settings-panel-subscription");
+    paragraph(
+      sub,
+      "Pongy Plus открывает расширенные возможности сервиса:",
+      "Pongy Plus unlocks extended service capabilities:",
+    );
+    const benefits = node("ul", undefined, "plus-benefits");
+    for (const [r, e] of [
+      [
+        "Доступ к дополнительным моделям при их подключении",
+        "Access to additional models when enabled",
+      ],
+      ["Увеличенный дневной лимит запросов", "A higher daily request limit"],
+      [
+        "Более длинный контекст чата и большие вложения",
+        "Longer chat context and larger attachments",
+      ],
+      ["Приоритет обработки запросов", "Priority request processing"],
+      ["Приоритетная поддержка", "Priority support"],
+    ])
+      benefits.append(node("li", tr(r, e)));
+    sub.append(benefits);
+    sub.append(button("Plus", () => ctx.subscribe()));
+    sub.lastChild.classList.add("plus-action");
+    new MutationObserver(() => {
+      for (const [n, pair] of translated) {
+        if (n.isConnected) {
+          if (
+            n.tagName === "LABEL" &&
+            n.querySelector("input,select,textarea")
+          ) {
+            if (n.firstChild.nodeType === 3)
+              n.firstChild.textContent = tr(...pair);
+          } else n.textContent = tr(...pair);
+        }
+      }
+      for (const [id, labels] of Object.entries(tabs))
+        $("settings-tab-" + id).textContent = tr(...labels);
+      $("voiceGenderLabel").textContent = tr(
+        "Голос озвучивания",
+        "Spoken reply voice",
+      );
+      $("voiceGenderHint").textContent = "";
+      $("voiceGenderHint").hidden = true;
+      $("voiceGender").options[0].textContent = tr("Мужской", "Male");
+      $("voiceGender").options[1].textContent = tr("Женский", "Female");
+      refresh();
+      siteState();
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["lang"],
+    });
+  }
+  function apiPanel() {
+    const p = $("settings-panel-tools");
+    p.append(node("h3", "API"));
+    paragraph(
+      p,
+      "Подключите ключ одного из поддерживаемых провайдеров. Каталог не охватывает все сервисы: доступность моделей и сведения об их разработчике зависят от ответа API провайдера. Ключ отправляется только на официальный endpoint выбранного провайдера и хранится зашифрованным.",
+      "Connect an API key from a supported provider. This catalog does not cover every service; model availability and developer details depend on the provider API. Keys are sent only to the selected provider’s official endpoint and stored encrypted.",
+    );
+    const provider = node("select");
+    provider.id = "personalApiProvider";
+    provider.className = "inp";
+    provider.setAttribute("aria-label", tr("Провайдер", "Provider"));
+    provider.disabled = true;
+    p.append(provider);
+    const keyField = node("label", tr("API-ключ", "API key"), "settings-field"),
+      keyWrap = node("div", undefined, "api-key-field"),
+      key = node("input"),
+      keyEye = node("button");
+    key.className = "inp";
+    key.type = "password";
+    key.id = "personalApiKey";
+    key.autocomplete = "new-password";
+    key.spellcheck = false;
+    key.maxLength = 512;
+    keyEye.type = "button";
+    keyEye.id = "personalApiToggle";
+    keyEye.className = "api-key-eye";
+    keyEye.setAttribute("aria-pressed", "false");
+    keyEye.setAttribute("aria-controls", "personalApiKey");
+    keyEye.innerHTML =
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="api-eye-pupil" cx="12" cy="12" r="3"/><path class="api-eye-slash" pathLength="1" d="M3 3 21 21"/></svg>';
+    keyEye.onclick = function (event) {
+      event.preventDefault();
+      if (key.type === "text") hideApiKey();
+      else revealApiKey();
+    };
+    keyWrap.append(key, keyEye);
+    keyField.append(keyWrap);
+    p.append(keyField);
+    hideApiKey();
+    const modelLabel = node("label", tr("Модель", "Model"), "settings-field"),
+      model = node("select");
+    model.id = "personalApiModel";
+    model.className = "inp";
+    model.disabled = true;
+    model.append(
+      node("option", tr("Сначала загрузите модели", "Load models first")),
+    );
+    modelLabel.append(model);
+    p.append(modelLabel);
+    const ownerHint = node("p", undefined, "settings-hint");
+    ownerHint.id = "personalApiModelOwner";
+    p.append(ownerHint);
+    const output = node("p", undefined, "settings-hint");
+    output.id = "personalApiStatus";
+    output.setAttribute("role", "status");
+    p.append(output);
+    const loadModels = button(
+      tr("Загрузить модели", "Load models"),
+      async () => {
+        const token = epoch,
+          request = ++modelsRequest,
+          selectedProvider = provider.value,
+          enteredKey = key.value.trim();
+        const current = () =>
+          token === epoch &&
+          request === modelsRequest &&
+          provider.value === selectedProvider &&
+          key.value.trim() === enteredKey;
+        loadModels.disabled = true;
+        model.dataset.loading = "true";
+        output.textContent = tr(
+          "Запрашиваем список моделей у провайдера…",
+          "Requesting the provider model list…",
+        );
+        ownerHint.textContent = "";
+        try {
+          const result = await ctx.api("/api/user-api/models", {
+            method: "POST",
+            body: { provider: selectedProvider, key: enteredKey },
+          });
+          if (!current()) return;
+          if (!Array.isArray(result.models) || result.models.length > 1000)
+            throw Error(
+              tr(
+                "Провайдер вернул некорректный список моделей.",
+                "The provider returned an invalid model list.",
+              ),
+            );
+          model.replaceChildren();
+          for (const item of result.models) {
+            if (!item || typeof item.id !== "string") continue;
+            const option = node("option");
+            option.value = item.id;
+            option.label = item.owner ? item.id + " — " + item.owner : item.id;
+            option.dataset.owner =
+              typeof item.owner === "string" ? item.owner : "";
+            model.append(option);
+          }
+          if (!model.options.length)
+            throw Error(
+              tr(
+                "Провайдер не предоставил доступных моделей.",
+                "The provider did not return any available models.",
+              ),
+            );
+          model.value = model.options[0].value;
+          model.disabled = false;
+          showOwner();
+          dirtyApi();
+          writeApiMeta({
+            ...readApiMeta(),
+            provider: provider.value,
+            model: model.value,
+            models: [...model.options].map((o) => ({
+              id: o.value,
+              owner: o.dataset.owner || "",
+            })),
+          });
+          output.textContent =
+            tr("Модели загружены: ", "Models loaded: ") + model.options.length;
+        } catch (e) {
+          if (current()) {
+            model.disabled = true;
+            output.textContent = e.message;
+          }
+        } finally {
+          if (current()) {
+            loadModels.disabled = false;
+            delete model.dataset.loading;
+          }
+        }
+      },
+    );
+    loadModels.id = "personalApiLoadModels";
+    loadModels.disabled = true;
+    p.append(loadModels);
+    function showOwner() {
+      const selected = model.selectedOptions[0],
+        owner = selected?.dataset.owner || "";
+      ownerHint.textContent = owner
+        ? tr(
+            "Разработчик по данным провайдера: ",
+            "Developer reported by provider: ",
+          ) + owner
+        : tr(
+            "Провайдер не указал разработчика этой модели.",
+            "The provider did not report this model’s developer.",
+          );
+    }
+    model.onchange = () => {
+      dirtyApi();
+      showOwner();
+      writeApiMeta({
+        ...readApiMeta(),
+        provider: provider.value,
+        model: model.value,
+        models: [...model.options].map((o) => ({
+          id: o.value,
+          owner: o.dataset.owner || "",
+        })),
+      });
+    };
+    provider.onchange = () => {
+      const saved = readApiMeta();
+      clearApiModels();
+      if (
+        saved &&
+        saved.provider === provider.value &&
+        Array.isArray(saved.models) &&
+        saved.models.length
+      )
+        fillModels(saved.models, saved.model);
+      else {
+        key.value = "";
+        writeStoredKey("");
+        writeConsent(false);
+        $("personalApiConsent").checked = false;
+        writeApiMeta({ provider: provider.value, model: "", models: [] });
+      }
+      dirtyApi();
+      hideApiKey();
+    };
+    key.addEventListener("input", () => {
+      if (readStoredKey() === key.value.trim()) return;
+      writeStoredKey(key.value.trim());
+      clearApiModels();
+      writeApiMeta({
+        ...readApiMeta(),
+        provider: provider.value,
+        model: "",
+        models: [],
+      });
+      dirtyApi();
+    });
+    key.addEventListener("change", () => writeStoredKey(key.value.trim()));
+    const keyHint = paragraph(
+      p,
+      "Используйте API-ключ из кабинета выбранного сервиса. Ключ не включается в URL; на сервере он хранится зашифрованным, а копия для автозаполнения остаётся только в этом браузере.",
+      "Use an API key from the selected provider dashboard. The key is never put in a URL; the server stores it encrypted and an autofill copy stays only in this browser.",
+    );
+    keyHint.id = "personalApiKeyHint";
+    const consent = node("label", undefined, "memory-setting"),
+      c = node("input");
+    c.type = "checkbox";
+    c.id = "personalApiConsent";
+    c.checked = readConsent();
+    c.onchange = () => {
+      writeConsent(c.checked);
+      dirtyApi();
+    };
+    consent.append(
+      c,
+      node(
+        "span",
+        tr(
+          "Разрешаю обращения к моему провайдеру и принимаю его возможную оплату.",
+          "Allow requests to my provider and accept any provider charges.",
+        ),
+      ),
+    );
+    p.append(consent);
+    const save = button(
+        tr("Проверить и подключить", "Validate & connect"),
+        async () => {
+          const token = epoch,
+            revision = apiRevision,
+            body = {
+              provider: provider.value,
+              model: model.value.trim(),
+              key: key.value.trim(),
+              consent: c.checked,
+            };
+          save.disabled = true;
+          try {
+            const v = await ctx.api("/api/user-api", { method: "PUT", body });
+            if (token !== epoch || revision !== apiRevision) return;
+            writeConsent(body.consent);
+            writeStoredKey(body.key);
+            apiDirty = false;
+            showApi(v);
+            await usage();
+          } catch (e) {
+            if (token === epoch) output.textContent = e.message;
+          } finally {
+            if (token === epoch) save.disabled = false;
+          }
+        },
+      ),
+      remove = button(tr("Отключить ключ", "Disconnect key"), async () => {
+        const token = epoch,
+          revision = apiRevision;
+        remove.disabled = true;
+        try {
+          const v = await ctx.api("/api/user-api", { method: "DELETE" });
+          if (token !== epoch || revision !== apiRevision) return;
+          clearApiModels();
+          writeStoredKey("");
+          writeApiMeta(null);
+          writeConsent(false);
+          c.checked = false;
+          key.value = "";
+          apiDirty = false;
+          hideApiKey();
+          showApi(v);
+          await usage();
+        } catch (e) {
+          if (token === epoch) output.textContent = e.message;
+        } finally {
+          if (token === epoch) remove.disabled = false;
+        }
+      });
+    save.id = "personalApiSave";
+    remove.id = "personalApiRemove";
+    p.append(save, remove);
+    paragraph(
+      p,
+      "Личный API использует только выбранную текстовую модель. Pongy не получает сведения о тарифах, балансе или лимитах провайдера. Генерация изображений личным ключом пока не поддерживается.",
+      "Personal API uses only the selected text model. Pongy cannot see your provider’s plan, balance or quotas. Image generation with personal keys is not supported yet.",
+    );
+    mcpPanel(p);
+  }
+  function mcpPanel(parent) {
+    // The API section below shares the existing API heading.paragraph(parent,'Создайте личный Pongy API Key для подключения внешних агентов. API совместим с OpenAI Chat Completions; используйте адрес endpoint и ключ как Bearer-токен. Ключ действует от имени вашего аккаунта и расходует его лимиты.','Create a personal Pongy API Key to connect external agents. The API is compatible with OpenAI Chat Completions; use the endpoint and key as a Bearer token. The key acts as your account and uses its limits.');
+    const apiStatus = node("p", "", "settings-hint"),
+      apiKey = node("output", "", "credential-value"),
+      apiEndpointText = node("output", "", "credential-value"),
+      apiDetails = node("div"),
+      apiCreate = button(tr("Создать API-ключ", "Create API key"), async () => {
+        apiCreate.disabled = true;
+        try {
+          const issuedEpoch=epoch;
+          const data = await ctx.api("/api/api-key", { method: "POST" });
+          if(issuedEpoch!==epoch)return;
+          apiKey.textContent = data.token;
+          apiEndpointText.textContent = data.endpoint;
+          apiStatus.textContent = tr(
+            "Ключ создан. Скопируйте и сохраните его сейчас: повторно секрет не показывается.",
+            "Key created. Copy and save it now; the secret will not be shown again.",
+          );
+          apiRevoke.hidden = false;
+          apiCopy.hidden = false;
+          apiCreate.textContent = tr(
+            "Создать новый API Key",
+            "Create new API Key",
+          );
+        } catch (error) {
+          apiStatus.textContent = error.message;
+        } finally {
+          apiCreate.disabled = false;
+        }
+      }),
+      apiCopy = button(tr("Копировать API Key", "Copy API Key"), async () => {
+        try {
+          await navigator.clipboard.writeText(apiKey.textContent);
+          ctx.notify(tr("API Key скопирован", "API Key copied"));
+        } catch {
+          ctx.notify(
+            tr("Не удалось скопировать API Key", "Could not copy API Key"),
+          );
+        }
+      }),
+      apiRevoke = button(tr("Отозвать API Key", "Revoke API Key"), async () => {
+        apiRevoke.disabled = true;
+        try {
+          await ctx.api("/api/api-key", { method: "DELETE" });
+          apiKey.textContent = "";
+          apiStatus.textContent = tr("API Key отозван.", "API Key revoked.");
+          apiRevoke.hidden = true;
+          apiCopy.hidden = true;
+          apiCreate.textContent = tr("Создать API-ключ", "Create API key");
+        } catch (error) {
+          apiStatus.textContent = error.message;
+        } finally {
+          apiRevoke.disabled = false;
+        }
+      });
+    apiDetails.className = "api-key-details";
+    apiStatus.id = "apiKeyStatus";
+    apiStatus.setAttribute("role", "status");
+    apiKey.id = "apiKeyValue";
+    apiEndpointText.id = "apiKeyEndpoint";
+    apiCreate.id = "apiKeyCreate";
+    apiCopy.id = "apiKeyCopy";
+    apiRevoke.id = "apiKeyRevoke";
+    apiCreate.classList.add("api-key-primary");
+    apiKey.textContent = tr(
+      "Создайте ключ и сохраните его в надёжном месте",
+      "Create a key and keep it in a safe place",
+    );
+    apiEndpointText.textContent = "";
+    apiDetails.append(
+      node("span", tr("Адрес API", "API address"), "credential-label"),
+      apiEndpointText,
+      node("span", "", "credential-divider"),
+      node("span", tr("Секретный ключ", "Secret key"), "credential-label"),
+      apiKey,
+    );
+    const keyCard = node("section", undefined, "api-key-card");
+    keyCard.setAttribute(
+      "aria-label",
+      tr("Личный API-ключ", "Personal API key"),
+    );
+    keyCard.append(
+      node("h3", tr("Личный API-ключ", "Personal API key")),
+      apiStatus,
+      apiDetails,
+      apiCreate,
+      apiCopy,
+      apiRevoke,
+    );
+    parent.append(keyCard);
+    apiCopy.hidden = true;
+    apiRevoke.hidden = true;
+    apiCreate.disabled = !ctx.user();
+    apiRevoke.disabled = !ctx.user();
+    refreshApiKeyStatus = async () => {
+      const token = epoch,
+        user = ctx.user();
+      apiCreate.disabled = !user;
+      apiRevoke.disabled = !user;
+      if (!user) {
+        apiStatus.textContent = tr(
+          "Войдите в аккаунт, чтобы создать API Key.",
+          "Sign in to create an API Key.",
+        );
+        apiEndpointText.textContent = "";
+        apiRevoke.hidden = true;
+        return;
+      }
+      try {
+        const data = await ctx.api("/api/api-key");
+        if (token !== epoch) return;
+        if (data.connected) {
+          apiStatus.textContent = tr(
+            "API Key уже создан. Создайте новый, чтобы заменить его, или отзовите текущий.",
+            "An API Key already exists. Create a new one to replace it, or revoke the current key.",
+          );
+          apiEndpointText.textContent = data.endpoint;
+          apiCreate.textContent = tr(
+            "Создать новый API Key",
+            "Create new API Key",
+          );
+          apiRevoke.hidden = false;
+        } else {
+          apiStatus.textContent = tr(
+            "API Key не создан.",
+            "No API Key has been created.",
+          );
+          apiEndpointText.textContent = "";
+          apiRevoke.hidden = true;
+        }
+      } catch (error) {
+        if (token === epoch) apiStatus.textContent = error.message;
+      }
+    };
+    parent.append(node("h3", "MCP"));
+    paragraph(
+      parent,
+      "Подключите своё приложение к Pongy через MCP. Создайте токен и скопируйте настройки подключения. Действуют лимиты вашего аккаунта",
+      "Connect your app to Pongy using MCP. Create a token and copy the connection settings. Your account limits apply",
+    );
+    const status = node("p", "", "settings-hint"),
+      secret = node("code"),
+      pre = node("details", "", "mcp-connection-card"),
+      copy = button(tr("Копировать конфигурацию", "Copy config"), async () => {
+        try {
+          await navigator.clipboard.writeText(secret.textContent);
+          ctx.notify(tr("Конфигурация скопирована", "Configuration copied"));
+        } catch {
+          ctx.notify(
+            tr(
+              "Не удалось скопировать конфигурацию",
+              "Could not copy configuration",
+            ),
+          );
+        }
+      }),
+      create = button(tr("Создать токен", "Create token"), async () => {
+        create.disabled = true;
+        try {
+          const issuedEpoch=epoch;
+          const data = await ctx.api("/api/mcp/token", { method: "POST" });
+          if(issuedEpoch!==epoch)return;
+          $("mcpEndpoint").value=data.endpoint;$("mcpSecret").value=data.token;pre.open=true;
+          secret.textContent = JSON.stringify(
+            {
+              mcpServers: {
+                pongy: {
+                  url: data.endpoint,
+                  headers: { Authorization: "Bearer " + data.token },
+                },
+              },
+            },
+            null,
+            2,
+          );
+          status.textContent = tr(
+            "Токен создан. Скопируйте конфигурацию сейчас: секрет повторно не показывается.",
+            "Token created. Copy the configuration now; the secret will not be shown again.",
+          );
+          create.textContent = tr("Создать новый токен", "Create new token");
+          revoke.hidden = false;
+          copy.hidden = false;
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          create.disabled = false;
+        }
+      }),
+      revoke = button(tr("Отозвать токен", "Revoke token"), async () => {
+        revoke.disabled = true;
+        try {
+          await ctx.api("/api/mcp/token", { method: "DELETE" });
+          secret.textContent = "";$("mcpEndpoint").value="";$("mcpSecret").value="";
+          status.textContent = tr("Токен отозван.", "Token revoked.");
+          revoke.hidden = true;
+          copy.hidden = true;
+          create.textContent = tr("Создать токен", "Create token");
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          revoke.disabled = false;
+        }
+      });
+    create.id = "mcpCreateToken";
+    revoke.id = "mcpRevokeToken";
+    copy.id = "mcpCopyConfig";
+    status.id = "mcpTokenStatus";
+    secret.id = "mcpConfig";
+    secret.textContent = tr(
+      "Сначала создайте токен подключения.",
+      "Create a connection token first.",
+    );
+    secret.hidden=true;
+    const mcpEndpoint=node('input'),mcpSecret=node('input');mcpEndpoint.id='mcpEndpoint';mcpSecret.id='mcpSecret';mcpSecret.type='password';[mcpEndpoint,mcpSecret].forEach(field=>{field.readOnly=true;field.className='credential-value';field.autocomplete='off';});
+    const endpointLabel=node('label',tr('Адрес сервера','Server address'),'credential-label');endpointLabel.htmlFor=mcpEndpoint.id;const secretLabel=node('label',tr('Секретный токен','Secret token'),'credential-label');secretLabel.htmlFor=mcpSecret.id;
+    pre.append(node("summary", tr("Настройки для подключения", "Connection settings")),endpointLabel,mcpEndpoint,secretLabel,mcpSecret, copy, secret);
+    parent.append(status, pre, create, revoke);
+    revoke.hidden = true;
+    copy.hidden = true;
+    create.disabled = !ctx.user();
+    revoke.disabled = !ctx.user();
+    refreshMcpStatus = async () => {
+      const token = epoch,
+        user = ctx.user();
+      create.disabled = !user;
+      revoke.disabled = !user;
+      if (!user) {
+        status.textContent = tr(
+          "Войдите в аккаунт, чтобы настроить подключение MCP.",
+          "Sign in to configure MCP.",
+        );
+        revoke.hidden = true;
+        return;
+      }
+      try {
+        const data = await ctx.api("/api/mcp/token");
+        if (token !== epoch) return;
+        if (data.connected) {
+          status.textContent = tr(
+            "Подключение настроено. Создайте новый токен, чтобы показать конфигурацию, либо отзовите текущий.",
+            "Connection is configured. Create a new token to reveal its configuration, or revoke the current token.",
+          );
+          create.textContent = tr("Создать новый токен", "Create new token");
+          revoke.hidden = false;
+        } else {
+          status.textContent = tr(
+            "Готово к подключению",
+            "Ready to connect",
+          );
+          revoke.hidden = true;
+        }
+      } catch (error) {
+        if (token === epoch) status.textContent = error.message;
+      }
+    };
+    refreshMcpStatus();
+  }
+  function loadProviderCatalog() {
+    const provider = $("personalApiProvider"),
+      output = $("personalApiStatus");
+    if (
+      !ctx.user() ||
+      provider.dataset.loading === "true" ||
+      provider.dataset.loaded === "true"
+    )
+      return;
+    provider.dataset.loading = "true";
+    const token = epoch;
+    ctx
+      .api("/api/user-api/providers")
+      .then((data) => {
+        if (token !== epoch) return;
+        if (!Array.isArray(data.providers) || !data.providers.length)
+          throw Error(
+            tr(
+              "Каталог провайдеров недоступен.",
+              "The provider catalog is unavailable.",
+            ),
+          );
+        provider.replaceChildren(
+          ...data.providers.map((item) => {
+            const option = node("option", item.name);
+            option.value = item.id;
+            return option;
+          }),
+        );
+        provider.disabled = false;
+        $("personalApiLoadModels").disabled = false;
+        provider.dataset.loaded = "true";
+        const meta = readApiMeta();
+        if (meta && meta.provider)
+          restoreApiSelection(meta.provider, meta.model);
+      })
+      .catch((e) => {
+        if (token === epoch) output.textContent = e.message;
+      })
+      .finally(() => {
+        if (token === epoch) provider.dataset.loading = "false";
+      });
+  }
+  function showApi(v) {
+    const connected = v.connected === true;
+    lock(connected);
+    $("personalApiRemove").hidden = !connected;
+    if (apiDirty) {
+      $("personalApiStatus").textContent = tr(
+        "Черновик сохранён на устройстве. Для применения нажмите «Проверить и подключить».",
+        "Draft saved on this device. Select Validate & connect to apply it.",
+      );
+      $("personalApiSave").hidden = false;
+      const meta = readApiMeta();
+      if (meta?.provider) restoreApiSelection(meta.provider, meta.model);
+      return;
+    }
+    $("personalApiStatus").textContent = v.unavailable
+      ? tr(
+          "Сохранённый ключ временно недоступен. Проверьте серверный секрет шифрования или подключите ключ повторно.",
+          "The saved key is unavailable. Check the server encryption secret or reconnect the key.",
+        )
+      : connected
+        ? tr("Подключено: ", "Connected: ") +
+          (v.providerName || v.provider) +
+          " · " +
+          v.model
+        : tr("Личный API не подключён", "No personal API connected");
+    $("personalApiSave").hidden = connected;
+    $("personalApiRemove").hidden = !connected;
+    const keyInput = $("personalApiKey");
+    if (keyInput && !keyInput.value) {
+      const stored = storedKeyForField();
+      if (stored) keyInput.value = stored;
+    }
+    if (keyInput) {
+      keyInput.placeholder = connected
+        ? tr("Ключ сохранён на сервере", "Key saved on server")
+        : tr("API-ключ", "API key");
+      keyInput.dataset.saved = String(connected);
+    }
+    if (connected && v.provider) {
+      $("personalApiConsent").checked = v.consent === true;
+      writeConsent(v.consent === true);
+      const meta = readApiMeta();
+      writeApiMeta({
+        provider: v.provider,
+        model: v.model,
+        models:
+          Array.isArray(v.models) && v.models.length
+            ? v.models
+            : meta &&
+                meta.provider === v.provider &&
+                Array.isArray(meta.models) &&
+                meta.models.length
+              ? meta.models
+              : [{ id: v.model, owner: v.providerName || v.provider }],
+      });
+      restoreApiSelection(v.provider, v.model);
+    } else if (!connected) {
+      const meta = readApiMeta();
+      if (meta && meta.provider) restoreApiSelection(meta.provider, meta.model);
+    }
+  }
+  function restoreApiSelection(providerId, modelId) {
+    const provider = $("personalApiProvider"),
+      meta = readApiMeta();
+    if (!provider || !providerId) return;
+    if ([...provider.options].some((o) => o.value === providerId))
+      provider.value = providerId;
+    if (
+      meta &&
+      meta.provider === providerId &&
+      Array.isArray(meta.models) &&
+      meta.models.length
+    )
+      fillModels(meta.models, modelId || meta.model);
+  }
+  function usagePanel() {
+    const p = $("settings-panel-usage");
+    paragraph(
+      p,
+      "Шкала заполняется по мере использования общего ресурса Pongy.",
+      "This bar fills up as the shared Pongy allowance is used.",
+    );
+    const row = node("div", undefined, "usage-row");
+    const bar = node("progress");
+    bar.id = "usageProgress";
+    bar.max = 100;
+    bar.setAttribute(
+      "aria-label",
+      tr("Использование общего ресурса Pongy", "Shared Pongy allowance usage"),
+    );
+    row.append(bar);
+    const percent = node("p", undefined, "settings-hint");
+    percent.id = "usagePercent";
+    row.append(percent);
+    p.append(row);
+    for (const id of ["usageReset", "usageHint"]) {
+      const n = node("p", undefined, "settings-hint");
+      n.id = id;
+      p.append(n);
+    }
+  }
+  async function usage() {
+    if (!ctx.user()) return;
+    const token = epoch;
+    try {
+      const s = await ctx.api("/api/service-status");
+      if (token !== epoch) return;
+      const own = s.dailyUnlimited === true || s.userApi?.connected === true,
+        remaining = Number(s.dailyRemainingPercent);
+      if (
+        !own &&
+        (!Number.isFinite(remaining) || remaining < 0 || remaining > 100)
+      )
+        throw Error(
+          tr(
+            "Не удалось получить состояние общего ресурса Pongy.",
+            "Could not retrieve the shared Pongy allowance status.",
+          ),
+        );
+      const used = own
+        ? 0
+        : Math.max(0, Math.min(100, 100 - remaining));
+      $("usageProgress").value = used;
+      $("usageProgress").hidden=own;
+      $("usageProgress").removeAttribute("aria-disabled");
+      $("settings-panel-usage").dataset.state = s.aiUnavailable
+        ? "unavailable"
+        : used >= 100
+          ? "exhausted"
+          : "normal";
+      $("usagePercent").textContent = own ? tr("Без дневного лимита Free", "No Free daily limit") : String(s.dailyUsed||0)+" / "+String(s.dailyLimit||0)+" · "+used.toLocaleString(ctx.lang()==='ru'?'ru-RU':'en-US',{maximumFractionDigits:1})+"%";
+      $("usageReset").textContent = s.dailyReset
+        ? tr("Обновление лимита: ", "Limit resets: ") +
+          new Date(s.dailyReset).toLocaleString(
+            ctx.lang() === "ru" ? "ru-RU" : "en-US",
+          )
+        : "";
+      $("usageHint").replaceChildren();
+      if (!own && used >= 100) {
+        const upgrade = button(
+          tr(
+            "Упс! Весь сегодняшний дневной лимит был исчерпан. Перейдите на тариф Plus для разблокировки лимита!",
+            "Oops! Today’s daily limit is used up. Switch to Plus to unlock the limit!",
+          ),
+          () => ctx.subscribe(),
+        );
+        upgrade.onclick = () => ctx.subscribe();
+        $("usageHint").append(upgrade);
+        return;
+      }
+      $("usageHint").textContent = own
+        ? tr(
+            "Личный API или активный Plus: дневной лимит Free не применяется.",
+            "Personal API or active Plus: the Free daily cap does not apply.",
+          )
+        : "";
+    } catch (e) {
+      $("usageHint").textContent = e.message;
+    }
+  }
+  function developerPanel() {
+    const p = $("settings-panel-developer"),
+      open = button(tr("Проверка", "Check"), () => {
+        open.focus();
+        dialog.showModal();
+      });
+    open.id = "adminCheckButton";
+    p.append(open);
+    const dialog = node("dialog");
+    dialog.id = "adminCheckDialog";
+    dialog.className = "admin-check-dialog";
+    dialog.setAttribute("aria-labelledby", "adminCheckTitle");
+    const title = node("h2", tr("Выберите тип проверки", "Choose a check"));
+    title.id = "adminCheckTitle";
+    const close = button(tr("Закрыть", "Close"), () => dialog.close());
+    const choices = node("div", undefined, "grid2");
+    for (const [mode, r, e] of [
+      ["standard", "Обычный тест", "Standard test"],
+      ["full", "Полное сканирование", "Full local scan"],
+    ])
+      choices.append(
+        button(tr(r, e), () => {
+          dialog.close();
+          startScan(mode);
+        }),
+      );
+    dialog.append(
+      title,
+      paragraph(
+        dialog,
+        "Проверка локальных компонентов и синтаксиса. Не заменяет полный CI, аудит безопасности или проверку внешних сервисов.",
+        "Local component and syntax diagnostics. Not a replacement for full CI, security auditing or external service tests.",
+      ),
+      choices,
+      close,
+    );
+    document.body.append(dialog);
+    for (const [id, r, e] of [
+      ["disabled", "Остановить работу сайта", "Disable site"],
+      ["maintenance", "Технические работы", "Maintenance"],
+    ]) {
+      const label = node("label", undefined, "display-option"),
+        input = node("input");
+      input.type = "checkbox";
+      input.id = "admin-" + id;
+      input.className = "display-switch";
+      input.setAttribute("role", "switch");
+      input.onchange = saveAdmin;
+      label.append(node("span", tr(r, e)), input);
+      p.append(label);
+    }
+    const progress = node("progress");
+    progress.id = "adminScanProgress";
+    progress.max = 1;
+    progress.value = 0;
+    progress.hidden = true;
+    p.append(progress, node("p", "", "settings-hint"));
+    progress.nextSibling.id = "adminScanCount";
+    progress.nextSibling.hidden = true;
+    const reports = node("div");
+    reports.id = "adminReports";
+    p.append(reports);
+    const hint = paragraph(
+      p,
+      "Эти ограничения применяются к обычным пользователям. Подтверждённые разработчики сохраняют доступ, чтобы можно было снова включить сайт. Изменения сохраняются в базе этого сервера.",
+      "Restrictions apply to regular users. Verified developers retain access so they can reopen the site. Changes are stored in this server’s database.",
+    );
+    hint.id = "adminControlHint";
+    const output = node("p", "", "admin-control-status");
+    output.id = "adminControlStatus";
+    output.setAttribute("role", "status");
+    output.setAttribute("aria-live", "polite");
+    p.append(output);
+    const email = field(
+      p,
+      tr("Почта для чёрного списка", "Email to block"),
+      "email",
+    );
+    email.id = "adminBlockEmail";
+    const block = button(tr("Заблокировать", "Block"), async () => {
+      if (!email.reportValidity() || !email.value.trim()) {
+        adminMessage(
+          tr("Укажите корректную почту.", "Enter a valid email."),
+          true,
+        );
+        return;
+      }
+      const ok = await mutateAdmin("/api/admin/blacklist", "POST", {
+        email: email.value.trim().toLowerCase(),
+      });
+      if (ok) {
+        email.value = "";
+        $("adminBlacklist").parentElement.open = true;
+      }
+    });
+    block.id = "adminBlockButton";
+    p.append(block);
+    const details = node("details"),
+      summary = node("summary", tr("Чёрный список", "Blacklist")),
+      list = node("div");
+    list.id = "adminBlacklist";
+    details.append(summary, list);
+    p.append(details);
+  }
+  function adminMessage(text, error = false) {
+    const el = $("adminControlStatus");
+    if (!el) return;
+    el.textContent = text;
+    el.dataset.error = String(error);
+  }
+  function adminLock(value) {
+    adminBusy = value;
+    for (const id of [
+      "admin-disabled",
+      "admin-maintenance",
+      "adminBlockEmail",
+      "adminBlockButton",
+    ])
+      if ($(id)) $(id).disabled = value;
+    $("adminBlacklist")
+      ?.querySelectorAll("button")
+      .forEach((b) => (b.disabled = value));
+  }
+  function applyAdminState(v) {
+    adminState = {
+      disabled: v.disabled === true,
+      maintenance: v.maintenance === true,
+    };
+    $("admin-disabled").checked = adminState.disabled;
+    $("admin-maintenance").checked = adminState.maintenance;
+    const forced = v.environmentMaintenance === true;
+    $("adminControlHint").textContent = forced
+      ? tr(
+          "Сервер запущен с MAINTENANCE_MODE=true: режим обслуживания нельзя отключить здесь. Разработчики сохраняют доступ.",
+          "The server uses MAINTENANCE_MODE=true: maintenance cannot be disabled here. Developers retain access.",
+        )
+      : tr(
+          "Ограничения действуют для обычных пользователей. Подтверждённые разработчики сохраняют доступ для управления сайтом. Состояние хранится в базе этого сервера.",
+          "Restrictions apply to regular users. Verified developers retain management access. State is stored in this server’s database.",
+        );
+  }
+  async function saveAdmin() {
+    if (adminBusy) return;
+    const desired = {
+        disabled: $("admin-disabled").checked,
+        maintenance: $("admin-maintenance").checked,
+      },
+      previous = { ...adminState };
+    const ok = await mutateAdmin("/api/admin/control", "PUT", desired);
+    if (!ok) {
+      $("admin-disabled").checked = previous.disabled;
+      $("admin-maintenance").checked = previous.maintenance;
+    }
+  }
+  async function mutateAdmin(url, method, body) {
+    if (adminBusy) return false;
+    const token = epoch;
+    ++adminRequest;
+    adminLock(true);
+    adminMessage(tr("Сохраняю…", "Saving…"));
+    try {
+      await ctx.api(url, { method, body });
+      if (token !== epoch) return false;
+      await admin(true);
+      if (token !== epoch) return false;
+      adminMessage(
+        tr(
+          "Изменения сохранены и подтверждены сервером.",
+          "Changes saved and confirmed by the server.",
+        ),
+      );
+      void siteState();
+      return true;
+    } catch (e) {
+      if (token === epoch) adminMessage(e.message, true);
+      return false;
+    } finally {
+      if (token === epoch) adminLock(false);
+    }
+  }
+  async function admin(force = false) {
+    if (!ctx.user()?.developer || (adminBusy && !force)) return;
+    const token = epoch,
+      request = ++adminRequest;
+    try {
+      const v = await ctx.api("/api/admin/control");
+      if (token !== epoch || request !== adminRequest || (adminBusy && !force))
+        return;
+      applyAdminState(v);
+      $("adminBlacklist").replaceChildren();
+      for (const b of v.blocked) {
+        const row = node("div", undefined, "admin-block-row");
+        row.append(
+          node(
+            "span",
+            b.email + " · " + new Date(b.blockedAt).toLocaleString(ctx.lang()),
+          ),
+          button(tr("Исключить", "Unblock"), async () => {
+            await mutateAdmin("/api/admin/blacklist", "DELETE", {
+              email: b.email,
+            });
+          }),
+        );
+        $("adminBlacklist").append(row);
+      }
+      if (!v.blocked.length)
+        $("adminBlacklist").append(
+          node("p", tr("Список пуст", "No blocked accounts"), "settings-hint"),
+        );
+      $("adminReports").replaceChildren();
+      for (const scan of v.scans) report(scan);
+    } catch (e) {
+      if (token === epoch && request === adminRequest)
+        adminMessage(e.message, true);
+      if (force) throw e;
+    }
+  }
+  function report(v) {
+    const box = node("details"),
+      summary = node(
+        "summary",
+        tr("Проверка", "Scan") +
+          " · " +
+          new Date(v.finishedAt || v.startedAt).toLocaleString(ctx.lang()),
+      ),
+      code = node("pre"),
+      logs = v.checks
+        .map((c) => (c.ok ? "PASS" : "FAIL") + " — " + c.name)
+        .join("\n"),
+      a = node("a", tr("Скачать отчёт .md", "Download .md report"));
+    const badge = node("span");
+    badge.className = "scan-status";
+    badge.setAttribute(
+      "aria-label",
+      v.running
+        ? tr("В процессе", "Running")
+        : v.ok
+          ? tr("Успешно", "Passed")
+          : tr("Есть ошибки", "Errors found"),
+    );
+    badge.innerHTML =
+      '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="' +
+      (v.running
+        ? "M6 12h12"
+        : v.ok
+          ? "m5 12 4 4L19 6"
+          : "m6 6 12 12M18 6 6 18") +
+      '"/></svg>';
+    summary.prepend(badge);
+    a.href = "#";
+    a.onclick = async (e) => {
+      e.preventDefault();
+      try {
+        const value = await ctx.api(
+          "/api/admin/scans/" + encodeURIComponent(v.id),
+        );
+        download(
+          "Pongy-AI-scan-" + v.id + ".md",
+          "# Pongy AI\n\n" +
+            new Date(value.finishedAt || value.startedAt).toISOString() +
+            "\n\n" +
+            value.passed +
+            "/" +
+            value.total +
+            " checks passed.\n\n" +
+            value.checks
+              .map((c) => (c.ok ? "PASS" : "FAIL") + " — " + c.name)
+              .join("\n") +
+            "\n\nScope: local diagnostics, not full CI or a security audit.\n",
+        );
+      } catch (error) {
+        ctx.notify(error.message);
+      }
+    };
+    code.append(
+      button(tr("Копировать", "Copy"), () =>
+        navigator.clipboard.writeText(logs).catch(() => {}),
+      ),
+      node("code", logs),
+    );
+    box.append(summary, a, code);
+    $("adminReports").append(box);
+  }
+  function download(name, text) {
+    const url = URL.createObjectURL(
+        new Blob([text], { type: "text/markdown;charset=utf-8" }),
+      ),
+      a = node("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  async function startScan(mode) {
+    if (scanRunning) return;
+    scanRunning = true;
+    $("adminCheckButton").setAttribute("aria-busy", "true");
+    $("adminCheckButton").disabled = true;
+    $("adminScanProgress").hidden = false;
+    $("adminScanCount").hidden = false;
+    $("adminScanProgress").value = 0;
+    $("adminScanCount").textContent = "";
+    const modal = $("settingsModal"),
+      close = $("closeSettings"),
+      previous = close.disabled;
+    close.disabled = true;
+    modal.dataset.scanning = "true";
+    const guard = (e) => {
+      if (
+        scanRunning &&
+        (e.key === "Escape" || e.target === modal || e.target === close)
+      ) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    };
+    modal.addEventListener("click", guard, true);
+    document.addEventListener("keydown", guard, true);
+    try {
+      let v = await ctx.api("/api/admin/scans", {
+        method: "POST",
+        body: { mode },
+      });
+      for (;;) {
+        $("adminScanProgress").max = v.total || 1;
+        $("adminScanProgress").value = v.completed;
+        $("adminScanCount").textContent =
+          v.passed +
+          " / " +
+          v.total +
+          " " +
+          tr("тестов прошли проверку", "checks passed");
+        if (!v.running) break;
+        await new Promise((r) => setTimeout(r, 1500));
+        v = await ctx.api("/api/admin/scans/" + encodeURIComponent(v.id));
+      }
+      await admin();
+    } catch (e) {
+      ctx.notify(e.message);
+    } finally {
+      scanRunning = false;
+      $("adminCheckButton").removeAttribute("aria-busy");
+      $("adminCheckButton").disabled = false;
+      close.disabled = previous;
+      delete modal.dataset.scanning;
+      modal.removeEventListener("click", guard, true);
+      document.removeEventListener("keydown", guard, true);
+    }
+  }
+  async function refresh() {
+    const user = ctx.user(),
+      id = user?.email || "";
+    if ($("accountEmail")) $("accountEmail").value = id;
+    if (account !== id) {
+      account = id;
+      ["mcpEndpoint","mcpSecret"].forEach(id=>{if($(id))$(id).value="";});
+      ["apiKeyValue","apiKeyEndpoint","mcpConfig"].forEach(id=>{if($(id))$(id).textContent="";});
+      ["apiKeyCopy","mcpCopyConfig"].forEach(id=>{if($(id))$(id).hidden=true;});
+      epoch++;
+      apiRevision++;
+      apiDirty = readApiMeta()?.draft === true;
+      clearApiModels();
+      const provider = $("personalApiProvider");
+      provider.disabled = true;
+      provider.replaceChildren();
+      delete provider.dataset.loaded;
+      delete provider.dataset.loading;
+      $("personalApiSave").disabled = false;
+      $("personalApiRemove").disabled = false;
+      ++adminRequest;
+      adminLock(false);
+      adminMessage("");
+      lastRefresh = 0;
+      autoRestored = 0;
+      siteState();
+      $("personalApiKey").value = readStoredKey();
+      $("personalApiConsent").checked = readConsent();
+      hideApiKey();
+      $("betaFunctions").checked = ctx.beta();
+      syncBetaTab();
+      lock(false);
+      void refreshApiKeyStatus();
+      void refreshMcpStatus();
+    }
+    const keyField = $("personalApiKey");
+    if (keyField && !keyField.value) {
+      const stored = readStoredKey();
+      if (stored) keyField.value = stored;
+    }
+    const dev = !!user?.developer;
+    $("settings-tab-developer").hidden = !dev;
+    if (!dev && active === "developer") selectTab("main");
+    if (!user) return;
+    loadProviderCatalog();
+    if (Date.now() - lastRefresh < 12000) return;
+    lastRefresh = Date.now();
+    const token = epoch;
+    await Promise.all([
+      ctx
+        .api("/api/user-api")
+        .then((v) => {
+          if (token !== epoch) return;
+          showApi(v);
+          if (!v.connected && !v.unavailable && id)
+            void autoRestoreConnection(id);
+        })
+        .catch((e) => {
+          if (token === epoch) $("personalApiStatus").textContent = e.message;
+        }),
+      usage(),
+      dev ? admin() : Promise.resolve(),
+    ]);
+  }
+  async function siteState() {
+    try {
+      const response = await fetch("/api/site-state", { cache: "no-store" });
+      if (!response.ok) return;
+      const value = await response.json(),
+        user = ctx.user(),
+        closed = (value.disabled || value.maintenance) && !user?.developer;
+      let box = $("siteControlScreen");
+      if (!box) {
+        box = node("section");
+        box.id = "siteControlScreen";
+        box.setAttribute("role", "alert");
+        box.hidden = true;
+        const icon = node("span");
+        icon.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v6"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/></svg>';
+        box.append(
+          icon,
+          node("h1"),
+          button(tr("Вход разработчика", "Developer sign-in"), () => {
+            box.hidden = true;
+            box.dataset.login = "true";
+          }),
+        );
+        document.body.append(box);
+      }
+      if (!closed) {
+        box.hidden = true;
+        delete box.dataset.login;
+        return;
+      }
+      box.querySelector("h1").textContent = value.disabled
+        ? tr(
+            "Внимание! На данный момент сайт отключен. Попробуйте посетить нас позднее!",
+            "Attention! The site is currently disabled. Please try again later!",
+          )
+        : tr(
+            "Извините, сейчас этот сервис недоступен. На сайте ведутся технические работы!",
+            "Sorry, this service is unavailable during maintenance.",
+          );
+      box.querySelector("button").hidden = !!user;
+      if (box.dataset.login !== "true" || user) box.hidden = false;
+    } catch {}
+  }
+  function init(options) {
+    ctx = options;
+    setup();
+    window.addEventListener("pongy-session-ready", () => {
+      void refresh();
+    });
+    siteState();
+    setInterval(siteState, 30000);
+    let last = "";
+    statusTimer = setInterval(() => {
+      const id = ctx.user()?.email || "";
+      if (id !== last) {
+        last = id;
+        refresh();
+      }
+      if ($("settingsModal").classList.contains("open")) usage();
+    }, 15000);
+    refresh();
+  }
+  // Watchdog: re-check the personal API while the session is live. A silent server-side loss
+  // (redeploy with a stable encryption secret) can be repaired from a validated browser copy.
+  setInterval(function () {
+    if (!ctx || !ctx.ready() || restoreBusy) return;
+    var id = ctx.account();
+    if (!id) return;
+    ctx
+      .api("/api/user-api")
+      .then(function (v) {
+        if (v && v.connected !== true && !v.unavailable && ctx.account() === id)
+          autoRestoreConnection(id);
+      })
+      .catch(function () {});
+  }, 120000);
+  root.addEventListener("pongy-answer-settled",()=>{if($("settingsModal").classList.contains("open"))void usage();});
+  root.addEventListener("pongy-products-updated",()=>{if($("settingsModal").classList.contains("open"))void usage();});
+  root.PongySettings = {
+    init,
+    refresh,
+    refreshUsage: usage,
+    checkSite: siteState,
+    syncPreferences() {
+      if (!ctx) return;
+      $("betaFunctions").checked = ctx.beta();
+      syncBetaTab();
+      $("voiceGender").value = ctx.voiceGender();
+    },
+    syncVoiceGender() {
+      if (ctx) $("voiceGender").value = ctx.voiceGender();
+    },
+    reset() {
+      if (!ctx) return;
+      account = "";
+      ["mcpEndpoint","mcpSecret"].forEach(id=>{if($(id))$(id).value="";});
+      ["apiKeyValue","apiKeyEndpoint","mcpConfig"].forEach(id=>{if($(id))$(id).textContent="";});
+      ["apiKeyCopy","mcpCopyConfig"].forEach(id=>{if($(id))$(id).hidden=true;});
+      epoch++;
+      apiRevision++;
+      apiDirty = false;
+      modelsRequest++;
+      autoRestored = 0;
+      clearApiModels();
+      $("personalApiProvider").replaceChildren();
+      delete $("personalApiProvider").dataset.loaded;
+      delete $("personalApiProvider").dataset.loading;
+      $("personalApiKey").value = "";
+      $("personalApiConsent").checked = false;
+      $("adminReports").textContent = "";
+      $("adminBlacklist").textContent = "";
+      $("adminBlockEmail").value = "";
+      $("settings-tab-developer").hidden = true;
+      selectTab("main");
+      lock(false);
+      $("personalApiSave").hidden = false;
+      $("personalApiRemove").hidden = true;
+      $("personalApiStatus").textContent = "";
+      $("personalApiKey").placeholder = tr("API-ключ", "API key");
+      $("personalApiKey").dataset.saved = "false";
+      hideApiKey();
+    },
+  };
 })(window);

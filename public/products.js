@@ -1,19 +1,470 @@
-(function(){'use strict';const $=id=>document.getElementById(id),ru=()=>document.documentElement.lang==='ru',tr=(r,e)=>ru()?r:e;let busy=false,poll=null,current=null,account='',alive=true;
-function el(tag,text,cls){const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;}
-const api=(p,o)=>window.PongyAppSession.request(p,o);
-const dialog=el('dialog',null,'product-dialog');dialog.id='smartPCDialog';dialog.setAttribute('aria-labelledby','smartPCTitle');const head=el('header'),title=el('h2');title.id='smartPCTitle';const close=el('button','×','icon-btn');close.type='button';close.onclick=()=>dialog.close();head.append(title,close);const description=el('p'),benefits=el('ul'),price=el('strong'),status=el('p'),buy=el('button',null,'settings-action primary'),launch=el('button',null,'settings-action');buy.type=launch.type='button';status.setAttribute('role','status');dialog.append(head,description,benefits,price,status,buy,launch);document.body.append(dialog);
-const btn=el('button',null,'icon-btn smart-pc-top');btn.id='smartPCButton';btn.hidden=true;btn.innerHTML='<svg viewBox="0 0 32 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><defs><radialGradient id="pcIconGradient" cx="25%" cy="20%" r="90%"><stop offset="0" stop-color="#b0f1eb"/><stop offset=".5" stop-color="#a18cef"/><stop offset="1" stop-color="#7152c1"/></radialGradient></defs><rect x="1.5" y="3" width="21" height="14" rx="3"/><path d="M8 21h9m-4.5-4v4"/><circle cx="25" cy="8" r="5" fill="url(#pcIconGradient)" stroke="none"/></svg><span></span>';const parent=$('shareBtn')?.parentElement;if(parent)parent.append(btn);
-function labels(){title.textContent=tr('Умный ПК','Smart PC');btn.title=title.textContent;btn.querySelector('span').textContent=title.textContent;close.setAttribute('aria-label',tr('Закрыть','Close'));description.textContent=tr('Компактный помощник в трее Windows. Активируйте его нажатием или голосом. Доступ оформляется на месяц, без автоматического списания.','A compact Windows tray assistant. Activate it with a click or your voice. Access lasts one month, with no automatic charge.');benefits.replaceChildren(...[tr('Открытие приложений и YouTube','Open apps and YouTube'),tr('Изменение звука и яркости поддерживаемого экрана','Adjust sound and supported display brightness'),tr('Разрешение на управление, проверка подписки и быстрая остановка','Control permission, subscription checks and an emergency stop')].map(t=>el('li',t)));buy.textContent=tr('Подключить','Subscribe');launch.textContent=tr('Открыть помощника','Open assistant');}
-function native(){return window.PongyNative?.platform==='windows';}
-async function refresh(){const user=window.PongyAppSession?.user();const next=user?.email||'';if(next!==account){account=next;clearInterval(poll);poll=null;current=null;status.textContent='';}btn.hidden=!user;if(!user){if(dialog.open)dialog.close();return;}const data=await api('/api/products');if(!alive||account!==next)return;const changed=!current||current.plus.until!==data.plus.until||current.smart_pc.until!==data.smart_pc.until;current=data;$('productAccessStatus')?.remove();if(changed)void window.PongyAppSession.refreshProducts?.(data).catch(()=>{});const renewal=data.plus.active&&data.plus.until-data.serverTime<=3*86400000;document.querySelectorAll('#sidebarPlus,.plus-action,#upgradeBtn').forEach(b=>{b.hidden=data.plus.active&&!renewal;if(b.id==='sidebarPlus'){b.textContent=renewal?tr('Продлить','Renew'):'Plus';}else if(b.matches('.plus-action'))b.textContent=renewal?tr('Продлить','Renew'):'Plus';});const active=data.smart_pc.active;launch.hidden=!active||!native();buy.hidden=active;description.textContent=native()?description.textContent:tr('Умный ПК работает в Windows-приложении Pongy. Подключите доступ на месяц и установите актуальную сборку.','Smart PC works in the Pongy Windows app. Subscribe for one month and install the current build.');status.textContent=active?tr('Доступ до ','Access until ')+new Date(data.smart_pc.until).toLocaleString(ru()?'ru-RU':'en-US'):'';}
-async function open(){labels();if(!dialog.open)dialog.showModal();status.textContent=tr('Загрузка…','Loading…');try{await refresh();const catalog=await api('/api/billing/catalog?locale='+(ru()?'ru':'en')),q=catalog.smart_pc;price.textContent=q.minor==null?tr('Цена в долларах пока недоступна','USD price is not available yet'):new Intl.NumberFormat(ru()?'ru-RU':'en-US',{style:'currency',currency:q.currency}).format(q.minor/100)+tr(' / месяц',' / month');buy.disabled=!q.configured;if(!q.configured&&!current?.smart_pc.active)status.textContent=tr('Приём оплаты пока не настроен. Доступ может выдать разработчик.','Payments are not configured yet. A developer can grant access.');}catch(e){status.textContent=e.message;buy.disabled=true;}}
-btn.onclick=open;launch.onclick=()=>{if(window.PongyDesktop?.openSmartPC)window.PongyDesktop.openSmartPC();else status.textContent=tr('Нужна новая Windows-сборка приложения.','An updated Windows build is required.');};
-buy.onclick=async()=>{if(busy)return;busy=true;buy.disabled=true;try{const order=await api('/api/billing/orders',{method:'POST',body:{product:'smart_pc',locale:ru()?'ru':'en'}});if(window.PongyDesktop?.openCheckout){window.PongyDesktop.openCheckout(order.url);}else{location.assign(order.url);return;}status.textContent=tr('Ожидаем подтверждение оплаты…','Waiting for payment confirmation…');clearInterval(poll);let checking=false;poll=setInterval(async()=>{if(checking)return;checking=true;try{const result=await api('/api/billing/orders/'+order.id);if(result.status==='paid'){clearInterval(poll);poll=null;await refresh();}else if(['failed','canceled'].includes(result.status)){clearInterval(poll);poll=null;status.textContent=tr('Оплата не завершена.','Payment was not completed.');buy.disabled=false;}}catch(e){status.textContent=e.message;}finally{checking=false;}},5000);}catch(e){status.textContent=e.message;}finally{busy=false;buy.disabled=false;}};
-function mountGrant(){const host=$('settings-panel-developer');if(!host||$('productGrantButton'))return;const trigger=el('button',null,'settings-action');trigger.id='productGrantButton';const d=el('dialog',null,'product-dialog');d.id='productGrantDialog';const h=el('h2'),header=el('header'),close=el('button','×','icon-btn'),form=el('form');h.id='productGrantTitle';d.setAttribute('aria-labelledby',h.id);close.type='button';close.setAttribute('aria-label',tr('Закрыть','Close'));close.onclick=()=>d.close();header.append(h,close);form.onsubmit=e=>e.preventDefault();const product=el('select'),email=el('input'),term=el('select'),until=el('input'),result=el('p'),grant=el('button'),revoke=el('button'),lookup=el('button'),cancel=el('button');product.id='grantProduct';email.id='grantEmail';term.id='grantTerm';until.id='grantUntil';grant.id='grantSubmit';revoke.id='grantRevoke';lookup.id='grantLookup';email.type='email';email.required=true;email.autocomplete='email';until.type='datetime-local';until.step='1';until.hidden=true;for(const [value,text] of [['plus','Plus'],['smart_pc','Smart PC']]){const o=el('option',text);o.value=value;product.append(o);}for(const [value,r,e] of [['7d','7 дней','7 days'],['1m','Месяц','One month'],['3m','3 месяца','3 months'],['1y','Год','One year'],['custom','Своя дата','Custom date']]){const o=el('option',tr(r,e));o.value=value;term.append(o);}term.value='1m';term.onchange=()=>{until.hidden=term.value!=='custom';until.required=!until.hidden;if(until.parentElement?.tagName==='LABEL')until.parentElement.hidden=until.hidden;};
- function field(name,node){const l=el('label',name,'settings-field');l.append(node);return l;}result.id='grantResult';result.setAttribute('role','status');[grant,revoke,lookup,cancel].forEach(b=>{b.type='button';b.className='settings-action';});grant.classList.add('primary');revoke.classList.add('danger');
- function text(){close.setAttribute('aria-label',tr('Закрыть','Close'));for(const [control,r,e] of [[product,'Продукт','Product'],[email,'Почта получателя','Recipient email'],[term,'Срок','Term'],[until,'До даты','Until']]){const l=control.parentElement;if(l?.tagName==='LABEL'&&l.firstChild?.nodeType===3)l.firstChild.nodeValue=tr(r,e);}const names=[['7 дней','7 days'],['Месяц','One month'],['3 месяца','3 months'],['Год','One year'],['Своя дата','Custom date']];[...term.options].forEach((o,i)=>o.textContent=tr(...names[i]));product.options[1].textContent=tr('Умный ПК','Smart PC');trigger.textContent=h.textContent=tr('Выдача продукта','Grant product');grant.textContent=tr('Выдать','Grant');revoke.textContent=tr('Отменить доступ','Revoke access');lookup.textContent=tr('Проверить доступ','Check access');cancel.textContent=tr('Закрыть','Close');}
- async function run(action){const requester=window.PongyAppSession.user()?.email;if(!email.reportValidity()||!email.value.trim())return;if(action==='grant'&&term.value==='custom'&&!until.reportValidity())return;if(action==='revoke'&&!window.confirm(tr('Отменить доступ к выбранному продукту для ','Revoke the selected product for ')+email.value+'?'))return;const controls=[grant,revoke,lookup,product,email,term,until];controls.forEach(b=>b.disabled=true);form.setAttribute('aria-busy','true');try{const payload={email:email.value.trim(),product:product.value,term:term.value,action};if(term.value==='custom'&&until.value)payload.until=new Date(until.value).toISOString();const data=action==='lookup'?await api('/api/admin/products?email='+encodeURIComponent(email.value.trim())):await api('/api/admin/products',{method:'POST',body:payload});if(requester!==window.PongyAppSession.user()?.email)return;const p=data[product.value];result.textContent=(p.active?tr('Активно до ','Active until ')+new Date(p.until).toLocaleString():tr('Доступ не активен','Access is inactive'));}catch(e){result.textContent=e.message;}finally{controls.forEach(b=>b.disabled=false);form.setAttribute('aria-busy','false');}}
- grant.onclick=()=>run('grant');revoke.onclick=()=>run('revoke');lookup.onclick=()=>run('lookup');cancel.onclick=()=>d.close();trigger.onclick=()=>{text();result.textContent='';if(d.open)d.close();d.showModal();email.focus({preventScroll:true});};d.addEventListener('close',()=>{if(trigger.isConnected&&window.PongyAppSession.user()?.developer)trigger.focus({preventScroll:true});});form.append(field(tr('Продукт','Product'),product),field(tr('Почта получателя','Recipient email'),email),field(tr('Срок','Term'),term),field(tr('До даты','Until'),until),result,lookup,grant,revoke,cancel);if(until.parentElement)until.parentElement.hidden=true;d.append(header,form);document.body.append(d);host.append(trigger);text();new MutationObserver(text).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
-window.chrome?.webview?.addEventListener('message',e=>{if(e.data?.type==='smart-panel'){window.PongySmartPanelOpen=e.data.open===true;if(window.PongySmartPanelOpen)window.PongyAppSession.suspendVoice?.();}});
-window.PongyProducts={open,refresh,reset(){clearInterval(poll);poll=null;if(dialog.open)dialog.close();const d=$('productGrantDialog');if(d?.open)d.close();if($('grantEmail'))$('grantEmail').value='';if($('grantResult'))$('grantResult').textContent='';if($('productAccessStatus')){$('productAccessStatus').textContent='';$('productAccessStatus').hidden=true;}account='';current=null;btn.hidden=true;}};labels();mountGrant();void refresh().catch(()=>{});const timer=setInterval(()=>{void refresh().catch(()=>{});mountGrant();},15000);new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.addEventListener('pongy-native-ready',()=>{void refresh().catch(()=>{});});window.addEventListener('pagehide',()=>{alive=false;clearInterval(timer);clearInterval(poll);});
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id),
+    ru = () => document.documentElement.lang === "ru",
+    tr = (r, e) => (ru() ? r : e);
+  let busy = false,
+    poll = null,
+    current = null,
+    account = "",
+    alive = true;
+  function el(tag, text, cls) {
+    const n = document.createElement(tag);
+    if (text) n.textContent = text;
+    if (cls) n.className = cls;
+    return n;
+  }
+  const api = (p, o) => window.PongyAppSession.request(p, o);
+  const dialog = el("dialog", null, "product-dialog");
+  dialog.id = "smartPCDialog";
+  dialog.setAttribute("aria-labelledby", "smartPCTitle");
+  const head = el("header"),
+    title = el("h2");
+  title.id = "smartPCTitle";
+  const close = el("button", "×", "icon-btn");
+  close.type = "button";
+  close.onclick = () => dialog.close();
+  head.append(title, close);
+  const description = el("p"),
+    benefits = el("ul"),
+    price = el("strong"),
+    status = el("p"),
+    buy = el("button", null, "settings-action primary"),
+    launch = el("button", null, "settings-action");
+  buy.type = launch.type = "button";
+  status.setAttribute("role", "status");
+  dialog.append(head, description, benefits, status, buy, launch);
+  document.body.append(dialog);
+  const btn = el("button", null, "icon-btn smart-pc-top");
+  btn.id = "smartPCButton";
+  btn.hidden = true;
+  btn.innerHTML =
+    '<svg viewBox="0 0 32 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><defs><radialGradient id="pcIconGradient" cx="25%" cy="20%" r="90%"><stop offset="0" stop-color="#b0f1eb"/><stop offset=".5" stop-color="#a18cef"/><stop offset="1" stop-color="#7152c1"/></radialGradient></defs><rect x="1.5" y="3" width="21" height="14" rx="3"/><path d="M8 21h9m-4.5-4v4"/><circle cx="25" cy="8" r="5" fill="url(#pcIconGradient)" stroke="none"/></svg><span></span>';
+  const parent = $("shareBtn")?.parentElement;
+  if (parent) parent.insertBefore(btn, parent.children[2] || null);
+  let refreshSerial=0,watchController=null,watchAccount="",watchRevision="";
+  function stopWatch(){watchAccount="";watchController?.abort();watchController=null;}
+  async function watchProducts(){const email=window.PongyAppSession?.user()?.email;if(!email||watchAccount===email||!alive)return;stopWatch();watchAccount=email;const controller=new AbortController();watchController=controller;while(alive&&!controller.signal.aborted&&watchAccount===email&&window.PongyAppSession?.user()?.email===email){try{const data=await api("/api/products/watch?revision="+encodeURIComponent(watchRevision),{signal:controller.signal});if(controller.signal.aborted||window.PongyAppSession?.user()?.email!==email)break;watchRevision=data.revision||"";await refresh();window.dispatchEvent(new CustomEvent("pongy-products-updated"));}catch(error){if(controller.signal.aborted)break;if(error.status===401||error.code==="ACCOUNT_CHANGED")break;await new Promise(resolve=>setTimeout(resolve,5000));}}if(watchController===controller){watchController=null;watchAccount="";}}
+  window.addEventListener("pongy-session-ready",()=>{stopWatch();watchRevision="";void refresh().then(watchProducts).catch(()=>{});});
+  window.addEventListener("pagehide",stopWatch);
+  window.addEventListener("pageshow",()=>{alive=true;void watchProducts();});
+  function labels() {
+    title.textContent = tr("Умный ПК", "Smart PC");
+    btn.title = title.textContent;
+    btn.querySelector("span").textContent = title.textContent;
+    close.setAttribute("aria-label", tr("Закрыть", "Close"));
+    description.textContent = tr(
+      "Компактный помощник в трее Windows. Активируйте его нажатием или голосом. Доступ оформляется на месяц, без автоматического списания.",
+      "A compact Windows tray assistant. Activate it with a click or your voice. Access lasts one month, with no automatic charge.",
+    );
+    benefits.replaceChildren(
+      ...[
+        tr("Открытие приложений и YouTube", "Open apps and YouTube"),
+        tr(
+          "Изменение звука и яркости поддерживаемого экрана",
+          "Adjust sound and supported display brightness",
+        ),
+        tr(
+          "Разрешение на управление, проверка подписки и быстрая остановка",
+          "Control permission, subscription checks and an emergency stop",
+        ),
+      ].map((t) => el("li", t)),
+    );
+    buy.textContent = tr("Перейти к оплате", "Continue to checkout");
+    launch.textContent = tr("Открыть помощника", "Open assistant");
+  }
+  function native() {
+    return window.PongyNative?.platform === "windows";
+  }
+  async function refresh() {
+    const user = window.PongyAppSession?.user();
+    const next = user?.email || "";
+    if (next !== account) {
+      account = next;
+      clearInterval(poll);
+      poll = null;
+      current = null;
+      status.textContent = "";
+    }
+    btn.hidden = !user;
+    if (!user) {
+      if (dialog.open) dialog.close();
+      return;
+    }
+    const requestId=++refreshSerial;
+    const data = await api("/api/products");
+    if (requestId!==refreshSerial || !alive || account !== next || window.PongyAppSession?.user()?.email !== next || data.email !== next) return;
+    const changed =
+      !current ||
+      current.plus.until !== data.plus.until ||
+      current.smart_pc.until !== data.smart_pc.until;
+    current = data;
+    if(data.revision)watchRevision=data.revision;
+    $("productAccessStatus")?.remove();
+    if (changed)
+      void window.PongyAppSession.refreshProducts?.(data).catch(() => {});
+    const renewal =
+      data.plus.active && data.plus.until - data.serverTime <= 3 * 86400000;
+    document
+      .querySelectorAll("#sidebarPlus,.plus-action,#upgradeBtn")
+      .forEach((b) => {
+        b.hidden = data.plus.active && !renewal;
+        if (b.id === "sidebarPlus") {
+          b.textContent = renewal ? tr("Продлить", "Renew") : "Plus";
+        } else if (b.matches(".plus-action"))
+          b.textContent = renewal ? tr("Продлить", "Renew") : "Plus";
+      });
+    const active = data.smart_pc.active;
+    launch.hidden = !active || !native();
+    buy.hidden = active;
+    description.textContent = native()
+      ? description.textContent
+      : tr(
+          "Умный ПК работает в Windows-приложении Pongy. Подключите доступ на месяц и установите актуальную сборку.",
+          "Smart PC works in the Pongy Windows app. Subscribe for one month and install the current build.",
+        );
+    status.textContent = active
+      ? tr("Доступ до ", "Access until ") +
+        new Date(data.smart_pc.until).toLocaleString(ru() ? "ru-RU" : "en-US")
+      : "";
+  }
+  async function open() {
+    labels();
+    if (!dialog.open) dialog.showModal();
+    status.textContent = tr("Загрузка…", "Loading…");
+    try {
+      await refresh();
+      const catalog = await api(
+          "/api/billing/catalog?locale=" + (ru() ? "ru" : "en"),
+        ),
+        q = catalog.smart_pc;
+      price.textContent =
+        q.minor == null
+          ? tr(
+              "Цена в долларах пока недоступна",
+              "USD price is not available yet",
+            )
+          : new Intl.NumberFormat(ru() ? "ru-RU" : "en-US", {
+              style: "currency",
+              currency: q.currency,
+            }).format(q.minor / 100) + tr(" / месяц", " / month");
+      buy.disabled = !q.configured;
+      if (!q.configured && !current?.smart_pc.active)
+        status.textContent = tr(
+          "Оплата временно недоступна — попробуйте позже",
+          "Checkout is temporarily unavailable — please try later",
+        );
+    } catch (e) {
+      status.textContent = tr("Не удалось открыть оплату — попробуйте ещё раз", "Could not open checkout — please try again");
+      buy.disabled = true;
+    }
+  }
+  void watchProducts();
+  btn.onclick = open;
+  launch.onclick = () => {
+    if (window.PongyDesktop?.openSmartPC) window.PongyDesktop.openSmartPC();
+    else
+      status.textContent = tr(
+        "Нужна новая Windows-сборка приложения.",
+        "An updated Windows build is required.",
+      );
+  };
+  buy.onclick = async () => {
+    if (busy) return;
+    busy = true;
+    buy.disabled = true;
+    try {
+      const order = await api("/api/billing/orders", {
+        method: "POST",
+        body: { product: "smart_pc", locale: ru() ? "ru" : "en" },
+      });
+      if (window.PongyDesktop?.openCheckout) {
+        window.PongyDesktop.openCheckout(order.url);
+      } else {
+        location.assign(order.url);
+        return;
+      }
+      status.textContent = tr(
+        "Ожидаем подтверждение оплаты…",
+        "Waiting for payment confirmation…",
+      );
+      clearInterval(poll);
+      let checking = false;
+      poll = setInterval(async () => {
+        if (checking) return;
+        checking = true;
+        try {
+          const result = await api("/api/billing/orders/" + order.id);
+          if (result.status === "paid") {
+            clearInterval(poll);
+            poll = null;
+            await refresh();
+          } else if (["failed", "canceled"].includes(result.status)) {
+            clearInterval(poll);
+            poll = null;
+            status.textContent = tr(
+              "Оплата не завершена.",
+              "Payment was not completed.",
+            );
+            buy.disabled = false;
+          }
+        } catch (e) {
+          status.textContent = e.message;
+        } finally {
+          checking = false;
+        }
+      }, 5000);
+    } catch (e) {
+      status.textContent = e.message;
+    } finally {
+      busy = false;
+      buy.disabled = false;
+    }
+  };
+  function mountGrant() {
+    const host = $("settings-panel-developer");
+    if (!host || $("productGrantButton")) return;
+    const trigger = el("button", null, "settings-action");
+    trigger.id = "productGrantButton";
+    const d = el("dialog", null, "product-dialog");
+    d.id = "productGrantDialog";
+    const h = el("h2"),
+      header = el("header"),
+      close = el("button", "×", "icon-btn"),
+      form = el("form");
+    h.id = "productGrantTitle";
+    d.setAttribute("aria-labelledby", h.id);
+    close.type = "button";
+    close.setAttribute("aria-label", tr("Закрыть", "Close"));
+    close.onclick = () => d.close();
+    header.append(h, close);
+    form.onsubmit = (e) => e.preventDefault();
+    const product = el("select"),
+      email = el("input"),
+      term = el("select"),
+      until = el("input"),
+      result = el("p"),
+      grant = el("button"),
+      revoke = el("button"),
+      lookup = el("button"),
+      cancel = el("button");
+    product.id = "grantProduct";
+    email.id = "grantEmail";
+    term.id = "grantTerm";
+    until.id = "grantUntil";
+    grant.id = "grantSubmit";
+    revoke.id = "grantRevoke";
+    lookup.id = "grantLookup";
+    email.type = "email";
+    email.required = true;
+    email.autocomplete = "email";
+    until.type = "datetime-local";
+    until.step = "1";
+    until.hidden = true;
+    for (const [value, text] of [
+      ["plus", "Plus"],
+      ["smart_pc", "Smart PC"],
+    ]) {
+      const o = el("option", text);
+      o.value = value;
+      product.append(o);
+    }
+    for (const [value, r, e] of [
+      ["7d", "7 дней", "7 days"],
+      ["1m", "Месяц", "One month"],
+      ["3m", "3 месяца", "3 months"],
+      ["1y", "Год", "One year"],
+      ["custom", "Своя дата", "Custom date"],
+    ]) {
+      const o = el("option", tr(r, e));
+      o.value = value;
+      term.append(o);
+    }
+    term.value = "1m";
+    term.onchange = () => {
+      until.hidden = term.value !== "custom";
+      until.required = !until.hidden;
+      if (until.parentElement?.tagName === "LABEL")
+        until.parentElement.hidden = until.hidden;
+    };
+    function field(name, node) {
+      const l = el("label", name, "settings-field");
+      l.append(node);
+      return l;
+    }
+    result.id = "grantResult";
+    result.setAttribute("role", "status");
+    [grant, revoke, lookup, cancel].forEach((b) => {
+      b.type = "button";
+      b.className = "settings-action";
+    });
+    grant.classList.add("primary");
+    revoke.classList.add("danger");
+    function text() {
+      close.setAttribute("aria-label", tr("Закрыть", "Close"));
+      for (const [control, r, e] of [
+        [product, "Продукт", "Product"],
+        [email, "Почта получателя", "Recipient email"],
+        [term, "Срок", "Term"],
+        [until, "До даты", "Until"],
+      ]) {
+        const l = control.parentElement;
+        if (l?.tagName === "LABEL" && l.firstChild?.nodeType === 3)
+          l.firstChild.nodeValue = tr(r, e);
+      }
+      const names = [
+        ["7 дней", "7 days"],
+        ["Месяц", "One month"],
+        ["3 месяца", "3 months"],
+        ["Год", "One year"],
+        ["Своя дата", "Custom date"],
+      ];
+      [...term.options].forEach((o, i) => (o.textContent = tr(...names[i])));
+      product.options[1].textContent = tr("Умный ПК", "Smart PC");
+      trigger.textContent = h.textContent = tr(
+        "Выдача продукта",
+        "Grant product",
+      );
+      grant.textContent = tr("Выдать", "Grant");
+      revoke.textContent = tr("Отменить доступ", "Revoke access");
+      lookup.textContent = tr("Проверить доступ", "Check access");
+      cancel.textContent = tr("Закрыть", "Close");
+    }
+    async function run(action) {
+      const requester = window.PongyAppSession.user()?.email;
+      if (!email.reportValidity() || !email.value.trim()) return;
+      if (
+        action === "grant" &&
+        term.value === "custom" &&
+        !until.reportValidity()
+      )
+        return;
+      if (
+        action === "revoke" &&
+        !window.confirm(
+          tr(
+            "Отменить доступ к выбранному продукту для ",
+            "Revoke the selected product for ",
+          ) +
+            email.value +
+            "?",
+        )
+      )
+        return;
+      const controls = [grant, revoke, lookup, product, email, term, until];
+      controls.forEach((b) => (b.disabled = true));
+      form.setAttribute("aria-busy", "true");
+      try {
+        const payload = {
+          email: email.value.trim(),
+          product: product.value,
+          term: term.value,
+          action,
+        };
+        if (term.value === "custom" && until.value)
+          payload.until = new Date(until.value).toISOString();
+        const data =
+          action === "lookup"
+            ? await api(
+                "/api/admin/products?email=" +
+                  encodeURIComponent(email.value.trim()),
+              )
+            : await api("/api/admin/products", {
+                method: "POST",
+                body: payload,
+              });
+        if (requester !== window.PongyAppSession.user()?.email) return;
+        const p = data[product.value];
+        result.textContent = p.active
+          ? tr("Активно до ", "Active until ") +
+            new Date(p.until).toLocaleString()
+          : tr("Доступ не активен", "Access is inactive");
+      } catch (e) {
+        result.textContent = e.message;
+      } finally {
+        controls.forEach((b) => (b.disabled = false));
+        form.setAttribute("aria-busy", "false");
+      }
+    }
+    grant.onclick = () => run("grant");
+    revoke.onclick = () => run("revoke");
+    lookup.onclick = () => run("lookup");
+    cancel.onclick = () => d.close();
+    trigger.onclick = () => {
+      text();
+      result.textContent = "";
+      if (d.open) d.close();
+      d.showModal();
+      email.focus({ preventScroll: true });
+    };
+    d.addEventListener("close", () => {
+      if (trigger.isConnected && window.PongyAppSession.user()?.developer)
+        trigger.focus({ preventScroll: true });
+    });
+    form.append(
+      field(tr("Продукт", "Product"), product),
+      field(tr("Почта получателя", "Recipient email"), email),
+      field(tr("Срок", "Term"), term),
+      field(tr("До даты", "Until"), until),
+      result,
+      lookup,
+      grant,
+      revoke,
+      cancel,
+    );
+    if (until.parentElement) until.parentElement.hidden = true;
+    d.append(header, form);
+    document.body.append(d);
+    host.append(trigger);
+    text();
+    new MutationObserver(text).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["lang"],
+    });
+  }
+  window.chrome?.webview?.addEventListener("message", (e) => {
+    if (e.data?.type === "smart-panel") {
+      window.PongySmartPanelOpen = e.data.open === true;
+      if (window.PongySmartPanelOpen) window.PongyAppSession.suspendVoice?.();
+    }
+  });
+  window.PongyProducts = {
+    open,
+    refresh,
+    reset() {
+      clearInterval(poll);
+      poll = null;
+      if (dialog.open) dialog.close();
+      const d = $("productGrantDialog");
+      if (d?.open) d.close();
+      if ($("grantEmail")) $("grantEmail").value = "";
+      if ($("grantResult")) $("grantResult").textContent = "";
+      if ($("productAccessStatus")) {
+        $("productAccessStatus").textContent = "";
+        $("productAccessStatus").hidden = true;
+      }
+      account = "";
+      current = null;
+      btn.hidden = true;
+    },
+  };
+  labels();
+  mountGrant();
+  void refresh().catch(() => {});
+  const timer = setInterval(() => {
+    void refresh().catch(() => {});
+    mountGrant();
+  }, 15000);
+  new MutationObserver(labels).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["lang"],
+  });
+  window.addEventListener("pongy-native-ready", () => {
+    void refresh().catch(() => {});
+  });
+  window.addEventListener("pagehide", () => {
+    alive = false;
+    clearInterval(timer);
+    clearInterval(poll);
+  });
 })();
