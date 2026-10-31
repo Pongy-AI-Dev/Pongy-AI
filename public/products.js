@@ -38,24 +38,23 @@
   const btn = el("button", null, "icon-btn smart-pc-top");
   btn.id = "smartPCButton";
   btn.hidden = true;
-  btn.innerHTML =
-    '<svg viewBox="0 0 32 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><defs><radialGradient id="pcIconGradient" cx="25%" cy="20%" r="90%"><stop offset="0" stop-color="#b0f1eb"/><stop offset=".5" stop-color="#a18cef"/><stop offset="1" stop-color="#7152c1"/></radialGradient></defs><rect x="1.5" y="3" width="21" height="14" rx="3"/><path d="M8 21h9m-4.5-4v4"/><circle cx="25" cy="8" r="5" fill="url(#pcIconGradient)" stroke="none"/></svg><span></span>';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/><circle cx="18.5" cy="5.5" r="3" fill="var(--accent)" stroke="var(--bg2)"/></svg><span></span>';
   const parent = $("shareBtn")?.parentElement;
   if (parent) parent.insertBefore(btn, parent.children[2] || null);
   let refreshSerial=0,watchController=null,watchAccount="",watchRevision="";
   function stopWatch(){watchAccount="";watchController?.abort();watchController=null;}
-  async function watchProducts(){const email=window.PongyAppSession?.user()?.email;if(!email||watchAccount===email||!alive)return;stopWatch();watchAccount=email;const controller=new AbortController();watchController=controller;while(alive&&!controller.signal.aborted&&watchAccount===email&&window.PongyAppSession?.user()?.email===email){try{const data=await api("/api/products/watch?revision="+encodeURIComponent(watchRevision),{signal:controller.signal});if(controller.signal.aborted||window.PongyAppSession?.user()?.email!==email)break;watchRevision=data.revision||"";await refresh();window.dispatchEvent(new CustomEvent("pongy-products-updated"));}catch(error){if(controller.signal.aborted)break;if(error.status===401||error.code==="ACCOUNT_CHANGED")break;await new Promise(resolve=>setTimeout(resolve,5000));}}if(watchController===controller){watchController=null;watchAccount="";}}
+  async function watchProducts(){const email=window.PongyAppSession?.user()?.email;if(!email||watchAccount===email||!alive)return;stopWatch();watchAccount=email;const controller=new AbortController();watchController=controller;while(alive&&!controller.signal.aborted&&watchAccount===email&&window.PongyAppSession?.user()?.email===email){try{const data=await api("/api/products/watch?revision="+encodeURIComponent(watchRevision),{signal:controller.signal});if(controller.signal.aborted||window.PongyAppSession?.user()?.email!==email)break;const previous=watchRevision;watchRevision=data.revision||"";applyProductData(data,email,++refreshSerial);if(previous!==watchRevision)window.dispatchEvent(new CustomEvent("pongy-products-updated"));}catch(error){if(controller.signal.aborted)break;if(error.status===401||error.code==="ACCOUNT_CHANGED")break;await new Promise(resolve=>setTimeout(resolve,5000));}}if(watchController===controller){watchController=null;watchAccount="";}}
   window.addEventListener("pongy-session-ready",()=>{stopWatch();watchRevision="";void refresh().then(watchProducts).catch(()=>{});});
   window.addEventListener("pagehide",stopWatch);
   window.addEventListener("pageshow",()=>{alive=true;void watchProducts();});
   function labels() {
-    title.textContent = tr("Умный ПК", "Smart PC");
+    title.textContent = tr("Умный дом", "Smart Home");
     btn.title = title.textContent;
     btn.querySelector("span").textContent = title.textContent;
     close.setAttribute("aria-label", tr("Закрыть", "Close"));
     description.textContent = tr(
-      "Компактный помощник в трее Windows. Активируйте его нажатием или голосом. Доступ оформляется на месяц, без автоматического списания.",
-      "A compact Windows tray assistant. Activate it with a click or your voice. Access lasts one month, with no automatic charge.",
+      "Сейчас здесь доступен помощник для компьютера Windows — «Умный ПК». Управление домашними устройствами пока не подключено. Оплата ниже относится только к помощнику ПК.",
+      "Currently available here: the Windows computer assistant, Smart PC. Home-device control is not connected. Checkout below is for the PC assistant only.",
     );
     benefits.replaceChildren(
       ...[
@@ -70,7 +69,7 @@
         ),
       ].map((t) => el("li", t)),
     );
-    buy.textContent = tr("Перейти к оплате", "Continue to checkout");
+    buy.textContent = tr("Подключить Умный ПК", "Get Smart PC");
     launch.textContent = tr("Открыть помощника", "Open assistant");
   }
   function native() {
@@ -93,6 +92,9 @@
     }
     const requestId=++refreshSerial;
     const data = await api("/api/products");
+    applyProductData(data,next,requestId);
+  }
+  function applyProductData(data,next,requestId){
     if (requestId!==refreshSerial || !alive || account !== next || window.PongyAppSession?.user()?.email !== next || data.email !== next) return;
     const changed =
       !current ||
@@ -117,12 +119,6 @@
     const active = data.smart_pc.active;
     launch.hidden = !active || !native();
     buy.hidden = active;
-    description.textContent = native()
-      ? description.textContent
-      : tr(
-          "Умный ПК работает в Windows-приложении Pongy. Подключите доступ на месяц и установите актуальную сборку.",
-          "Smart PC works in the Pongy Windows app. Subscribe for one month and install the current build.",
-        );
     status.textContent = active
       ? tr("Доступ до ", "Access until ") +
         new Date(data.smart_pc.until).toLocaleString(ru() ? "ru-RU" : "en-US")

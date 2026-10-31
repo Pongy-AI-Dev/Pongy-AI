@@ -1,19 +1,15 @@
 {
-  "version": "0.29.0",
+  "version": "0.29.1",
   "ru": [
-    "Камера в режиме маскота: кадр отправляется вместе с вашим вопросом",
-    "Локальное распознавание речи в поддерживаемых аудио и видео",
-    "Выданная подписка и уведомление появляются без перезагрузки",
-    "Сохранение использования подключений, модели, мышления и уведомлений",
-    "Новые панели API/MCP, компактные ошибки и адаптивное оформление",
-    "Для сохранности серверной базы требуется постоянное хранилище"
+    "Подписки: внешнее серверное хранение после настройки Firestore",
+    "Камера: последовательная передача кадров, анализ при вопросе",
+    "Раздел «Умный дом»: доступные функции компьютера обозначены явно",
+    "Сборки Android и Windows: исправления версий и процесса обновления"
   ],
   "en": [
-    "Camera in mascot mode: a frame is sent with your question",
-    "Local speech transcription for supported audio and video",
-    "Subscription grants and notices update without reloading",
-    "Persistent connection application, model, reasoning and notification choices",
-    "Refined API/MCP panels, compact recovery cards and responsive layout",
-    "Durable server storage is required to retain the database"
+    "Subscriptions: external server storage after Firestore configuration",
+    "Camera: continuous sampled-frame feed, analyzed on a question",
+    "Smart Home section: available PC features explicitly identified",
+    "Android and Windows build version and update workflow fixes"
   ]
 }
