@@ -1,0 +1,49 @@
+name: Build Android update (original signing identity)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned SDK components
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Restore original signing identity
+        env:
+          SIGNING_P12: ${{ secrets.PONGY_ANDROID_P12_BASE64 }}
+          SIGNING_PASSWORD: ${{ secrets.PONGY_ANDROID_STORE_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$SIGNING_P12" ] || [ -z "$SIGNING_PASSWORD" ]; then
+            echo 'Original signing identity is required; configure the two Android signing secrets.' >&2
+            exit 1
+          fi
+          umask 077
+          mkdir -p "$RUNNER_TEMP/pongy-signing"
+          printf '%s' "$SIGNING_P12" | base64 --decode > "$RUNNER_TEMP/pongy-signing/release.p12"
+          printf '%s' "$SIGNING_PASSWORD" > "$RUNNER_TEMP/pongy-signing/password"
+      - name: Build and verify signed update
+        env:
+          PONGY_SIGNING_DIR: ${{ runner.temp }}/pongy-signing
+        run: |
+          bash native/android/build.sh
+          sha256sum public/downloads/Pongy-AI-0.29.1-android.apk > public/downloads/Pongy-AI-0.29.1-android.apk.sha256
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Pongy-AI-0.29.1-android-signed
+          if-no-files-found: error
+          path: |
+            public/downloads/Pongy-AI-0.29.1-android.apk
+            public/downloads/Pongy-AI-0.29.1-android.apk.sha256
+      - name: Remove signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/pongy-signing"
