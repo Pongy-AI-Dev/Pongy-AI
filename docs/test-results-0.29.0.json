@@ -1,0 +1,521 @@
+{
+  "version": "0.29.0",
+  "environment": {
+    "os": "Linux",
+    "node": "24.22.1",
+    "browser": "Chromium, local executable via Playwright"
+  },
+  "unit": {
+    "passed": 780,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "uniqueSuites": 64,
+    "latestPassed": 64,
+    "initialPassed": 59,
+    "initialFailed": 5,
+    "initial": [
+      {
+        "suite": "tests/update-029-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 17697
+      },
+      {
+        "suite": "tests/legal-pages-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4278
+      },
+      {
+        "suite": "tests/update-028-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 9888
+      },
+      {
+        "suite": "tests/response-recovery-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6097
+      },
+      {
+        "suite": "tests/api-persistence-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14850
+      },
+      {
+        "suite": "tests/startup-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5156
+      },
+      {
+        "suite": "tests/products-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 16561
+      },
+      {
+        "suite": "tests/motion-style-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 8869
+      },
+      {
+        "suite": "tests/motion-video-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5840
+      },
+      {
+        "suite": "tests/speech-origin-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5214
+      },
+      {
+        "suite": "tests/capabilities-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5610
+      },
+      {
+        "suite": "tests/reliability-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 3901
+      },
+      {
+        "suite": "tests/skill-menu-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14028
+      },
+      {
+        "suite": "tests/extensions-ui.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "signal": null,
+        "durationMs": 12161
+      },
+      {
+        "suite": "tests/reminder-lifecycle-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7975
+      },
+      {
+        "suite": "tests/focus-download-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 8397
+      },
+      {
+        "suite": "tests/focus-extension-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 1340
+      },
+      {
+        "suite": "tests/voice-mode-ui.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "signal": null,
+        "durationMs": 8208
+      },
+      {
+        "suite": "tests/reminder-flow-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 18529
+      },
+      {
+        "suite": "tests/activity-wake-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 26124
+      },
+      {
+        "suite": "tests/connections-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 10316
+      },
+      {
+        "suite": "tests/wake-enrollment-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5806
+      },
+      {
+        "suite": "tests/preferences-persistence-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 10733
+      },
+      {
+        "suite": "tests/settings-navigation-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7407
+      },
+      {
+        "suite": "tests/update-0231-ui.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "signal": null,
+        "durationMs": 2852
+      },
+      {
+        "suite": "tests/update-023-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 17149
+      },
+      {
+        "suite": "tests/settings-tools-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 20612
+      },
+      {
+        "suite": "tests/display-settings-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 23612
+      },
+      {
+        "suite": "tests/notifications-offline-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7436
+      },
+      {
+        "suite": "tests/notifications-popover-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6146
+      },
+      {
+        "suite": "tests/attachments-layout-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4689
+      },
+      {
+        "suite": "tests/delivery-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6695
+      },
+      {
+        "suite": "tests/image-experience-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4721
+      },
+      {
+        "suite": "tests/ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 22745
+      },
+      {
+        "suite": "tests/firebase-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6695
+      },
+      {
+        "suite": "tests/tools-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 9294
+      },
+      {
+        "suite": "tests/i18n-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 13721
+      },
+      {
+        "suite": "tests/branding-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 11937
+      },
+      {
+        "suite": "tests/session-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 31148
+      },
+      {
+        "suite": "tests/auth-polish-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 10963
+      },
+      {
+        "suite": "tests/auth-verification-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4883
+      },
+      {
+        "suite": "tests/motion-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6322
+      },
+      {
+        "suite": "tests/workspace-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7066
+      },
+      {
+        "suite": "tests/stability-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6306
+      },
+      {
+        "suite": "tests/recovery-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14143
+      },
+      {
+        "suite": "tests/product-ui.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "signal": null,
+        "durationMs": 3760
+      },
+      {
+        "suite": "tests/chat-policy-ui.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "signal": null,
+        "durationMs": 7309
+      },
+      {
+        "suite": "tests/voice-scroll-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 9367
+      },
+      {
+        "suite": "tests/wake-word-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 33040
+      },
+      {
+        "suite": "tests/brand-time-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 8636
+      },
+      {
+        "suite": "tests/notes-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14337
+      },
+      {
+        "suite": "tests/workbench-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7690
+      },
+      {
+        "suite": "tests/app-downloads-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14114
+      },
+      {
+        "suite": "tests/upload-scroll-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4452
+      },
+      {
+        "suite": "tests/homework-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 3827
+      },
+      {
+        "suite": "tests/reminders-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 14094
+      },
+      {
+        "suite": "tests/mobile-reminders-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 9908
+      },
+      {
+        "suite": "tests/service-warnings-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 3260
+      },
+      {
+        "suite": "tests/security-beta-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5374
+      },
+      {
+        "suite": "tests/speech-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 22129
+      },
+      {
+        "suite": "tests/application-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 12154
+      },
+      {
+        "suite": "tests/documents-notes-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 5903
+      },
+      {
+        "suite": "tests/native-files-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 6415
+      },
+      {
+        "suite": "tests/installer-language-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 1387
+      }
+    ],
+    "reruns": [
+      {
+        "suite": "tests/extensions-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 16625
+      },
+      {
+        "suite": "tests/voice-mode-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 25937
+      },
+      {
+        "suite": "tests/update-0231-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 26400
+      },
+      {
+        "suite": "tests/product-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 23105
+      },
+      {
+        "suite": "tests/chat-policy-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 12078
+      },
+      {
+        "suite": "tests/update-029-ui.cjs",
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 16105
+      }
+    ]
+  },
+  "newCameraAsrAssertions": 19,
+  "limitations": [
+    "AI/provider and OAuth fixtures do not prove production provider availability",
+    "Camera/microphone virtual; Vosk WAV transcription real but imperfect",
+    "Firefox/WebKit and physical devices not tested",
+    "Native APK/MSI not rebuilt",
+    "SQLite restart test uses the same persistent file, not Render ephemeral storage"
+  ]
+}
