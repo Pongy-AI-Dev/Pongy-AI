@@ -2408,3 +2408,77 @@ html[data-theme="holiday"] .sb-title::after{content:" ✦";color:#a52e54;font-si
 .activity-card.work-plugin .activity-icon{color:color-mix(in srgb,var(--accent) 72%,#38a6a0)}
 .image-generation-pending{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--accent) 12%,var(--bg2)),var(--bg3) 72%);border:1px solid color-mix(in srgb,var(--accent) 20%,var(--border));}
 @media(prefers-reduced-motion:reduce){.code-card,.code-card button{transition:none!important}}
+
+/* Pongy settings refresh: reference-led navigation, spacing and readable controls */
+#settingsModal>.modal-box{
+  width:min(980px,calc(100vw - 40px));max-width:980px;height:min(760px,calc(100dvh - 48px));max-height:calc(100dvh - 48px);
+  display:grid;grid-template-columns:252px minmax(0,1fr);grid-template-rows:64px minmax(0,1fr);
+  border-radius:20px;overflow:hidden
+}
+#settingsModal>.modal-box>.modal-head{grid-column:1/-1;grid-row:1;min-height:64px;padding:0 24px;border-bottom:1px solid var(--border);background:var(--bg)}
+#settingsModal>.modal-box>.modal-head h2{font-size:19px;font-weight:700;letter-spacing:-.02em}
+#settingsModal>.modal-box>.settings-tabs-shell{grid-column:1;grid-row:2;display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0;min-height:0;padding:18px 12px;background:var(--bg2);border-right:1px solid var(--border);overflow:hidden}
+#settingsModal .settings-nav-search{flex:0 0 40px;width:100%;min-width:0;box-sizing:border-box;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px;outline:none}
+#settingsModal .settings-nav-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+#settingsModal .settings-tabs{position:relative;display:flex;flex:1 1 auto;flex-direction:column;align-items:stretch;gap:3px;width:100%;min-width:0;min-height:0;padding:0;margin:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--fg) 20%,transparent) transparent;border:0;background:transparent}
+#settingsModal .settings-tabs [role=tab]{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;gap:11px;width:100%;min-height:40px;padding:9px 11px;border:0;border-radius:9px;background:transparent;color:var(--fg2);font-size:13px;font-weight:550;line-height:1.3;text-align:left;white-space:normal;transition:background-color .16s ease,color .16s ease}
+#settingsModal .settings-tabs [role=tab]:hover{background:color-mix(in srgb,var(--fg) 6%,transparent);color:var(--fg)}
+#settingsModal .settings-tabs [role=tab][aria-selected=true]{background:color-mix(in srgb,var(--accent) 13%,var(--bg));color:var(--accent);font-weight:700}
+#settingsModal .settings-tabs [role=tab]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#settingsModal .settings-nav-icon{width:17px;height:17px;flex:0 0 17px;opacity:.9}
+#settingsModal .settings-tab-indicator,#settingsModal .settings-tabs-arrow{display:none!important}
+#settingsModal>.modal-box>.modal-body{grid-column:2;grid-row:2;min-width:0;min-height:0;max-height:none;height:auto;padding:26px 32px 30px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;background:var(--bg)}
+#settingsModal .settings-section{animation:settings-panel-enter .18s ease-out both}
+#settingsModal .settings-section>h3{margin:0 0 8px;font-size:21px;font-weight:750;letter-spacing:-.025em;color:var(--fg)}
+#settingsModal .settings-section .settings-hint{max-width:680px;font-size:13px;line-height:1.6}
+
+#settingsModal .settings-section .display-option,#settingsModal .settings-section .memory-setting{min-height:54px;padding:12px 14px;margin:8px 0;border:1px solid var(--border);border-radius:11px;background:color-mix(in srgb,var(--bg2) 42%,transparent);transition:border-color .16s ease,background-color .16s ease}
+#settingsModal .settings-section .display-option:hover,#settingsModal .settings-section .memory-setting:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:var(--bg2)}
+#settingsModal .settings-section input:not([type=checkbox]),#settingsModal .settings-section select,#settingsModal .settings-section textarea{border-radius:10px}
+#settingsModal .settings-section button{transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+#settingsModal .settings-section button:active:not(:disabled){transform:translateY(1px)}
+#settingsModal .settings-section button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#settingsModal .settings-section .field-save-row{display:flex;align-items:center;gap:8px}
+#settingsModal .settings-section .field-save{width:38px;height:38px;display:grid;place-items:center;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--accent)}
+#settingsModal .settings-section .field-save:hover{background:color-mix(in srgb,var(--accent) 12%,var(--bg2));border-color:var(--accent)}
+/* High-contrast foregrounds on filled action controls, across themes */
+#sendBtn.ready,.confirm-btn.primary,.download-primary,.settings-action.api-key-primary,#personalApiSave,#apiKeyCreate,.connection-primary,#noteAISend,.workspace-action.primary,.moderation-notice button,.direct-support-form button:last-child,.admin-action-warning{
+  color:#fff!important;text-shadow:0 1px 1px #0002
+}
+#sendBtn.ready:disabled,.confirm-btn.primary:disabled,.settings-action:disabled{opacity:.58}
+button{transition-property:background-color,color,border-color,box-shadow,transform;transition-duration:.16s;transition-timing-function:cubic-bezier(.2,.7,.2,1)}
+button:active:not(:disabled){transform:translateY(1px)}
+@keyframes settings-panel-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){
+  #settingsModal>.modal-box{width:calc(100vw - 20px);height:calc(100dvh - 20px);max-height:calc(100dvh - 20px);grid-template-columns:minmax(0,1fr);grid-template-rows:58px auto minmax(0,1fr);border-radius:16px}
+  #settingsModal>.modal-box>.modal-head{grid-column:1;grid-row:1;min-height:58px;padding:0 16px}
+  #settingsModal>.modal-box>.settings-tabs-shell{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;padding:10px 12px 8px;border-right:0;border-bottom:1px solid var(--border);overflow:hidden}
+  #settingsModal .settings-nav-search{flex-basis:36px}
+  #settingsModal .settings-tabs{flex:0 0 auto;flex-direction:row;gap:5px;overflow-x:auto;overflow-y:hidden;padding:0 0 4px;scrollbar-width:none}
+  #settingsModal .settings-tabs [role=tab]{width:auto;min-width:max-content;min-height:36px;padding:8px 11px;font-size:12px}
+  #settingsModal .settings-nav-icon{width:15px;height:15px;flex-basis:15px}
+  #settingsModal>.modal-box>.modal-body{grid-column:1;grid-row:3;padding:18px 16px 24px}
+}
+@media(prefers-reduced-motion:reduce){
+  #settingsModal .settings-section{animation:none!important}
+  #settingsModal .settings-tabs [role=tab],#settingsModal .settings-section .display-option{transition:none!important}
+}
+
+#settingsModal .settings-tabs [role=tab]::before{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;font-size:16px;line-height:1;color:currentColor;opacity:.86}
+#settings-tab-main::before{content:"⌂"}#settings-tab-account::before{content:"◉"}#settings-tab-interface::before{content:"◈"}#settings-tab-tools::before{content:"⌘"}#settings-tab-connections::before{content:"↔"}#settings-tab-plugins::before{content:"✣"}#settings-tab-skills::before{content:"✓"}#settings-tab-usage::before{content:"◴"}#settings-tab-subscription::before{content:"☆"}#settings-tab-beta::before{content:"✧"}#settings-tab-developer::before{content:"〈〉"}
+@media(max-width:700px){#settingsModal .settings-tabs [role=tab]::before{flex-basis:16px;width:16px;font-size:14px}}
+
+#settingsModal .settings-tabs [role=tab][hidden]{display:none!important}
+
+#settingsModal .settings-page-title{margin:0 0 6px;font-size:23px;font-weight:760;letter-spacing:-.035em;line-height:1.2;color:var(--fg)}
+#settingsModal .settings-page-description{margin:0 0 24px;max-width:680px;font-size:13px;line-height:1.55;color:var(--fg2)}
+@media(max-width:700px){#settingsModal .settings-page-title{font-size:20px}#settingsModal .settings-page-description{margin-bottom:18px}}
+
+#settingsModal .settings-section button.primary,#settingsModal .settings-section .primary,#settingsModal .settings-section [data-variant=primary]{color:#fff!important}
+#settingsModal .settings-section .field-save::before{content:"✓";font-size:17px;font-weight:800;line-height:1}
+#settingsModal .settings-section .field-save svg{display:none}
+#settingsModal #nickLabel::after{content:"✎";display:inline-block;margin-left:7px;color:var(--fg2);font-size:13px;font-weight:500}
+
+/* Keep the redesigned settings dialog proportional on tablet landscape breakpoints. */
+html[data-layout=mobile] #settingsModal>.modal-box{width:min(980px,calc(100vw - 40px));max-width:980px;height:min(760px,calc(100dvh - 48px));max-height:calc(100dvh - 48px)}
+@media(max-width:700px){html[data-layout=mobile] #settingsModal>.modal-box{width:calc(100vw - 20px);max-width:980px;height:calc(100dvh - 20px);max-height:calc(100dvh - 20px)}}

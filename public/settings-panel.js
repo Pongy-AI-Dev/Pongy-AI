@@ -425,6 +425,23 @@
     );
     strip.id = "settingsTabs";
     const shell = node("div", undefined, "settings-tabs-shell");
+    const search = node("input", undefined, "settings-nav-search");
+    search.type = "search";
+    const syncSearchLanguage = () => {
+      const russian = ctx.lang() === "ru";
+      search.placeholder = russian ? "Поиск в настройках" : "Search settings";
+      search.setAttribute("aria-label", russian ? "Поиск по разделам настроек" : "Search settings sections");
+    };
+    syncSearchLanguage();
+    new MutationObserver(syncSearchLanguage).observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "data-lang"] });
+    search.autocomplete = "off";
+    search.addEventListener("input", () => {
+      const query = search.value.trim().toLocaleLowerCase();
+      strip.querySelectorAll("[role=tab]").forEach((tab) => {
+        tab.hidden = !!query && !(tab.dataset.search || tab.textContent).toLocaleLowerCase().includes(query);
+      });
+      syncSettingsTabs(true);
+    });
     function arrow(dir) {
       const b = node(
         "button",
@@ -455,7 +472,7 @@
         });
       return b;
     }
-    shell.append(arrow(-1), strip, arrow(1));
+    shell.append(search, arrow(-1), strip, arrow(1));
     body.before(shell);
     strip.addEventListener("scroll", () => syncSettingsTabs(false), {
       passive: true,
@@ -501,8 +518,12 @@
       attributeFilter: ["class"],
     });
     Object.entries(tabs).forEach(([id, label]) => {
-      const b = button(tr(...label), () => selectTab(id));
+      const b = node("button", undefined, "settings-action");
+      b.type = "button";
+      b.onclick = () => selectTab(id);
+      b.append(node("span", tr(...label)));
       b.id = "settings-tab-" + id;
+      b.dataset.search = label.join(" ").toLocaleLowerCase();
       b.setAttribute("role", "tab");
       b.setAttribute("aria-controls", "settings-panel-" + id);
       b.tabIndex = id === "main" ? 0 : -1;
@@ -511,6 +532,20 @@
       panel.id = "settings-panel-" + id;
       panel.setAttribute("role", "tabpanel");
       panel.setAttribute("aria-labelledby", b.id);
+      const descriptions = {
+        main:["Основные параметры приложения и личные предпочтения","App defaults and personal preferences"],
+        account:["Профиль, безопасность и параметры аккаунта","Profile, security and account preferences"],
+        interface:["Язык, тема, отображение и голос","Language, theme, display and voice"],
+        tools:["Ключи API, совместимость и инструменты разработчика","API keys, compatibility and developer tools"],
+        connections:["Подключение внешних сервисов и аккаунтов","Connect external services and accounts"],
+        plugins:["Управление подключёнными расширениями","Manage connected extensions"],
+        skills:["Навыки и дополнительные возможности помощника","Assistant skills and capabilities"],
+        usage:["Состояние использования и доступные лимиты","Usage status and available limits"],
+        subscription:["Тариф, преимущества и состояние подписки","Plan, benefits and subscription status"],
+        beta:["Экспериментальные и новые функции","Experimental and upcoming features"],
+        developer:["Расширенные параметры и диагностика","Advanced settings and diagnostics"]
+      };
+      panel.append(node("h2",tr(...label),"settings-page-title"),node("p",tr(...descriptions[id]),"settings-page-description"));
       body.append(panel);
     });
     const betaPanel = $("settings-panel-beta");
@@ -531,7 +566,7 @@
     });
     strip.prepend(node("span", undefined, "settings-tab-indicator"));
     strip.onkeydown = (e) => {
-      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
       const list = [...strip.querySelectorAll("[role=tab]")].filter(
           (n) => !n.hidden,
         ),
@@ -541,7 +576,7 @@
             ? 0
             : e.key === "End"
               ? list.length - 1
-              : (idx + (e.key === "ArrowRight" ? 1 : -1) + list.length) %
+              : (idx + (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1) + list.length) %
                 list.length;
       e.preventDefault();
       list[next].click();

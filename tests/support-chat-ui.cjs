@@ -1,12 +1,13 @@
 'use strict';
-const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),net=require('node:net');
 const {launchBrowser}=require('./browser.cjs');
 (async()=>{
  const {createApp}=await import('../server.js');
  const {loadConfig}=await import('../lib/config.js');
+ const port=await new Promise(resolve=>{const probe=net.createServer();probe.listen(0,'127.0.0.1',()=>{const value=probe.address().port;probe.close(()=>resolve(value));});});
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pongy-support-ui-'));
- const runtime=createApp({config:loadConfig({DATA_DIR:dir,JWT_SECRET:'support-ui-jwt-'.repeat(4),SESSION_SECRET:'support-ui-session-'.repeat(4),FRONTEND_URL:'http://127.0.0.1:3187',PONGY_LOCAL_DEV_AUTH:'true',NODE_ENV:'development',OPENROUTER_API_KEY:''},dir)});
- const server=await new Promise(resolve=>{const instance=runtime.app.listen(0,'127.0.0.1',()=>resolve(instance));});
+ const runtime=createApp({config:loadConfig({DATA_DIR:dir,JWT_SECRET:'support-ui-jwt-'.repeat(4),SESSION_SECRET:'support-ui-session-'.repeat(4),FRONTEND_URL:'http://127.0.0.1:'+port,PONGY_LOCAL_DEV_AUTH:'true',NODE_ENV:'development',OPENROUTER_API_KEY:''},dir)});
+ const server=await new Promise(resolve=>{const instance=runtime.app.listen(port,'127.0.0.1',()=>resolve(instance));});
  const browser=await launchBrowser(),page=await browser.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  try{
