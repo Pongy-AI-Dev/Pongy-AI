@@ -4,9 +4,9 @@
  "androidCertificate": "fb65962bf41adde6e07bfba8915216d391c1d787861fd1341e589cd525b28167",
  "files": {
   "windows": {
-   "name": "Pongy-AI-0.29.2-windows-x64.msi",
-   "version": "0.29.2",
-   "sha256": "f84cf2e017d513e81e31936c2e9600912992c60329777ab4f353762180fb712f",
+   "name": "Pongy-AI-0.29.3-windows-x64.msi",
+   "version": "0.29.3",
+   "sha256": "d066ad01588a46f258ff77761c4141c3f213e067d764f44c8ef9ff8f460e0a6c",
    "bytes": 1134592
   },
   "android": {

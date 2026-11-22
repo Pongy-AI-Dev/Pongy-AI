@@ -35,12 +35,12 @@ Read-only verification of the archived APKs found three historical signing ident
 - Full Node suite: 938 tests; 937 passed, 0 failed, 1 skipped (real SMTP/TLS test intentionally skipped because SMTP configuration is excluded).
 - Browser UI suite: 74/74 suites verified. The first aggregate run passed 71/74; the three version-sensitive download/installer suites were corrected for the independently versioned Windows MSI/browser extension and each rerun passed. Startup, seven-size responsive viewport and offline-notification UI suites also passed after the safe-area change.
 - Android SDK 35 / Build Tools 35.0.0 compilation, D8 packaging, APK signature verification and zipalign completed successfully.
-- npm audit and final release checks are recorded in docs/TEST-0.29.3.md.
+- npm audit and final release checks are recorded in docs/releases/TEST-0.29.3.md.
 
 No physical Android devices were attached. Infinix, Samsung, Realme and Huawei installation, Play Protect classification, OEM background restrictions and real network behavior remain unverified until the user tests the APK.
 
 The public server still reports 0.29.1. The local 0.29.3 source/APK changes have not been deployed; no DNS, hosting, GitHub or Render changes were made. A stable check from one development network does not prove access from the user's other networks or without VPN.
 
-Windows MSI remains 0.29.2 and unsigned. No trusted Authenticode certificate was available; no self-signed MSI certificate was created or installed. No clean Windows VM was available for installer testing.
+Windows MSI 0.29.3 was rebuilt with WebView2 SDK 1.0.3537.50 and WiX 6.0.2. Product metadata and administrative extraction were verified. The MSI remains unsigned because no trusted Authenticode certificate was available; no self-signed certificate was created.
 
 Android's displayed first-install timestamp is maintained by Package Manager / the operating system. The application cannot set or rewrite that system timestamp.
