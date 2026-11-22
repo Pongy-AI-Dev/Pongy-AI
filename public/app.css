@@ -761,7 +761,7 @@ input::-ms-reveal,input::-ms-clear{display:none}
 
 /* Image generation reserves a stable square; no clipping of the generated subject. */
 .image-generation-pending,.generated-image-figure{width:min(100%,calc(512px * var(--ui-scale,1)));aspect-ratio:1;box-sizing:border-box;margin:calc(12px * var(--ui-scale,1)) 0;overflow:hidden;border-radius:calc(22px * var(--ui-scale,1));background:var(--bg3);position:relative;flex:none}
-.image-generation-pending{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);place-items:center;padding:calc(24px * var(--ui-scale,1));background:linear-gradient(135deg,var(--bg2),var(--bg3))}
+.image-generation-pending{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);place-items:center;padding:calc(24px * var(--ui-scale,1));background:linear-gradient(135deg,var(--bg2),var(--bg3))}
 .image-generation-pending>span{display:block;width:calc(5px * var(--ui-scale,1));height:calc(5px * var(--ui-scale,1));border-radius:50%;background:var(--fg2);opacity:.16;animation:image-dot-wave 2.8s ease-in-out var(--dot-delay,0s) infinite}
 @keyframes image-dot-wave{0%,100%{opacity:.13;transform:scale(.75)}50%{opacity:.52;transform:scale(1.25)}}
 .generated-image-figure .generated-image-open{width:100%;height:100%;padding:0;margin:0;border:0;border-radius:inherit;display:block;background:transparent;cursor:zoom-in;position:relative;overflow:hidden}
@@ -2392,3 +2392,19 @@ html[data-theme="holiday"] .sb-title::after{content:" ✦";color:#a52e54;font-si
 @font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-cyrillic.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-latin-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-latin.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+
+/* Refined code workspace and connected-tool activity states. */
+.code-card{position:relative;border-color:color-mix(in srgb,var(--accent) 22%,var(--border));background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 3%,var(--bg2)),var(--bg2) 55%);box-shadow:0 5px 18px color-mix(in srgb,var(--fg) 4%,transparent);transition:border-color .25s ease,box-shadow .25s ease}
+.code-card:focus-within,.code-card:hover{border-color:color-mix(in srgb,var(--accent) 46%,var(--border));box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 8%,transparent)}
+.code-card header{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 7%,var(--bg2)),var(--bg2));}
+.code-card header>span{font-weight:600;letter-spacing:.015em}
+.code-card pre{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 48%,transparent),transparent 72%)}
+.code-card button{position:relative}
+.code-card button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.activity-card[data-state="running"] .activity-icon{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent),0 0 18px color-mix(in srgb,var(--accent) 15%,transparent)}
+.activity-card.work-skill .activity-icon,.activity-card.work-plugin .activity-icon{background:color-mix(in srgb,var(--accent) 12%,var(--bg2));}
+.activity-card.work-skill .activity-icon{color:var(--accent)}
+.activity-card.work-plugin .activity-icon{color:color-mix(in srgb,var(--accent) 72%,#38a6a0)}
+.image-generation-pending{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--accent) 12%,var(--bg2)),var(--bg3) 72%);border:1px solid color-mix(in srgb,var(--accent) 20%,var(--border));}
+@media(prefers-reduced-motion:reduce){.code-card,.code-card button{transition:none!important}}

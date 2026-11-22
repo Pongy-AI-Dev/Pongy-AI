@@ -348,7 +348,7 @@ Website **0.18.5**; Windows MSI **0.18.2** and Android APK **0.18.1** unchanged.
 Patch base: **0.18.3**. Gemini's direct API is the primary general/vision route, with Flash-Lite first for short general requests and Flash first for complex/vision work. Explicitly enabled, operator-paid DeepSeek remains first for programming. OpenRouter is an independent zero-priced fallback. Google project billing and quotas still apply; no app flag can change an external provider's billing plan.
 
 - Separate fixed endpoints and credentials; shared-provider quota errors skip other models on that provider, while independent providers remain eligible. No catalogue wait on the direct route.
-- Cloudflare Workers AI FLUX.1 schnell replaces Pollinations when selected. Real returned image bytes are validated and attached; failed generation is never replaced with an unrelated picture or a hidden paid request.
+- Cloudflare Workers AI image generation validates returned image bytes and attaches only the actual result; failed generation is never replaced with an unrelated picture or a hidden paid request.
 - Bounded streaming/JSON I/O, cancellation, image-size validation, two concurrent image jobs, persistent UTC daily request reservations and Retry-After cooldown. The request cap does not promise a Neuron allowance shared with other applications.
 - Existing safety, site-action confirmation, file checks and paid-model restrictions remain. No model guarantees perfect answers or perpetual free availability.
 
