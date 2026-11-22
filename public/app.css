@@ -500,7 +500,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:calc(13px * var(--ui-scale,1));color:var(--fg2);line-height:1.7;margin:calc(12px * var(--ui-scale,1)) 0 calc(18px * var(--ui-scale,1))}.checkout-summary{font-size:calc(16px * var(--ui-scale,1));line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:calc(32px * var(--ui-scale,1));width:calc(32px * var(--ui-scale,1));height:calc(32px * var(--ui-scale,1));min-width:calc(32px * var(--ui-scale,1));min-height:calc(32px * var(--ui-scale,1))}}
 
-:root{--pongy-build:"0.29.3"}
+:root{--pongy-build:"0.29.4"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:calc(22px * var(--ui-scale,1));bottom:calc(16px * var(--ui-scale,1));width:calc(42px * var(--ui-scale,1));height:calc(42px * var(--ui-scale,1));min-width:calc(42px * var(--ui-scale,1));min-height:calc(42px * var(--ui-scale,1));display:flex;align-items:center;justify-content:center;border:calc(1px * var(--ui-scale,1)) solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 calc(4px * var(--ui-scale,1)) calc(18px * var(--ui-scale,1)) #0002;z-index:8;}
@@ -1756,7 +1756,7 @@ body.dark .product-dialog .primary,body.dark #personalApiSave{color:var(--bg)}
 /* Explicit recovery actions: bounded motion, keyboard focus and narrow screens. */
 .response-recovery{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 14px;margin:10px 0;border:1px solid var(--border);border-radius:14px;background:var(--bg2);color:var(--fg2);font-size:13px;line-height:1.5}
 .response-recovery-action{font:inherit;min-height:36px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;color:var(--accent);background:transparent;cursor:pointer;transition:background-color .18s ease,transform .18s ease}
-.response-recovery-action:hover:not(:disabled){background:var(--bg3);transform:translateY(-1px)}.response-recovery-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.response-recovery-action:disabled{opacity:.5;cursor:default}@media(prefers-reduced-motion:reduce){.response-recovery-action{transition:none;transform:none!important}}
+.response-recovery-action:hover:not(:disabled){background:var(--bg3);transform:none}.response-recovery-action{transition:background-color .18s ease}.response-recovery-action:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.response-recovery-action:disabled{opacity:.5;cursor:default}@media(prefers-reduced-motion:reduce){.response-recovery-action{transition:none;transform:none!important}}
 
 /* 0.28: bounded layout, one icon, shared colour and accessible motion. */
 #downloadAppTop::before{content:none!important;display:none!important}
@@ -2254,3 +2254,141 @@ body.guest-mode #chatList .chat-act,body.guest-mode #pinChatBtn{opacity:1!import
 .workspace-library-tools{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.6fr) minmax(130px,.6fr);gap:8px;margin:0 0 8px}.workspace-library-count{display:block;margin:0 2px 8px;color:var(--fg2)}.workspace-library-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.workspace-library-actions .workspace-download{margin-right:auto}@media(max-width:560px){.workspace-library-tools{grid-template-columns:1fr}.workspace-library-actions{display:grid;grid-template-columns:1fr 1fr}.workspace-library-actions .workspace-download{grid-column:1/-1}}
 
 .workspace-cleanup{display:grid;gap:8px;padding:12px;border:1px solid var(--border);border-radius:14px;margin:0 0 14px;background:var(--bg2)}.workspace-cleanup>small{color:var(--fg2);line-height:1.45}.workspace-cleanup-results{display:grid;gap:7px}.workspace-cleanup-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;border:1px solid var(--border);border-radius:10px}.workspace-cleanup-info{display:grid;gap:3px;min-width:0}.workspace-cleanup-info strong{overflow-wrap:anywhere}.workspace-cleanup-info small{color:var(--fg2)}@media(max-width:560px){.workspace-cleanup-item{align-items:stretch;flex-direction:column}}
+
+/* Общие размеры и аккуратное оформление элементов */
+:root{--control-radius:12px;--control-height:40px;--ui-gap:8px}
+button,input,textarea,select{font-family:inherit}
+.settings-section h3,.settings-subsection h3,.settings-field,.display-option,.beta-feature-option{font-size:13.5px;line-height:1.45}
+.settings-hint,.settings-section small{font-size:12px;line-height:1.5}
+.accent-swatch{background-image:linear-gradient(135deg,rgba(255,255,255,.38),rgba(0,0,0,.16))!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.35),0 2px 7px rgba(0,0,0,.1)}
+.avatar.ai{background-image:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 48%,#b18cff))}
+.chat-model-bar{min-height:38px;padding:4px 22px 6px}
+#chatModelName{display:inline-flex;align-items:center;gap:9px;min-height:30px;padding:4px 9px 4px 11px;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:600;line-height:1.25;transition:background .18s ease,border-color .18s ease}
+#chatModelName:hover,#chatModelName[aria-expanded=true]{background:var(--bg2);border-color:var(--border)}
+#chatModelName .model-chevron{width:20px;height:20px;flex-basis:20px}
+.chat-model-popup{padding:6px;border-radius:13px;box-shadow:0 12px 34px rgba(0,0,0,.16)}
+.chat-model-option{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:42px;padding:8px 10px;border-radius:9px;text-align:left}
+.chat-model-option strong{font-size:13px;font-weight:600}
+.chat-model-option small{font-size:11px;font-weight:500;color:var(--fg2);padding:3px 7px;border-radius:99px;background:var(--bg3)}
+.chat-model-option.active{background:color-mix(in srgb,var(--accent) 9%,var(--bg))}
+.chat-model-option.active small{background:color-mix(in srgb,var(--accent) 15%,var(--bg));color:var(--accent)}
+#soundSettings>summary::after{display:none!important}
+#settingsModal .sound-settings>summary{padding-right:0!important}
+#settingsModal .sound-settings>summary .settings-section-chevron{margin-left:auto;flex:0 0 18px;color:var(--fg2);transition:transform .2s ease}
+#settingsModal .sound-settings[open]>summary .settings-section-chevron{transform:rotate(180deg)}
+.composer-editor{position:relative;align-self:stretch;align-items:center;padding:0 30px 0 0}
+.composer-expand{position:absolute;right:1px;top:2px;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;color:var(--fg2);opacity:.8;z-index:2}
+.composer-expand:hover{background:var(--hover);color:var(--fg);opacity:1}
+.composer-editor #userInput{padding-right:4px;max-height:160px;overflow-y:auto}
+body.composer-expanded .input-box{align-items:flex-end}
+body.composer-expanded .composer-editor{align-items:flex-end}
+body.composer-expanded .composer-editor #userInput{max-height:min(62vh,560px);min-height:180px}
+body.composer-expanded .input-box>button{align-self:flex-end}
+body.composer-expanded #composerExpand{top:5px}
+@media(max-width:600px){body.composer-expanded .composer-editor #userInput{max-height:min(58vh,440px);min-height:150px}.chat-model-bar{min-height:36px}}
+
+/* Новогодняя тема */
+html[data-theme="holiday"]{--bg:#f5f8ff;--bg2:#eaf0fb;--bg3:#e0e9f7;--fg:#17263d;--fg2:#62748e;--border:#cfdaeb;--accent:#1768bd;--accent-h:#a52e54;--hover:rgba(23,104,189,.07);--hover2:rgba(23,104,189,.12)}
+html[data-theme="holiday"] body{background-image:radial-gradient(circle at 12% 10%,rgba(255,255,255,.9) 0 1px,transparent 2px),radial-gradient(circle at 82% 22%,rgba(255,255,255,.85) 0 1px,transparent 2px),linear-gradient(135deg,rgba(23,104,189,.035),rgba(165,46,84,.035))}
+html[data-theme="holiday"] .avatar.ai,html[data-theme="holiday"] #sendBtn.ready{background-image:linear-gradient(135deg,#1768bd,#a52e54)}
+html[data-theme="holiday"] .sb-title::after{content:" ✦";color:#a52e54;font-size:.78em}
+.workspace-tabs{gap:6px;padding:0 16px 12px}
+.workspace-tabs button{min-height:36px;flex:1;border:1px solid var(--border);background:var(--bg2);border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:600;transition:background .18s,border-color .18s,color .18s}
+.workspace-tabs button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));border-color:color-mix(in srgb,var(--accent) 38%,var(--border));color:var(--accent)}
+.workspace-content{padding:0 16px 16px}
+.workspace-create{gap:8px;padding:10px;border-radius:12px;margin-bottom:10px}
+.workspace-card-list{gap:8px}
+.workspace-card{gap:7px;padding:12px;border-radius:12px}
+.workspace-action{min-height:34px;padding:7px 10px;border-radius:9px;font-size:12.5px}
+.workspace-library-tools{gap:7px}
+.workspace-library-actions{gap:6px}
+.workspace-library-count{font-size:11.5px}
+
+/* Единные компактные переключатели разделов */
+.sb-workspace-nav{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:7px 10px 8px;border:0}
+.sb-workspace-nav .sb-btn{min-height:34px;padding:7px 9px;border:1px solid transparent;border-radius:10px;justify-content:flex-start;font-size:12.5px;font-weight:600;background:var(--bg2);color:var(--fg2);transition:background .18s,border-color .18s,color .18s}
+.sb-workspace-nav .sb-btn[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 11%,var(--bg));border-color:color-mix(in srgb,var(--accent) 32%,var(--border));color:var(--accent)}
+.archive-nav{min-height:34px;margin:0 10px 7px;width:calc(100% - 20px);border:1px solid transparent;border-radius:10px;font-size:12.5px;font-weight:600}
+.archive-nav[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 10%,var(--bg));border-color:color-mix(in srgb,var(--accent) 30%,var(--border));color:var(--accent)}
+#workspaceSwitch{margin-bottom:8px;min-height:40px}
+#workspaceSwitch button{font-weight:600}
+.workspace-tabs{gap:5px}
+.workspace-tabs button{min-height:36px;padding:7px 12px;font-size:12.5px;font-weight:600}
+.workspace-tabs button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 11%,var(--bg));border-color:color-mix(in srgb,var(--accent) 34%,var(--border));color:var(--accent)}
+/* Акцентные элементы получают мягкий фирменный градиент */
+.accent-swatch{background-image:linear-gradient(135deg,rgba(255,255,255,.4),rgba(0,0,0,.17))!important}
+#sendBtn.ready,.mode-btn.active,.icon-btn.active,.skill-chip.active{background-image:linear-gradient(135deg,color-mix(in srgb,var(--accent) 88%,#fff),color-mix(in srgb,var(--accent) 70%,#172033));border-color:color-mix(in srgb,var(--accent) 68%,transparent)}
+#sendBtn.ready{color:#fff}
+.chat-model-option.active{background-image:linear-gradient(115deg,color-mix(in srgb,var(--accent) 14%,var(--bg)),color-mix(in srgb,var(--accent) 5%,var(--bg)))}
+.model-chevron{display:inline-flex;align-items:center;justify-content:center;color:var(--fg2);margin-left:3px;transition:transform .2s ease}
+#chatModelName[aria-expanded=true] .model-chevron{transform:rotate(180deg)}
+
+/* Ответы, вложения и поля ввода используют общую типографику */
+.message-content{font-size:14px;line-height:1.68;overflow-wrap:anywhere}
+.message-content :is(h1,h2,h3,h4){font-size:1.06em;font-weight:650;line-height:1.35;letter-spacing:-.012em;margin:1.15em 0 .55em}
+.message-content p{margin:.45em 0 .8em}
+.message-content :is(ul,ol){padding-left:1.45em;margin:.55em 0 .85em}
+.message-content li{padding:.12em 0}
+.message-content blockquote{margin:.8em 0;padding:8px 13px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:var(--bg2);color:var(--fg2)}
+.message-content pre{max-width:100%;overflow:auto;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg3);line-height:1.55}
+.message-content :not(pre)>code{padding:2px 5px;border-radius:5px;background:var(--bg3);font-size:.92em}
+.message-content table{width:100%;border-collapse:collapse;display:block;max-width:100%;overflow:auto;margin:10px 0 14px;font-size:.94em}
+.message-content th,.message-content td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.message-content th{font-weight:650;background:var(--bg2)}
+.settings-section :is(input,textarea,select),.workspace-box :is(input,textarea,select){box-sizing:border-box;min-width:0;font:inherit;line-height:1.4;border-radius:10px}
+.settings-section :is(input,select),.workspace-box :is(input,select){min-height:40px}
+.settings-section textarea,.workspace-box textarea{min-height:76px;padding:10px 12px;resize:vertical}
+#composerExpand{touch-action:manipulation}
+.composer-editor #userInput{line-height:1.5;overflow-wrap:anywhere}
+#inputArea .input-box{align-items:flex-end}
+#inputArea .input-box>button{flex:0 0 auto}
+#inputArea .composer-editor{min-width:0;flex:1}
+@media(max-width:600px){.message-content{font-size:14px}.message-content pre{padding:10px 11px}.message-content th,.message-content td{padding:7px 8px}}
+
+.chat-model-popup[hidden]{display:none!important}
+.chat-model-popup:not([hidden]){animation:chatModelMenuIn .16s cubic-bezier(.2,.8,.2,1) both;transform-origin:top center}
+@keyframes chatModelMenuIn{from{opacity:0;transform:translateY(-5px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.chat-model-popup:not([hidden]){animation:none}}
+
+#workspaceSwitch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
+#workspaceSwitch button{min-width:0;min-height:34px;padding:7px 10px;border:0;border-radius:9px;background:transparent;color:var(--fg2);font-size:12.5px;font-weight:600;transition:background .16s,color .16s,box-shadow .16s}
+#workspaceSwitch button[aria-pressed=true]{background:var(--bg);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+/* Единое оформление ответов и вложений */
+.bubble{line-height:1.64;overflow-wrap:anywhere}
+.bubble>:first-child{margin-top:0}
+.bubble>:last-child{margin-bottom:0}
+.bubble :is(h1,h2,h3){line-height:1.3;letter-spacing:-.018em;font-weight:650;margin:1.05em 0 .48em}
+.bubble h1{font-size:1.32em}
+.bubble h2{font-size:1.18em}
+.bubble h3{font-size:1.08em}
+.bubble p{margin:.55em 0}
+.bubble li+li{margin-top:.24em}
+.bubble blockquote{margin:.8em 0;padding:9px 13px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--accent) 5%,var(--bg2))}
+.bubble pre{max-width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);line-height:1.55}
+.bubble :not(pre)>code{padding:.12em .36em;border:1px solid var(--border);border-radius:5px;background:var(--bg2);font-size:.92em}
+.bubble table{display:block;width:100%;max-width:100%;overflow-x:auto;border-collapse:collapse;border-spacing:0}
+.bubble th,.bubble td{padding:8px 10px;border:1px solid var(--border);text-align:left;vertical-align:top}
+.bubble th{background:var(--bg2);font-weight:650}
+.message-file-card .file-visual{background-image:linear-gradient(145deg,color-mix(in srgb,var(--accent) 15%,var(--bg2)),var(--bg2))}
+.message-file-card .message-file-label{gap:3px}
+.message-file-card .message-file-details{color:var(--fg2);line-height:1.35}
+#attachmentPreview .attachment-chip{border-radius:11px;background:var(--bg2)}
+@media(max-width:600px){.bubble pre{padding:10px;border-radius:10px}.bubble th,.bubble td{padding:7px 8px}}
+/* Встроенные шрифты с латиницей и кириллицей; работают без внешних запросов. */
+@font-face{font-family:"Pongy Inter";src:url("/fonts/inter-cyrillic-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Pongy Inter";src:url("/fonts/inter-cyrillic.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Pongy Inter";src:url("/fonts/inter-latin-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Pongy Inter";src:url("/fonts/inter-latin.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Pongy Roboto Flex";src:url("/fonts/roboto-flex-cyrillic-ext.woff2") format("woff2");font-style:normal;font-weight:100 1000;font-display:swap;unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Pongy Roboto Flex";src:url("/fonts/roboto-flex-cyrillic.woff2") format("woff2");font-style:normal;font-weight:100 1000;font-display:swap;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Pongy Roboto Flex";src:url("/fonts/roboto-flex-latin-ext.woff2") format("woff2");font-style:normal;font-weight:100 1000;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Pongy Roboto Flex";src:url("/fonts/roboto-flex-latin.woff2") format("woff2");font-style:normal;font-weight:100 1000;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Pongy Noto Sans";src:url("/fonts/noto-sans-cyrillic-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Pongy Noto Sans";src:url("/fonts/noto-sans-cyrillic.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Pongy Noto Sans";src:url("/fonts/noto-sans-latin-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Pongy Noto Sans";src:url("/fonts/noto-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-cyrillic-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-cyrillic.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-latin-ext.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Pongy Montserrat";src:url("/fonts/montserrat-latin.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}

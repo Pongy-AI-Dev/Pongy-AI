@@ -69,7 +69,7 @@
         ),
       ].map((t) => el("li", t)),
     );
-    buy.textContent = tr("Подключить Умный ПК", "Get Smart PC");
+    buy.textContent = tr("Оплатить", "Pay");
     launch.textContent = tr("\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0423\u043c\u043d\u044b\u0439 \u041f\u041a", "Open Smart PC");
   }
   function native() {
@@ -146,15 +146,11 @@
               style: "currency",
               currency: q.currency,
             }).format(q.minor / 100) + tr(" / месяц", " / month");
-      buy.disabled = !q.configured;
-      if (!q.configured && !current?.smart_pc.active)
-        status.textContent = tr(
-          "Оплата временно недоступна — попробуйте позже",
-          "Checkout is temporarily unavailable — please try later",
-        );
+      buy.disabled = false;
+      status.textContent = "";
     } catch (e) {
-      status.textContent = tr("Не удалось открыть оплату — попробуйте ещё раз", "Could not open checkout — please try again");
-      buy.disabled = true;
+      status.textContent = "";
+      buy.disabled = false;
     }
   }
   void watchProducts();
@@ -206,7 +202,9 @@
         }
       }, 2000);
     } catch (e) {
-      status.textContent = e.message;
+      status.textContent = e.code === "BILLING_NOT_CONFIGURED" || e.status === 503
+        ? tr("Оплата пока не подключена. Попробуйте позже.", "Payments are not configured yet. Please try again later.")
+        : e.message;
     } finally {
       busy = false;
       buy.disabled = false;

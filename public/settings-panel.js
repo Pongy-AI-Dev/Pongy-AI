@@ -526,7 +526,7 @@
       copy.append(title,hint);
       check.type="checkbox";check.className="display-switch";check.setAttribute("role","switch");
       check.id="betaFeature-"+key;check.checked=!!ctx.betaFeature?.(key);
-      check.onchange=()=>{ctx.betaFeature?.(key,check.checked);lock(own);};
+      check.onchange=()=>{ctx.betaFeature?.(key,check.checked);ctx.applyAdvanced?.();lock(own);};
       row.append(copy,check);betaPanel.append(row);
     });
     strip.prepend(node("span", undefined, "settings-tab-indicator"));
@@ -592,9 +592,7 @@
       $("settings-panel-main").append(body.querySelector(".support-link"));
     move("logoutBtnSettings", "account");
     move("settingsAppVersion", "main");
-    const about=node("section",undefined,"settings-subsection pongy-about");about.id="pongyAbout";about.append(node("h3",tr("О Pongy AI","About Pongy AI")));
-    const aboutRows=[[tr("Название","Name"),"Pongy (Pongy AI)"],[tr("Создан","Created"),"2026"],[tr("Разработчик","Developer"),"Pongy AI Dev"],[tr("Страна","Country"),tr("Россия","Russia")],[tr("Контекст","Context"),tr("До 64 000 символов истории диалога, плюс системные инструкции и последнее сообщение. Ограничение выбранной модели может быть ниже.","Up to 64,000 characters of conversation history, plus system instructions and the latest message. The selected model may impose a lower limit.")]];
-    for(const [label,value] of aboutRows){const line=node("p",undefined,"settings-hint"),key=node("strong",label+": ");line.append(key,node("span",value));about.append(line);}$("settings-panel-main").append(about);
+    // Keep the settings panel focused on controls; product details live outside settings.
     if (!ctx.user()?.guest) {
       const emailLabel = node(
           "label",
@@ -615,9 +613,10 @@
         $("logoutBtnSettings"),
       );
     }
-    const moderationAccount=node("section",undefined,"settings-subsection moderation-account"),moderationTitle=node("h3",tr("Предупреждения и апелляции","Warnings and appeals")),moderationHint=node("p",tr("Здесь отображаются действующие и прошлые решения модерации. Если вы не согласны с решением, можно подать апелляцию.","View moderation decisions and submit an appeal if you disagree."),"settings-hint"),moderationList=node("div",undefined,"moderation-account-list"),moderationStatus=node("p","","settings-hint"),moderationLoad=button(tr("Проверить решения","Refresh decisions"),async()=>loadMyModeration());moderationAccount.append(moderationTitle,moderationHint,moderationList,moderationLoad,moderationStatus);if(!ctx.user()?.guest)$("settings-panel-account").insertBefore(moderationAccount,$("logoutBtnSettings"));else moderationAccount.hidden=true;
+    const moderationAccount=node("section",undefined,"settings-subsection moderation-account"),moderationTitle=node("h3",tr("Предупреждения и апелляции","Warnings and appeals")),moderationHint=node("p",tr("Здесь отображаются действующие и прошлые решения модерации. Если вы не согласны с решением, можно подать апелляцию.","View moderation decisions and submit an appeal if you disagree."),"settings-hint"),moderationList=node("div",undefined,"moderation-account-list"),moderationStatus=node("p","","settings-hint"),moderationLoad=button(tr("Проверить решения","Refresh decisions"),async()=>loadMyModeration());moderationAccount.append(moderationTitle,moderationHint,moderationList,moderationLoad,moderationStatus);if(ctx.user()?.guest)moderationAccount.hidden=true;
     const appealDialog=node("dialog",undefined,"admin-user-dialog moderation-appeal-dialog"),appealTitle=node("h2",tr("Апелляция","Appeal")),appealInput=node("textarea",undefined,"inp"),appealSubmit=button(tr("Отправить апелляцию","Submit appeal"),async()=>{if(!appealAction||appealInput.value.trim().length<8){appealStatus.textContent=tr("Опишите причину подробнее (не менее 8 символов).","Please provide at least 8 characters.");return;}appealSubmit.disabled=true;try{await ctx.api("/api/moderation/appeal",{method:"POST",body:{actionId:appealAction,details:appealInput.value.trim()}});appealDialog.close();appealInput.value="";moderationStatus.textContent=tr("Апелляция отправлена разработчикам.","Your appeal was sent to the developers.");await loadMyModeration();}catch(e){appealStatus.textContent=e.message;}finally{appealSubmit.disabled=false;}}),appealStatus=node("p","","settings-hint"),appealClose=button(tr("Закрыть","Close"),()=>appealDialog.close());let appealAction="";appealInput.rows=6;appealInput.maxLength=2000;appealInput.placeholder=tr("Почему вы считаете это решение ошибочным?","Why do you believe this decision was incorrect?");appealDialog.append(appealTitle,appealInput,appealStatus,appealSubmit,appealClose);$("settingsModal").append(appealDialog);
-    async function loadMyModeration(){if(ctx.user()?.guest)return;moderationLoad.disabled=true;moderationStatus.textContent=tr("Загрузка…","Loading…");try{const data=await ctx.api("/api/moderation/my-actions");moderationList.replaceChildren();const items=data.actions||[];moderationAccount.hidden=!items.length;if(!items.length){moderationStatus.textContent=tr("Модерационных решений нет.","No moderation decisions.");return;}for(const a of items){const card=node("div",undefined,"moderation-account-card"),name={ban:tr("Блокировка аккаунта","Account ban"),restrict:tr("Ограничение доступа к функциям","AI access restriction"),warning:tr("Предупреждение","Warning")}[a.kind]||a.kind;card.append(node("strong",name),node("p",(a.reason||"—")+" · "+dateLabel(a.createdAt)+(a.expiresAt?" · "+tr("до ","until ")+dateLabel(a.expiresAt):""),"settings-hint"));if(a.revokedAt)card.append(node("span",tr("Отменено","Revoked"),"moderation-revoked"));else{const appeal=button(tr("Подать апелляцию","Appeal"),()=>{appealAction=a.id;appealInput.value="";appealStatus.textContent="";appealDialog.showModal();});card.append(appeal);}moderationList.append(card);}moderationStatus.textContent=tr("Записей: ","Records: ")+items.length;}catch(e){moderationStatus.textContent=e.message;}finally{moderationLoad.disabled=false;}}if(!ctx.user()?.guest)void loadMyModeration();
+    let moderationActions=[];
+    async function loadMyModeration(){if(ctx.user()?.guest)return;moderationLoad.disabled=true;moderationStatus.textContent=tr("Загрузка…","Loading…");try{const data=await ctx.api("/api/moderation/my-actions");moderationList.replaceChildren();const items=data.actions||[];moderationActions=items;moderationAccount.hidden=!items.length;if(!items.length){moderationStatus.textContent=tr("Модерационных решений нет.","No moderation decisions.");return;}for(const a of items){const card=node("div",undefined,"moderation-account-card"),name={ban:tr("Блокировка аккаунта","Account ban"),restrict:tr("Ограничение доступа к функциям","AI access restriction"),warning:tr("Предупреждение","Warning")}[a.kind]||a.kind;card.append(node("strong",name),node("p",(a.reason||"—")+" · "+dateLabel(a.createdAt)+(a.expiresAt?" · "+tr("до ","until ")+dateLabel(a.expiresAt):""),"settings-hint"));if(a.revokedAt)card.append(node("span",tr("Отменено","Revoked"),"moderation-revoked"));else{const appeal=button(tr("Подать апелляцию","Appeal"),()=>{appealAction=a.id;appealInput.value="";appealStatus.textContent="";appealDialog.showModal();});card.append(appeal);}moderationList.append(card);}moderationStatus.textContent=tr("Записей: ","Records: ")+items.length;}catch(e){moderationStatus.textContent=e.message;}finally{moderationLoad.disabled=false;}}if(!ctx.user()?.guest)void loadMyModeration();
     const voice = $("voiceGender");
     $("voiceGenderLabel").textContent = tr(
       "Голос озвучивания",
@@ -660,6 +659,7 @@
     speechLabel.append(speechSelect);
     $("voicePreferenceSetting").after(speechLabel);
     const sound = node("details", undefined, "sound-settings"), soundTitle = node("summary", tr("\u0417\u0432\u0443\u043a", "Sound")), soundRow = node("label", undefined, "display-option"), soundText = node("span", tr("\u0417\u0432\u0443\u043a", "Sound")), soundToggle = node("input");
+    soundTitle.insertAdjacentHTML("beforeend", '<svg class="settings-section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>');
     sound.id = "soundSettings"; sound.open = false; soundToggle.id = "soundEnabled"; soundToggle.type = "checkbox"; soundToggle.className = "display-switch"; soundToggle.setAttribute("role", "switch");
     try { soundToggle.checked = localStorage.getItem("pongy_sound") !== "off"; } catch { soundToggle.checked = true; }
     soundToggle.onchange = () => { try { localStorage.setItem("pongy_sound", soundToggle.checked ? "on" : "off"); } catch { soundToggle.checked = true; } if (!soundToggle.checked) { root.speechSynthesis?.cancel(); root.PongyNeuralSpeech?.stop(); $("musicStop")?.click(); } root.dispatchEvent(new root.CustomEvent("pongy-sound-change", { detail: { enabled: soundToggle.checked } })); };
@@ -680,6 +680,8 @@
     apiPanel();
     usagePanel();
     developerPanel();
+    const developerSettingsPanel = $("settings-panel-developer");
+    if (developerSettingsPanel) developerSettingsPanel.append(moderationAccount);
     selectTab("main");
     const sub = $("settings-panel-subscription");
     paragraph(
@@ -2055,6 +2057,7 @@
     openMain() { selectTab("main"); },
     openDeveloper() { if ($("settings-tab-developer")?.hidden) return false; selectTab("developer"); return active === "developer"; },
     openModerationReport(id) { return $("settings-panel-developer")?._openModerationReport?.(id); },
+    async openAppeal() { if (!moderationActions.length) await loadMyModeration(); const action = moderationActions.find((item) => !item.revokedAt); if (!action) return false; appealAction = action.id; appealInput.value = ""; appealStatus.textContent = ""; appealDialog.showModal(); return true; },
     refresh,
     refreshUsage: usage,
     checkSite: siteState,

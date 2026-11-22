@@ -1,17 +1,21 @@
 {
-    "version":  "0.29.3",
-    "ru":  [
-               "Исправлено отображение Android-приложения относительно системных панелей и безопасных областей экрана",
-               "Сокращено ожидание подключения; при сбое доступна локальная страница повторной попытки",
-               "Удалено разрешение на установку других пакетов; обновление загружается и подтверждается пользователем",
-               "Сохранён прежний ключ подписи Android для совместимого обновления",
-               "Для установок с другой старой подписью Android может отклонить обновление; перед переустановкой экспортируйте локальную историю"
-           ],
-    "en":  [
-               "Fixed Android layout around system bars and safe screen areas",
-               "Reduced connection wait; a local retry page is available after a failed load",
-               "Removed the permission to install other packages; APK updates are downloaded and confirmed by the user",
-               "Kept the existing Android signing key for compatible updates",
-               "Android may reject updates from older installs signed with a different certificate; export local history before reinstalling"
-           ]
+  "version": "0.29.4",
+  "ru": [
+    "Чат, выбор модели и поле ввода стали удобнее и аккуратнее",
+    "Добавлены шрифты Inter, Roboto Flex, Noto Sans и Montserrat с поддержкой кириллицы и латиницы",
+    "Разделы чатов, проектов, заметок и библиотеки стали компактнее; добавлена новогодняя тема",
+    "Дополнительные шрифты и цвета доступны только при включённых бета-настройках",
+    "Голосовой помощник озвучивает ответы независимо от общих звуков интерфейса; при сетевых сбоях доступно локальное распознавание",
+    "ГДЗ ищет по предмету, классу и номеру задания без обязательного уточнения автора",
+    "Статус подписки сохраняется после повторного входа и обновления страницы"
+  ],
+  "en": [
+    "The chat, model picker and message composer are easier to use",
+    "Inter, Roboto Flex, Noto Sans and Montserrat fonts include Cyrillic and Latin characters",
+    "Chats, projects, notes and Library are more compact; a holiday theme is available",
+    "Extra fonts and colours appear only when the required beta settings are enabled",
+    "Voice conversations speak independently of interface sounds; on-device recognition is available for network errors",
+    "Homework lookup starts from the subject, grade and exercise number without requiring the textbook author",
+    "Subscription status remains available after signing in again or refreshing the page"
+  ]
 }

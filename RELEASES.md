@@ -1,6 +1,6 @@
-# Pongy AI 0.29.3
+# Pongy AI 0.29.4
 
-**Версия веб-сайта и исходников: 0.29.3; Android APK: 0.29.3; Windows MSI: 0.29.3 (unsigned).**
+**Текущая версия веб-сайта и исходников: 0.29.4. Android APK: 0.29.3. Windows MSI: 0.29.3 (unsigned).** Нового GitHub Release и новых нативных установщиков нет.
 
 ## 0.29.3 — Android stability and safer installation
 

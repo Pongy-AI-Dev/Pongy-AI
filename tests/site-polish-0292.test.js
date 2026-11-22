@@ -96,17 +96,25 @@ test('guest settings hide account email, lock the localized guest name and retai
 });
 
 test('font and accent choices apply across the interface', () => {
-  assert.match(app, /var FONT_CHOICES=\['Default','Segoe UI','Arial','Aptos','Verdana','Tahoma','Trebuchet MS','Georgia','Times New Roman','Consolas'\]/);
+  assert.match(app, /var FONT_CHOICES=\['Default','System UI','Sans Serif','Serif','Monospace','Segoe UI','Arial','Aptos','Calibri','Cambria','Candara','Corbel','Verdana','Tahoma','Trebuchet MS','Georgia','Garamond','Palatino Linotype','Times New Roman','Consolas','Courier New','Lucida Sans Unicode','Franklin Gothic Medium','Inter','Roboto Flex','Noto Sans','Open Sans','Lato','Montserrat','Ubuntu','DejaVu Sans','Liberation Sans','PT Sans','Fira Sans','Nunito','Source Sans 3','Merriweather','Source Code Pro','JetBrains Mono'\]/);
   assert.match(app, /item\.style\.fontFamily=fontCss\(font\)/);
   assert.match(app, /document\.documentElement\.style\.setProperty\('--pongy-font',fontCss\(family\)\)/);
-  assert.match(app, /function loadFontAsset\(font\)\{if\(!FONT_CHOICES\.includes\(font\)\)return Promise\.resolve\(false\);try\{return document\.fonts\?\.load/);
+  assert.match(app, /function fontAvailable\(font\)/);assert.match(app, /function loadFontAsset\(font\)\{if\(!FONT_CHOICES\.includes\(font\)\)return Promise\.resolve\(false\);try\{if\(!document\.fonts\?\.load\)return Promise\.resolve\(fontAvailable\(font\)\);var spec='16px '\+fontCss\(font\),sample='Привет, Pongy! 0123456789';return document\.fonts\.load\(spec,sample\)\.then\(function\(\)\{return document\.fonts\.check\(spec,sample\)&&fontAvailable\(font\)\}\)\.catch\(function\(\)\{return false\}\)\}/);assert.match(app,/Pongy Inter/);assert.match(app,/Pongy Roboto Flex/);assert.match(css,/@font-face\{font-family:"Pongy Inter"/);for(const name of ['inter','roboto-flex','noto-sans','montserrat'])for(const subset of ['cyrillic','latin'])assert.ok(fs.existsSync(new URL('../public/fonts/'+name+'-'+subset+'.woff2',import.meta.url)));
   assert.doesNotMatch(app, /fonts\.googleapis\.com/);
-  assert.match(app, /\$\('accentPreferenceSetting'\)\.hidden=false/);
-  assert.match(app, /var visible=ACCENT_COLORS/);
+  assert.match(app, /function extendedAppearanceEnabled\(\)\{return settings\.betaFunctions===true&&settings\.betaFeatures&&settings\.betaFeatures\.earlyAccess===true\}/);
+  assert.match(app, /\$\('accentPreferenceSetting'\)\.hidden=!enabled/);
+  assert.match(app, /var visible=extendedAppearanceEnabled\(\)\?ACCENT_COLORS/);
+  assert.match(app, /availableFonts=extendedAppearanceEnabled\(\)\?FONT_CHOICES\.filter\(function\(font\)\{return font==='Default'\|\|fontAvailable\(font\)\}\):\['Default'\]/);
+  assert.match(app, /betaFeature:function\(key,value\)/);
   assert.match(startupGuard, /var accents=\['default','yellow','red','green','blue','gray','pink','orange','teal','cyan'\]/);
-  assert.match(index, /startup-guard\.js\?v=0\.29\.3-appearance1/);
+  assert.match(index, /startup-guard\.js\?v=0\.29\.4/);
 });
 
+test('expanded composer stays usable for long text and keeps its controls anchored',()=>{assert.match(index,/id="composerExpand"/);assert.match(app,/function resizeComposerInput\(\)/);assert.match(app,/composer-expanded/);assert.match(css,/body\.composer-expanded \.input-box\{align-items:flex-end\}/);assert.match(css,/body\.composer-expanded \.composer-editor #userInput\{max-height:min\(62vh,560px\)/)});
+test('short answers are never clipped or faded; only long answers get an expand control',()=>{assert.match(app,/b\.classList\.toggle\('answer-collapsed',!open&&b\.dataset\.answerLong==='true'\)/);assert.match(app,/var isLong=lines\.length>collapseLines;b\.dataset\.answerLong=String\(isLong\)/);assert.match(app,/toggle\.hidden=!isLong;update\(\)/)});
+test('voice input reports silence instead of leaving a false listening state',()=>{assert.match(app,/voiceHasSpeech=false/);assert.match(app,/showNoSpeech=!voiceHasSpeech&&!voiceFinishing/);assert.match(app,/showVoiceHelp\('no-speech'\)/)});
+test('holiday theme survives first paint and server-side settings actions',()=>{assert.match(startupGuard,/\['dark','holiday'\]\.includes\(appearance\.theme\)/);assert.match(server,/\['dark','holiday'\]\.includes\(merged\.theme\)/);assert.match(server,/\['dark','light','holiday','en','ru'/);});
+test('Smart PC shows payment only as the final action and does not display an early unavailable warning',()=>{assert.match(products,/buy\.textContent = tr\("Оплатить", "Pay"\)/);assert.match(products,/buy\.disabled = false/);assert.doesNotMatch(products,/Оплата временно недоступна/)});
 test('the old always-on duplicate accent palette is removed', () => {
   assert.doesNotMatch(interfaceUi, /interfaceColour|const colours=/);
 });
