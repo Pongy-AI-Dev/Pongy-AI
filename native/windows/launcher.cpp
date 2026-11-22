@@ -1,5 +1,6 @@
 #define UNICODE
 #define _UNICODE
+#define NOMINMAX
 #include <windows.h>
 #include <shlobj.h>
 #include <shellapi.h>
@@ -31,7 +32,7 @@ static void toggleFullscreen(){
   SetWindowPos(mainWindow,HWND_TOP,monitor.rcMonitor.left,monitor.rcMonitor.top,monitor.rcMonitor.right-monitor.rcMonitor.left,monitor.rcMonitor.bottom-monitor.rcMonitor.top,SWP_FRAMECHANGED|SWP_NOOWNERZORDER);
  }else{fullscreen=false;SetWindowLongPtrW(mainWindow,GWL_STYLE,savedStyle);SetWindowLongPtrW(mainWindow,GWL_EXSTYLE,savedExStyle);SetWindowPlacement(mainWindow,&savedPlacement);SetWindowPos(mainWindow,nullptr,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);}
 }
-static const wchar_t* site=L"https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.29.1";
+static const wchar_t* site=L"https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.29.3";
 static bool trusted(const wchar_t* u){std::wstring s=u?u:L"";const std::wstring origin=L"https://pongy-ai.devs.surf";return s==origin||s.rfind(origin+L"/",0)==0;}
 static void external(const wchar_t* u){if(u&&wcsncmp(u,L"https://",8)==0)ShellExecuteW(mainWindow,L"open",u,nullptr,nullptr,SW_SHOWNORMAL);}
 template<class I> struct Handler: I {ULONG refs=1;HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id,void** out)override{if(!out)return E_POINTER;*out=nullptr;if(IsEqualIID(id,IID_IUnknown)||IsEqualIID(id,__uuidof(I))){*out=static_cast<I*>(this);AddRef();return S_OK;}return E_NOINTERFACE;}ULONG STDMETHODCALLTYPE AddRef()override{return InterlockedIncrement(&refs);}ULONG STDMETHODCALLTYPE Release()override{ULONG n=InterlockedDecrement(&refs);if(!n)delete this;return n;}virtual ~Handler()=default;};
@@ -72,9 +73,14 @@ struct DesktopMessage:Handler<ICoreWebView2WebMessageReceivedEventHandler>{
   if(message==L"pongy:smart:hide"){if(smartWindow)ShowWindow(smartWindow,SW_HIDE);return S_OK;}
   if(message==L"pongy:smart:close"){if(smartWindow)DestroyWindow(smartWindow);return S_OK;}
   if(message==L"pongy:smart:stop"){if(sender!=smartView)stopSmartHost();else {smartConsent=false;++smartGeneration;smartActiveJob=0;}return S_OK;}
-  if(message==L"pongy:smart:consent"){
+  const std::wstring consentPrefix=L"pongy:smart:consent";
+  if(message.rfind(consentPrefix,0)==0){
    if(sender!=smartView)return S_OK;
-   const unsigned long consentGeneration=smartGeneration;const bool approved=MessageBoxW(smartWindow,ruHost()?L"Разрешить Pongy открывать приложения и сайты, менять звук и яркость? Доступ действует до закрытия панели или остановки. Ctrl+Alt+Pause — остановить.":L"Allow Pongy to open apps and websites, adjust sound and brightness? Permission lasts until the panel closes or you stop it. Ctrl+Alt+Pause stops control.",L"Pongy Smart PC",MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2)==IDYES;smartConsent=approved&&consentGeneration==smartGeneration;
+   const std::wstring mode=message.substr(consentPrefix.size());
+   const wchar_t* prompt=mode==L":ask"?(ruHost()?L"Подтвердите это действие Pongy. Разрешение будет запрошено снова при следующем действии. Ctrl+Alt+Pause — остановить.":L"Confirm this Pongy action. Permission will be requested again for the next action. Ctrl+Alt+Pause stops control.")
+    :mode==L":full"?(ruHost()?L"Разрешить все поддерживаемые функции Smart PC в этой сессии? Произвольные команды, полный доступ к диску и скрытые действия не разрешаются. Важные действия могут потребовать отдельного подтверждения. Ctrl+Alt+Pause — остановить.":L"Allow all currently supported Smart PC features for this session? Arbitrary commands, unrestricted disk access and hidden actions are not allowed. Important actions may still require confirmation. Ctrl+Alt+Pause stops control.")
+    :(ruHost()?L"Разрешить поддерживаемые безопасные действия Smart PC до закрытия панели или остановки? Доступ ограничен встроенным списком действий. Ctrl+Alt+Pause — остановить.":L"Allow supported safe Smart PC actions until the panel closes or you stop it? Access is limited to the built-in action list. Ctrl+Alt+Pause stops control.");
+   const unsigned long consentGeneration=smartGeneration;const bool approved=MessageBoxW(smartWindow,prompt,L"Pongy Smart PC",MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2)==IDYES;smartConsent=approved&&consentGeneration==smartGeneration;
    smartResult(sender,"smart-consent",smartConsent);return S_OK;
   }
   const std::wstring executePrefix=L"pongy:smart:execute:";
@@ -112,7 +118,7 @@ struct AcceleratorKeys:Handler<ICoreWebView2AcceleratorKeyPressedEventHandler>{
   return S_OK;
  }
 };
-static std::wstring nativeScript(){std::wstring lang=initialLanguage();std::wstring script=L"if(location.origin==='https://pongy-ai.devs.surf'){addEventListener('keydown',function(e){if(e.key==='F11'&&!e.repeat){e.preventDefault();window.chrome.webview.postMessage('pongy:fullscreen')}else if(e.key==='Escape'){window.chrome.webview.postMessage('pongy:exit-fullscreen')}},true);window.PongyDesktop=Object.freeze({bringToFront:function(){window.chrome.webview.postMessage('pongy:foreground')},openSmartPC:function(){window.chrome.webview.postMessage('pongy:smart:open')},stopSmartPC:function(){window.chrome.webview.postMessage('pongy:smart:stop')},openCheckout:function(url){window.chrome.webview.postMessage('pongy:checkout:'+url)},openApp:function(name){if(['notepad','calculator','explorer'].includes(name))window.chrome.webview.postMessage('pongy:open:'+name)}});window.PongyNative=Object.freeze({desktopActions:['notepad','calculator','explorer'],smartPC:true,platform:'windows',version:'0.29.1',scopedFiles:true,initialLanguage:'"+lang+L"'});try{if(!localStorage.getItem('pongy_settings_ui'))localStorage.setItem('pongy_settings_ui',JSON.stringify({theme:'light',lang:'"+lang+L"',nickname:''}));}catch(e){}}";return script;}
+static std::wstring nativeScript(){std::wstring lang=initialLanguage();std::wstring script=L"if(location.origin==='https://pongy-ai.devs.surf'){addEventListener('keydown',function(e){if(e.key==='F11'&&!e.repeat){e.preventDefault();window.chrome.webview.postMessage('pongy:fullscreen')}else if(e.key==='Escape'){window.chrome.webview.postMessage('pongy:exit-fullscreen')}},true);window.PongyDesktop=Object.freeze({bringToFront:function(){window.chrome.webview.postMessage('pongy:foreground')},openSmartPC:function(){window.chrome.webview.postMessage('pongy:smart:open')},stopSmartPC:function(){window.chrome.webview.postMessage('pongy:smart:stop')},openCheckout:function(url){window.chrome.webview.postMessage('pongy:checkout:'+url)},openApp:function(name){if(['notepad','calculator','explorer'].includes(name))window.chrome.webview.postMessage('pongy:open:'+name)}});window.PongyNative=Object.freeze({desktopActions:['notepad','calculator','explorer'],smartPC:true,platform:'windows',version:'0.29.3',scopedFiles:true,initialLanguage:'"+lang+L"'});try{if(!localStorage.getItem('pongy_settings_ui'))localStorage.setItem('pongy_settings_ui',JSON.stringify({theme:'light',lang:'"+lang+L"',nickname:''}));}catch(e){}}";return script;}
 // Navigate only after WebView2 has accepted the document-created script.
 struct StartWithBridge:Handler<ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler>{
  ICoreWebView2* target;std::wstring url;bool main;

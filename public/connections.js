@@ -164,7 +164,7 @@
     $("connectionsTitle").textContent = tr("Подключения", "Connections");
     $("connectionsClose").setAttribute("aria-label", tr("Закрыть", "Close"));
     $("connectionsPrivacy").textContent = tr(
-      "Только чтение · Данные по запросу передаются выбранному ИИ.",
+      "Только чтение · Данные по запросу передаются выбранной модели.",
       "Read only · Requested data is shared with your selected AI.",
     );
     if (dialog.open) {

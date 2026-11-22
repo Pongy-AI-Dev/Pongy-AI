@@ -26,11 +26,11 @@ static std::string verifySmartLease(const std::wstring& lease){
  #ifndef PONGY_SMART_API_HOST
  #define PONGY_SMART_API_HOST L"pongy-server.onrender.com"
  #endif
- HINTERNET session=WinHttpOpen(L"PongySmartPC/0.29.1",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0);if(!session)return "";
+ HINTERNET session=WinHttpOpen(L"PongySmartPC/0.29.3",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0);if(!session)return "";
  WinHttpSetTimeouts(session,3000,3000,3000,5000);
  HINTERNET connection=WinHttpConnect(session,PONGY_SMART_API_HOST,INTERNET_DEFAULT_HTTPS_PORT,0);
  HINTERNET request=connection?WinHttpOpenRequest(connection,L"POST",L"/api/smart-pc/verify",nullptr,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE):nullptr;
- std::string result,body="{\"lease\":\""+std::string(lease.begin(),lease.end())+"\"}";
+ std::string result,leaseAscii;leaseAscii.reserve(lease.size());for(wchar_t c:lease)leaseAscii.push_back(static_cast<char>(c));std::string body="{\"lease\":\""+leaseAscii+"\"}";
  if(request){DWORD redirect=WINHTTP_OPTION_REDIRECT_POLICY_NEVER;WinHttpSetOption(request,WINHTTP_OPTION_REDIRECT_POLICY,&redirect,sizeof(redirect));
   if(WinHttpSendRequest(request,L"Content-Type: application/json\r\n",DWORD(-1),body.data(),DWORD(body.size()),DWORD(body.size()),0)&&WinHttpReceiveResponse(request,nullptr)){
    DWORD status=0,size=sizeof(status);WinHttpQueryHeaders(request,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,WINHTTP_HEADER_NAME_BY_INDEX,&status,&size,WINHTTP_NO_HEADER_INDEX);

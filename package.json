@@ -1,6 +1,6 @@
 {
   "name": "pongy-server",
-  "version": "0.29.1",
+  "version": "0.29.3",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -8,12 +8,15 @@
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node tests/project-check.cjs",
     "test:ui": "node tests/ui-runner.cjs",
-    "check:release": "node tests/project-check.cjs --release"
+    "check:release": "node tests/project-check.cjs --release",
+    "build:pongx": "node scripts/build-pongx.cjs",
+    "audit:project": "node scripts/audit-project.cjs",
+    "audit:project:json": "node scripts/audit-project.cjs --json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^12.0.0",
+    "better-sqlite3": "^13.0.3",
     "cheerio": "^1.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -48,6 +51,6 @@
     "image-size": "2.0.3"
   },
   "allowScripts": {
-    "better-sqlite3@12.11.1": true
+    "better-sqlite3@13.0.3": true
   }
 }

@@ -48,10 +48,10 @@ const path=require('node:path');
     await page.locator('#authBtn').click();
     await page.waitForFunction(()=>!document.querySelector('#userInput').disabled);
     await openSettings();
-    check(await page.locator('.settings-tabs [role=tab]').count()===11,'tabs missing');
+    check(await page.locator('.settings-tabs [role=tab]').count()===11,'tabs missing');const navStyle=await page.locator('#settingsModal .settings-tabs').evaluate(e=>({scrollbar:getComputedStyle(e).scrollbarWidth,border:getComputedStyle(e).borderBottomWidth,webkitDisplay:getComputedStyle(e,'::-webkit-scrollbar').display,webkitWidth:getComputedStyle(e,'::-webkit-scrollbar').width}));check(navStyle.border==='0px'&&(navStyle.scrollbar==='none'||navStyle.webkitDisplay==='none'||navStyle.webkitWidth==='0px'),'settings tab strip still shows an extra scrollbar or border');
     await page.locator('#settings-tab-usage').click();
     await page.waitForFunction(()=>document.querySelector('#usagePercent').textContent.endsWith('0%'));
-    check(await page.locator('#usageProgress').evaluate(e=>e.value)===0,'usage bar does not start empty');
+    check(await page.locator('#usageProgress').evaluate(e=>e.value)===0,'usage bar does not start empty');const usagePalette=await page.evaluate(()=>({state:document.querySelector('#settings-panel-usage').dataset.state,text:getComputedStyle(document.querySelector('#usagePercent')).color,accent:getComputedStyle(document.body).getPropertyValue('--accent').trim(),bar:getComputedStyle(document.querySelector('#usageProgress')).accentColor}));check(usagePalette.state!=='unavailable'||(usagePalette.text!=='rgb(229, 161, 68)'&&usagePalette.bar!=='rgb(229, 161, 68)'),'unavailable usage state still forces orange styling');
     check(!(await page.locator('#settings-panel-usage').innerText()).includes('150'),'internal per-chat limit shown to user');
 
     await page.locator('#settings-tab-tools').click();
@@ -148,7 +148,7 @@ const path=require('node:path');
     await page.locator('#betaFunctions').check();
     await page.waitForFunction(async()=>!!(await(await fetch('/api/preferences')).json()).betaFunctions);
     check(await page.locator('#settings-tab-beta').isVisible(),'beta section did not appear when beta mode was enabled');
-    check(['Здесь появятся новые функции для тестирования','New features for testing will appear here'].includes((await page.locator('#settings-panel-beta').innerText()).trim()),'beta section placeholder text is incorrect');
+    check(await page.locator('#betaFeature-earlyAccess').isVisible()&&await page.locator('#betaFeature-developerFeatures').isVisible()&&await page.locator('#betaFeature-expanded').count()===0,'beta feature switches are missing or the redundant expanded gate remains');
     check(await page.locator('#settings-tab-beta').getAttribute('aria-selected')==='true','beta section did not open after enabling beta mode');
 
     await page.locator('#settings-tab-developer').click();
@@ -170,7 +170,7 @@ const path=require('node:path');
     check(true,'blacklist editing failed');
 
     await page.locator('#settings-tab-interface').click();
-    await page.locator('#langGrid button').filter({hasText:'Русский'}).click();
+    await page.locator('#languageDropdownTrigger').click();await page.locator('#languageDropdownMenu button').filter({hasText:'Русский'}).click();
     await page.waitForFunction(()=>document.querySelector('#settings-tab-tools').textContent==='API и MCP');
     check(true,'settings tabs did not translate');
     for(const width of [320,390,768]){

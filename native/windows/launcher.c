@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <wchar.h>
-static const wchar_t *site=L"https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.15.0";
+static const wchar_t *site=L"https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.29.3";
 int WINAPI wWinMain(HINSTANCE h,HINSTANCE old,LPWSTR cmd,int show){
  wchar_t path[32768],args[1024];const wchar_t *vars[]={L"ProgramFiles(x86)",L"ProgramFiles",L"LOCALAPPDATA"};
  for(int i=0;i<3;i++){DWORD n=GetEnvironmentVariableW(vars[i],path,32000);if(!n||n>=32000)continue;wcscat(path,L"\\Microsoft\\Edge\\Application\\msedge.exe");

@@ -1,15 +1,17 @@
 {
-  "version": "0.29.1",
-  "ru": [
-    "Подписки: внешнее серверное хранение после настройки Firestore",
-    "Камера: последовательная передача кадров, анализ при вопросе",
-    "Раздел «Умный дом»: доступные функции компьютера обозначены явно",
-    "Сборки Android и Windows: исправления версий и процесса обновления"
-  ],
-  "en": [
-    "Subscriptions: external server storage after Firestore configuration",
-    "Camera: continuous sampled-frame feed, analyzed on a question",
-    "Smart Home section: available PC features explicitly identified",
-    "Android and Windows build version and update workflow fixes"
-  ]
+    "version":  "0.29.3",
+    "ru":  [
+               "Исправлено отображение Android-приложения относительно системных панелей и безопасных областей экрана",
+               "Сокращено ожидание подключения; при сбое доступна локальная страница повторной попытки",
+               "Удалено разрешение на установку других пакетов; обновление загружается и подтверждается пользователем",
+               "Сохранён прежний ключ подписи Android для совместимого обновления",
+               "Для установок с другой старой подписью Android может отклонить обновление; перед переустановкой экспортируйте локальную историю"
+           ],
+    "en":  [
+               "Fixed Android layout around system bars and safe screen areas",
+               "Reduced connection wait; a local retry page is available after a failed load",
+               "Removed the permission to install other packages; APK updates are downloaded and confirmed by the user",
+               "Kept the existing Android signing key for compatible updates",
+               "Android may reject updates from older installs signed with a different certificate; export local history before reinstalling"
+           ]
 }

@@ -373,6 +373,7 @@
     if (id === "usage") void usage();
     if (id === "connections") void root.PongyConnections?.refreshSettings();
     if (id === "developer" && previous !== id) void admin();
+    if (id === "developer") void $("settings-panel-developer")._loadAiFirmware?.();
     Object.keys(tabs).forEach((key) => {
       $("settings-tab-" + key).setAttribute(
         "aria-selected",
@@ -411,10 +412,8 @@
       .forEach((n) => (n.hidden = !ctx.beta()));
   }
   function syncBetaTab() {
-    const enabled = ctx.beta();
-    $("settings-tab-beta").hidden = !enabled;
-    $("settings-panel-beta").hidden = !enabled || active !== "beta";
-    if (!enabled && active === "beta") selectTab("main");
+    $("settings-tab-beta").hidden = false;
+    $("settings-panel-beta").hidden = active !== "beta";
   }
   function setup() {
     const body = $("settingsModal").querySelector(".modal-body"),
@@ -514,16 +513,22 @@
       panel.setAttribute("aria-labelledby", b.id);
       body.append(panel);
     });
-    $("settings-panel-beta").append(
-      node(
-        "p",
-        tr(
-          "Здесь появятся новые функции для тестирования",
-          "New features for testing will appear here",
-        ),
-        "beta-empty-state",
-      ),
-    );
+    const betaPanel = $("settings-panel-beta");
+    [
+      ["earlyAccess", "Ранний доступ", "Early access", "Получайте доступ к новым функциям раньше, когда они появятся. Сейчас активных ранних функций ещё нет.", "Access new features earlier when they become available. There are no active early-access features yet."],
+      ["developerFeatures", "Функции разработчика", "Developer features", "Более осторожный и проверяющий стиль ответов. Не открывает платные модели, лимиты или дополнительные права.", "A slightly more careful, verification-focused response style. Does not unlock paid models, quotas, or extra permissions."],
+    ].forEach(([key,ru,en,ruHint,enHint])=>{
+      const row=node("label",undefined,"display-option beta-feature-option"),
+        copy=node("span",undefined,"beta-feature-copy"),
+        title=node("strong",tr(ru,en)),
+        hint=node("small",tr(ruHint,enHint)),
+        check=node("input");
+      copy.append(title,hint);
+      check.type="checkbox";check.className="display-switch";check.setAttribute("role","switch");
+      check.id="betaFeature-"+key;check.checked=!!ctx.betaFeature?.(key);
+      check.onchange=()=>{ctx.betaFeature?.(key,check.checked);lock(own);};
+      row.append(copy,check);betaPanel.append(row);
+    });
     strip.prepend(node("span", undefined, "settings-tab-indicator"));
     strip.onkeydown = (e) => {
       if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
@@ -544,7 +549,7 @@
     };
     root.addEventListener("resize", () => selectTab(active), { passive: true });
     const beta = node("label", undefined, "display-option"),
-      txt = node("span", tr("Режим бета-тестирования", "Beta testing mode")),
+      txt = node("span", tr("Бета-функции", "Beta features")),
       check = node("input");
     check.id = "betaFunctions";
     check.type = "checkbox";
@@ -554,18 +559,22 @@
     check.onchange = () => {
       ctx.beta(check.checked);
       syncBetaTab();
+      ctx.applyAdvanced?.();
       if (check.checked) selectTab("beta");
       lock(own);
     };
     beta.append(txt, check);
     const betaBox = node("div", undefined, "beta-setting-option");
-    betaBox.append(beta);
-    $("settings-panel-interface").append(betaBox);
+    const betaHint = node("small", tr("Включите, чтобы открыть отдельный раздел бета-функций", "Enable to open the Beta features section"));
+    betaBox.append(beta, betaHint);
+    $("settings-panel-interface").prepend(betaBox);
     syncBetaTab();
-    move("downloadAppSettings", "main");
     move("developerBadge", "account");
     move("langLabel", "interface", true);
     move("themeLabel", "interface", true);
+    move("accentPreferenceSetting", "interface");
+    move("fontPreferenceSetting", "interface");
+    move("expandedLanguageHint", "interface");
     move("motionPreference", "interface", true);
     move("voicePreferenceSetting", "interface");
     move("displayPreferences", "interface");
@@ -583,25 +592,32 @@
       $("settings-panel-main").append(body.querySelector(".support-link"));
     move("logoutBtnSettings", "account");
     move("settingsAppVersion", "main");
-    const emailLabel = node(
-        "label",
-        tr("Почта аккаунта", "Account email"),
-        "settings-field",
-      ),
-      emailField = node("input");
-    emailField.id = "accountEmail";
-    emailField.type = "email";
-    emailField.readOnly = true;
-    emailField.className = "inp";
-    emailField.autocomplete = "off";
-    emailField.value = ctx.user()?.email || "";
-    emailLabel.append(emailField);
-    $("nickInput")?.closest("div")?.after(emailLabel);
-    if (!emailLabel.isConnected)
+    const about=node("section",undefined,"settings-subsection pongy-about");about.id="pongyAbout";about.append(node("h3",tr("О Pongy AI","About Pongy AI")));
+    const aboutRows=[[tr("Название","Name"),"Pongy (Pongy AI)"],[tr("Создан","Created"),"2026"],[tr("Разработчик","Developer"),"Pongy AI Dev"],[tr("Страна","Country"),tr("Россия","Russia")],[tr("Контекст","Context"),tr("До 64 000 символов истории диалога, плюс системные инструкции и последнее сообщение. Ограничение выбранной модели может быть ниже.","Up to 64,000 characters of conversation history, plus system instructions and the latest message. The selected model may impose a lower limit.")]];
+    for(const [label,value] of aboutRows){const line=node("p",undefined,"settings-hint"),key=node("strong",label+": ");line.append(key,node("span",value));about.append(line);}$("settings-panel-main").append(about);
+    if (!ctx.user()?.guest) {
+      const emailLabel = node(
+          "label",
+          tr("Почта аккаунта", "Account email"),
+          "settings-field",
+        ),
+        emailField = node("input");
+      emailLabel.id = "accountEmailLabel";
+      emailField.id = "accountEmail";
+      emailField.type = "email";
+      emailField.readOnly = true;
+      emailField.className = "inp";
+      emailField.autocomplete = "off";
+      emailField.value = ctx.user()?.email || "";
+      emailLabel.append(emailField);
       $("settings-panel-account").insertBefore(
         emailLabel,
         $("logoutBtnSettings"),
       );
+    }
+    const moderationAccount=node("section",undefined,"settings-subsection moderation-account"),moderationTitle=node("h3",tr("Предупреждения и апелляции","Warnings and appeals")),moderationHint=node("p",tr("Здесь отображаются действующие и прошлые решения модерации. Если вы не согласны с решением, можно подать апелляцию.","View moderation decisions and submit an appeal if you disagree."),"settings-hint"),moderationList=node("div",undefined,"moderation-account-list"),moderationStatus=node("p","","settings-hint"),moderationLoad=button(tr("Проверить решения","Refresh decisions"),async()=>loadMyModeration());moderationAccount.append(moderationTitle,moderationHint,moderationList,moderationLoad,moderationStatus);if(!ctx.user()?.guest)$("settings-panel-account").insertBefore(moderationAccount,$("logoutBtnSettings"));else moderationAccount.hidden=true;
+    const appealDialog=node("dialog",undefined,"admin-user-dialog moderation-appeal-dialog"),appealTitle=node("h2",tr("Апелляция","Appeal")),appealInput=node("textarea",undefined,"inp"),appealSubmit=button(tr("Отправить апелляцию","Submit appeal"),async()=>{if(!appealAction||appealInput.value.trim().length<8){appealStatus.textContent=tr("Опишите причину подробнее (не менее 8 символов).","Please provide at least 8 characters.");return;}appealSubmit.disabled=true;try{await ctx.api("/api/moderation/appeal",{method:"POST",body:{actionId:appealAction,details:appealInput.value.trim()}});appealDialog.close();appealInput.value="";moderationStatus.textContent=tr("Апелляция отправлена разработчикам.","Your appeal was sent to the developers.");await loadMyModeration();}catch(e){appealStatus.textContent=e.message;}finally{appealSubmit.disabled=false;}}),appealStatus=node("p","","settings-hint"),appealClose=button(tr("Закрыть","Close"),()=>appealDialog.close());let appealAction="";appealInput.rows=6;appealInput.maxLength=2000;appealInput.placeholder=tr("Почему вы считаете это решение ошибочным?","Why do you believe this decision was incorrect?");appealDialog.append(appealTitle,appealInput,appealStatus,appealSubmit,appealClose);$("settingsModal").append(appealDialog);
+    async function loadMyModeration(){if(ctx.user()?.guest)return;moderationLoad.disabled=true;moderationStatus.textContent=tr("Загрузка…","Loading…");try{const data=await ctx.api("/api/moderation/my-actions");moderationList.replaceChildren();const items=data.actions||[];moderationAccount.hidden=!items.length;if(!items.length){moderationStatus.textContent=tr("Модерационных решений нет.","No moderation decisions.");return;}for(const a of items){const card=node("div",undefined,"moderation-account-card"),name={ban:tr("Блокировка аккаунта","Account ban"),restrict:tr("Ограничение доступа к функциям","AI access restriction"),warning:tr("Предупреждение","Warning")}[a.kind]||a.kind;card.append(node("strong",name),node("p",(a.reason||"—")+" · "+dateLabel(a.createdAt)+(a.expiresAt?" · "+tr("до ","until ")+dateLabel(a.expiresAt):""),"settings-hint"));if(a.revokedAt)card.append(node("span",tr("Отменено","Revoked"),"moderation-revoked"));else{const appeal=button(tr("Подать апелляцию","Appeal"),()=>{appealAction=a.id;appealInput.value="";appealStatus.textContent="";appealDialog.showModal();});card.append(appeal);}moderationList.append(card);}moderationStatus.textContent=tr("Записей: ","Records: ")+items.length;}catch(e){moderationStatus.textContent=e.message;}finally{moderationLoad.disabled=false;}}if(!ctx.user()?.guest)void loadMyModeration();
     const voice = $("voiceGender");
     $("voiceGenderLabel").textContent = tr(
       "Голос озвучивания",
@@ -643,6 +659,24 @@
     };
     speechLabel.append(speechSelect);
     $("voicePreferenceSetting").after(speechLabel);
+    const sound = node("details", undefined, "sound-settings"), soundTitle = node("summary", tr("\u0417\u0432\u0443\u043a", "Sound")), soundRow = node("label", undefined, "display-option"), soundText = node("span", tr("\u0417\u0432\u0443\u043a", "Sound")), soundToggle = node("input");
+    sound.id = "soundSettings"; sound.open = false; soundToggle.id = "soundEnabled"; soundToggle.type = "checkbox"; soundToggle.className = "display-switch"; soundToggle.setAttribute("role", "switch");
+    try { soundToggle.checked = localStorage.getItem("pongy_sound") !== "off"; } catch { soundToggle.checked = true; }
+    soundToggle.onchange = () => { try { localStorage.setItem("pongy_sound", soundToggle.checked ? "on" : "off"); } catch { soundToggle.checked = true; } if (!soundToggle.checked) { root.speechSynthesis?.cancel(); root.PongyNeuralSpeech?.stop(); $("musicStop")?.click(); } root.dispatchEvent(new root.CustomEvent("pongy-sound-change", { detail: { enabled: soundToggle.checked } })); };
+    sound.id = "soundSettings";
+    soundTitle.textContent = tr("Звук", "Sound"); translated.set(soundTitle, ["Звук", "Sound"]);
+    sound.classList.add("settings-subsection");
+    soundText.textContent = tr("Звук", "Sound");
+    soundRow.append(soundText, soundToggle); sound.append(soundTitle);
+    const voiceHost = $("voicePreferenceSetting"), speechHost = speechLabel, wakeHost = $("wakeWordSetting"), extensionHost = $("wakeFocusSetup");
+    const extensionTitle = node("strong", tr("Расширение браузера", "Browser extension"), "sound-subtitle");
+    const wakeTitle = node("strong", tr("Активация голосом", "Voice activation"), "sound-subtitle");
+    if (voiceHost) sound.append(voiceHost);
+    sound.append(speechHost);
+    if (wakeHost) { wakeHost.prepend(wakeTitle); sound.append(wakeHost); }
+    if (extensionHost) extensionHost.prepend(extensionTitle);
+    sound.append(soundRow);
+    $("settings-panel-interface").append(sound);
     apiPanel();
     usagePanel();
     developerPanel();
@@ -691,6 +725,9 @@
       );
       $("voiceGenderHint").textContent = "";
       $("voiceGenderHint").hidden = true;
+      const extensionHeading = $("wakeFocusSetup")?.querySelector(".sound-subtitle"); if (extensionHeading) extensionHeading.textContent = tr("Расширение браузера", "Browser extension");
+      const wakeHeading = $("wakeWordSetting")?.querySelector(".sound-subtitle"); if (wakeHeading) wakeHeading.textContent = tr("Активация голосом", "Voice activation");
+      $("wakeWordLabel").textContent = tr("Активация голосом", "Voice activation");
       $("voiceGender").options[0].textContent = tr("Мужской", "Male");
       $("voiceGender").options[1].textContent = tr("Женский", "Female");
       refresh();
@@ -723,7 +760,7 @@
     key.id = "personalApiKey";
     key.autocomplete = "new-password";
     key.spellcheck = false;
-    key.maxLength = 512;
+    key.maxLength = 512;key.placeholder = tr("Вставьте API-ключ провайдера", "Paste provider API key");
     keyEye.type = "button";
     keyEye.id = "personalApiToggle";
     keyEye.className = "api-key-eye";
@@ -1002,6 +1039,7 @@
           );
           apiRevoke.hidden = false;
           apiCopy.hidden = false;
+          apiEndpointCopy.hidden = false;
           apiCreate.textContent = tr(
             "Создать новый API Key",
             "Create new API Key",
@@ -1022,6 +1060,7 @@
           );
         }
       }),
+      apiEndpointCopy = button(tr("Копировать адрес API", "Copy API endpoint"), async () => { try { await navigator.clipboard.writeText(apiEndpointText.textContent); ctx.notify(tr("Адрес API скопирован", "API endpoint copied")); } catch { ctx.notify(tr("Не удалось скопировать адрес API", "Could not copy API endpoint")); } }),
       apiRevoke = button(tr("Отозвать API Key", "Revoke API Key"), async () => {
         apiRevoke.disabled = true;
         try {
@@ -1030,6 +1069,7 @@
           apiStatus.textContent = tr("API Key отозван.", "API Key revoked.");
           apiRevoke.hidden = true;
           apiCopy.hidden = true;
+          apiEndpointCopy.hidden = true;
           apiCreate.textContent = tr("Создать API-ключ", "Create API key");
         } catch (error) {
           apiStatus.textContent = error.message;
@@ -1045,6 +1085,7 @@
     apiCreate.id = "apiKeyCreate";
     apiCopy.id = "apiKeyCopy";
     apiRevoke.id = "apiKeyRevoke";
+    apiEndpointCopy.id = "apiKeyEndpointCopy";
     apiCreate.classList.add("api-key-primary");
     apiKey.textContent = tr(
       "Создайте ключ и сохраните его в надёжном месте",
@@ -1069,10 +1110,12 @@
       apiDetails,
       apiCreate,
       apiCopy,
+      apiEndpointCopy,
       apiRevoke,
     );
     parent.append(keyCard);
     apiCopy.hidden = true;
+    apiEndpointCopy.hidden = true;
     apiRevoke.hidden = true;
     apiCreate.disabled = !ctx.user();
     apiRevoke.disabled = !ctx.user();
@@ -1088,6 +1131,7 @@
         );
         apiEndpointText.textContent = "";
         apiRevoke.hidden = true;
+        apiEndpointCopy.hidden = true;
         return;
       }
       try {
@@ -1099,6 +1143,7 @@
             "An API Key already exists. Create a new one to replace it, or revoke the current key.",
           );
           apiEndpointText.textContent = data.endpoint;
+          apiEndpointCopy.hidden = false;
           apiCreate.textContent = tr(
             "Создать новый API Key",
             "Create new API Key",
@@ -1111,6 +1156,7 @@
           );
           apiEndpointText.textContent = "";
           apiRevoke.hidden = true;
+          apiEndpointCopy.hidden = true;
         }
       } catch (error) {
         if (token === epoch) apiStatus.textContent = error.message;
@@ -1389,55 +1435,34 @@
     try {
       const s = await ctx.api("/api/service-status");
       if (token !== epoch) return;
-      const own = s.dailyUnlimited === true || s.userApi?.connected === true,
-        remaining = Number(s.dailyRemainingPercent);
-      if (
-        !own &&
-        (!Number.isFinite(remaining) || remaining < 0 || remaining > 100)
-      )
-        throw Error(
-          tr(
-            "Не удалось получить состояние общего ресурса Pongy.",
-            "Could not retrieve the shared Pongy allowance status.",
-          ),
-        );
-      const used = own
-        ? 0
-        : Math.max(0, Math.min(100, 100 - remaining));
+      const own = s.weeklyUnlimited === true || s.userApi?.connected === true,
+        paid = s.paid === true,
+        remaining = Number(s.weeklyRemainingPercent);
+      if (!own && (!Number.isFinite(remaining) || remaining < 0 || remaining > 100))
+        throw Error(tr("Не удалось получить состояние общего ресурса Pongy.","Could not retrieve the shared Pongy allowance status."));
+      const used = own ? 0 : Math.max(0, Math.min(100, 100 - remaining));
       $("usageProgress").value = used;
-      $("usageProgress").hidden=own;
+      $("usageProgress").hidden = own;
       $("usageProgress").removeAttribute("aria-disabled");
-      $("settings-panel-usage").dataset.state = s.aiUnavailable
-        ? "unavailable"
-        : used >= 100
-          ? "exhausted"
-          : "normal";
-      $("usagePercent").textContent = own ? tr("Без дневного лимита Free", "No Free daily limit") : String(s.dailyUsed||0)+" / "+String(s.dailyLimit||0)+" · "+used.toLocaleString(ctx.lang()==='ru'?'ru-RU':'en-US',{maximumFractionDigits:1})+"%";
-      $("usageReset").textContent = s.dailyReset
-        ? tr("Обновление лимита: ", "Limit resets: ") +
-          new Date(s.dailyReset).toLocaleString(
-            ctx.lang() === "ru" ? "ru-RU" : "en-US",
-          )
+      $("settings-panel-usage").dataset.state = s.aiUnavailable ? "unavailable" : used >= 100 ? "exhausted" : "normal";
+      $("usagePercent").textContent = own
+        ? tr("Личный API без лимита Pongy","Personal API: no Pongy usage cap")
+        : tr("Использовано ","Used ") + used.toLocaleString(ctx.lang()==="ru"?"ru-RU":"en-US",{maximumFractionDigits:1}) + "%";
+      $("usageReset").textContent = s.weeklyReset
+        ? tr("Сброс: ","Resets: ") + new Date(s.weeklyReset).toLocaleDateString(ctx.lang()==="ru"?"ru-RU":"en-US")
         : "";
       $("usageHint").replaceChildren();
-      if (!own && used >= 100) {
-        const upgrade = button(
-          tr(
-            "Упс! Весь сегодняшний дневной лимит был исчерпан. Перейдите на тариф Plus для разблокировки лимита!",
-            "Oops! Today’s daily limit is used up. Switch to Plus to unlock the limit!",
-          ),
-          () => ctx.subscribe(),
-        );
+      if (!own && used >= 100 && !paid) {
+        const upgrade = button(tr("Лимит этой недели исчерпан. Перейдите на Plus, чтобы увеличить доступный ресурс.","This week's allowance is exhausted. Switch to Plus for a larger weekly budget."),() => ctx.subscribe());
         upgrade.onclick = () => ctx.subscribe();
         $("usageHint").append(upgrade);
         return;
       }
       $("usageHint").textContent = own
-        ? tr(
-            "Личный API или активный Plus: дневной лимит Free не применяется.",
-            "Personal API or active Plus: the Free daily cap does not apply.",
-          )
-        : "";
+        ? tr("Запросы выполняются через подключённый личный API.","Requests use your connected personal API.")
+        : used >= 100
+          ? tr("Недельный лимит исчерпан. Он обновится в указанную дату.","The weekly allowance is exhausted. It resets on the date shown.")
+          : tr("Расход зависит от длины и сложности запроса, контекста, выбранной модели и уровня размышления.","Usage depends on request length and complexity, context, selected model and thinking level.");
     } catch (e) {
       $("usageHint").textContent = e.message;
     }
@@ -1450,6 +1475,76 @@
       });
     open.id = "adminCheckButton";
     p.append(open);
+    const firmware = node("section", undefined, "settings-subsection");
+    const firmwareTitle = node("h3", tr("Настройки модели", "AI firmware"));
+    const firmwareHint = node("p", tr("Глобальные правила поведения Pongy AI для всех пользователей. Настройки применяются на сервере.", "Global Pongy AI behaviour settings for all users. Changes are applied server-side."), "settings-hint");
+    const firmwareStyleLabel = node("label", tr("Стиль общения", "Communication style"), "field-label");
+    const firmwareStyle = node("select", undefined, "inp");
+    firmwareStyleLabel.htmlFor = "aiFirmwareStyle"; firmwareStyle.id = "aiFirmwareStyle";
+    for (const [value, ru, en] of [["balanced","Сбалансированный","Balanced"],["friendly","Дружелюбный","Friendly"],["formal","Формальный","Formal"],["concise","Краткий","Concise"],["detailed","Подробный","Detailed"]]) firmwareStyle.append(new Option(tr(ru,en),value));
+    const firmwareDiscussionLabel = node("label", tr("Обсуждение спорных тем", "Sensitive-topic discussion"), "field-label");
+    const firmwareDiscussion = node("select", undefined, "inp");
+    firmwareDiscussionLabel.htmlFor = "aiFirmwareDiscussion"; firmwareDiscussion.id = "aiFirmwareDiscussion";
+    for (const [value, ru, en] of [["contextual","Контекстный анализ — без фильтра по словам","Contextual analysis — no keyword filtering"],["academic","Академический и исторический","Academic and historical"],["balanced","Сбалансированный разбор фактов","Balanced, evidence-led discussion"]]) firmwareDiscussion.append(new Option(tr(ru,en),value));
+    const firmwareMaskRow = node("label", undefined, "display-option");
+    const firmwareMaskText = node("span", tr("Внутренние названия моделей всегда скрыты", "Internal model names are always hidden"));
+    const firmwareMask = node("input"); firmwareMask.type = "checkbox"; firmwareMask.id = "aiFirmwareMaskModels"; firmwareMask.className = "display-switch"; firmwareMask.checked = true; firmwareMask.disabled = true; firmwareMask.setAttribute("role","switch");
+    firmwareMaskRow.append(firmwareMaskText,firmwareMask);
+    const firmwareSafety = node("p", tr("Базовые правила безопасности всегда включены и не могут быть отключены.", "Core safety rules always remain enabled and cannot be disabled."), "settings-hint");
+    const firmwareStatus = node("p", "", "settings-hint"); firmwareStatus.id = "aiFirmwareStatus";
+    const firmwareSave = button(tr("Сохранить прошивку", "Save AI firmware"), async () => {
+      firmwareSave.disabled = true; firmwareStatus.textContent = tr("Сохранение…","Saving…");
+      try {
+        const value = await ctx.api("/api/admin/ai-firmware", {method:"PUT",body:{style:firmwareStyle.value,discussion:firmwareDiscussion.value,maskModels:firmwareMask.checked}});
+        firmwareStyle.value=value.style; firmwareDiscussion.value=value.discussion; firmwareMask.checked=value.maskModels===true;
+        firmwareStatus.textContent = tr("Глобальная прошивка сохранена.","Global AI firmware saved.");
+      } catch(error) { firmwareStatus.textContent = error.message || tr("Не удалось сохранить настройки.","Could not save settings."); }
+      finally { firmwareSave.disabled = false; }
+    });
+    firmwareSave.id = "aiFirmwareSave";
+    firmware.append(firmwareTitle,firmwareHint,firmwareStyleLabel,firmwareStyle,firmwareDiscussionLabel,firmwareDiscussion,firmwareMaskRow,firmwareSafety,firmwareSave,firmwareStatus);
+    p.append(firmware);
+    async function loadFirmware() {
+      try {
+        const value = await ctx.api("/api/admin/ai-firmware");
+        firmwareStyle.value = value.style || "balanced";
+        firmwareDiscussion.value = value.discussion || "contextual";
+        firmwareMask.checked = value.maskModels !== false;
+        firmwareStatus.textContent = value.updatedAt ? tr("Последнее сохранение: ","Last saved: ")+new Date(value.updatedAt).toLocaleString(ctx.lang()==="ru"?"ru-RU":"en-US") : tr("Используются стандартные настройки.","Default settings are active.");
+      } catch(error) { firmwareStatus.textContent = error.message || tr("Не удалось загрузить прошивку.","Could not load AI firmware."); }
+    }
+    p._loadAiFirmware = loadFirmware;
+    const users = node("details", undefined, "admin-users"), usersSummary = node("summary", tr("Пользователи", "Users")), usersStatus = node("p", "", "settings-hint"), usersWrap = node("div", undefined, "admin-users-wrap"), usersTable = node("table", undefined, "admin-users-table"), usersHead = node("thead"), usersBody = node("tbody"), usersActions = node("div", undefined, "admin-users-actions");
+    users.id = "adminUsers"; usersStatus.id = "adminUsersStatus"; usersTable.append(usersHead, usersBody); usersWrap.append(usersTable); users.append(usersSummary, usersStatus, usersWrap);
+    const headRow = node("tr"); [["Имя","Name"],["Почта","Email"],["Возраст аккаунта","Account age"],["Подписка","Subscription"],["Платежи","Payments"],["Последнее посещение","Last visit"]].forEach(([ru,en])=>headRow.append(node("th",tr(ru,en)))); usersHead.append(headRow);
+    let usersOffset = 0, usersBusy = false, usersLoaded = false;
+    function accountAge(value){if(!Number.isFinite(Number(value))||Number(value)<=0)return "—";const days=Math.max(0,Math.floor((Date.now()-Number(value))/86400000));if(ctx.lang()==="ru"){if(days<30)return days+" дн.";const months=Math.floor(days/30);if(months<12)return months+" мес.";const years=Math.floor(months/12),rest=months%12;return years+" г. "+(rest?rest+" мес.":"");}if(days<30)return days+" d";const months=Math.floor(days/30);if(months<12)return months+" mo";const years=Math.floor(months/12),rest=months%12;return years+" y "+(rest?rest+" mo":"");}
+    function dateLabel(value){return Number(value)>0?new Date(Number(value)).toLocaleString(ctx.lang()==="ru"?"ru-RU":"en-US",{dateStyle:"medium",timeStyle:"short"}):"—";}
+    function paymentLabel(items){if(!items||!items.length)return tr("Нет платежей","No payments");return items.map(x=>{const amount=(Number(x.paidMinor||0)/100).toLocaleString(ctx.lang()==="ru"?"ru-RU":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+x.currency;return tr("Оплачено: ","Paid: ")+(x.paidCount||0)+" · "+amount+(x.pendingCount?" · "+tr("Ожидают: ","Pending: ")+x.pendingCount:"")+(x.failedCount?" · "+tr("Не завершено: ","Unsuccessful: ")+x.failedCount:"");}).join(" / ");}
+    let selectedUser=null,selectedReport=null,selectedDetails=null;
+    function modal(titleText,cls){const d=node("dialog",undefined,"admin-user-dialog "+(cls||""));const h=node("h2",titleText);const close=button(tr("Закрыть","Close"),()=>d.close());close.classList.add("admin-dialog-close");d.append(h);d.addEventListener("click",e=>{if(e.target===d)d.close();});p.append(d);return {dialog:d,heading:h,close};}
+    const detailsModal=modal(tr("Сведения о пользователе","User details"));
+    const detailsContent=node("div",undefined,"admin-user-details-content");detailsModal.dialog.append(detailsContent,detailsModal.close);
+    const actionsModal=modal(tr("Действия с пользователем","User actions"));
+    const actionsIdentity=node("div",undefined,"admin-action-identity"),reportBox=node("textarea",undefined,"inp admin-report-readonly");reportBox.readOnly=true;reportBox.rows=5;
+    const reportHead=node("div",undefined,"admin-report-head"),reportStatus=node("select",undefined,"inp admin-report-status"),reportStatusMenu=node("div",undefined,"admin-report-status-menu"),reportStatusToggle=button(tr("Статус обращения","Report status"),()=>{reportStatusMenu.hidden=!reportStatusMenu.hidden;}),reportStatusSave=button(tr("Сохранить статус","Save status"),async()=>{if(!selectedReport)return;try{await ctx.api("/api/admin/moderation/reports/"+encodeURIComponent(selectedReport.id)+"/status",{method:"POST",body:{status:reportStatus.value}});selectedReport.status=reportStatus.value;reportStatusSave.textContent=tr("Сохранено","Saved");reportStatusSave.hidden=true;}catch(e){reportStatusSave.textContent=e.message;}});reportStatus.hidden=true;reportStatusMenu.hidden=true;reportStatusSave.hidden=true;
+    for(const [value,r,e] of [["accepted","✓ Согласие","✓ Accepted"],["investigation","◷ Разбирательства","◷ Under review"],["rejected","× Отказ","× Rejected"]]){const label=tr(r,e);reportStatus.append(new Option(label,value));reportStatusMenu.append(button(label,()=>{reportStatus.value=value;reportStatusMenu.hidden=true;reportStatusToggle.textContent=label;reportStatusSave.hidden=false;}));}reportHead.append(reportStatusToggle);
+    const reportPanel=node("section",undefined,"admin-report-panel");reportPanel.append(reportHead,reportBox,reportStatus,reportStatusMenu,reportStatusSave);
+    const actionReason=field(actionsModal.dialog,tr("Причина действия","Reason for action"));actionReason.placeholder=tr("Укажите причину, которая будет видна пользователю","Enter the reason visible to the user");actionReason.maxLength=2000;
+    const actionButtons=node("div",undefined,"admin-moderation-actions");
+    const actionReasonLabel=actionReason.closest("label");actionReasonLabel.classList.add("admin-action-reason");
+    actionsModal.dialog.append(actionsIdentity,reportPanel,actionReasonLabel,actionButtons,actionsModal.close);
+    let pendingKind="";
+    const confirmModal=modal(tr("Подтвердить действие","Confirm action"));
+    const confirmText=node("p",undefined,"settings-hint"),termSelect=node("select",undefined,"inp");
+    for(const [value,r,e] of [["1","1 день","1 day"],["7","7 дней","7 days"],["30","30 дней","30 days"],["90","90 дней","90 days"],["permanent","Бессрочно","Permanent"]])termSelect.append(new Option(tr(r,e),value));
+    const confirmReason=node("p",undefined,"settings-hint"),confirmGo=button(tr("Подтвердить","Confirm"),async()=>{if(!selectedUser||!pendingKind)return;confirmGo.disabled=true;try{await ctx.api("/api/admin/users/"+selectedUser.id+"/actions",{method:"POST",body:{kind:pendingKind,reason:actionReason.value.trim(),term:termSelect.value,reportId:selectedReport?.id||null}});confirmModal.dialog.close();actionsModal.dialog.close();await loadUsers(true);}catch(e){confirmText.textContent=e.message;}finally{confirmGo.disabled=false;}});
+    confirmModal.dialog.append(confirmText,termSelect,confirmReason,confirmGo,confirmModal.close);
+    function openAction(kind){pendingKind=kind;const warning=kind==="warning";confirmModal.heading.textContent=kind==="ban"?tr("Подтвердить бан","Confirm ban"):kind==="restrict"?tr("Ограничить доступ к функциям","Restrict AI access"):tr("Отправить предупреждение","Send warning");const activeWarnings=(selectedDetails?.actions||[]).filter(x=>x.kind==='warning'&&!x.revoked_at).length;confirmText.textContent=warning?(activeWarnings>=2?tr("Это третье активное предупреждение. После него аккаунт будет автоматически заблокирован бессрочно.","This is the third active warning. The account will be automatically banned permanently after it."):tr("Пользователь получит уведомление в приложении и на почту. Максимум три активных предупреждения.","The user will receive an in-app and email warning. Maximum three active warnings.")):tr("Выберите срок действия ограничения.","Choose how long the restriction will last.");termSelect.hidden=warning;confirmReason.textContent=tr("Проверьте причину: ","Reason: ")+(actionReason.value.trim()||tr("не указана","not provided"));confirmModal.dialog.showModal();}
+    async function showUserDetails(user){selectedUser=user;detailsContent.replaceChildren(node("p",tr("Загрузка сведений…","Loading details…"),"settings-hint"));detailsModal.dialog.showModal();try{const d=await ctx.api("/api/admin/users/"+user.id+"/details");selectedDetails=d;detailsContent.replaceChildren();const rows=[["ID",d.id],["Имя",d.nickname||user.name],["Почта",d.email],["Создан",dateLabel(d.firebase_created_at||d.created_at)],["Последний визит",dateLabel(d.last_seen_at)],["Подтверждение почты",d.email_verified?tr("Да","Yes"):tr("Нет","No")],["Plus до",dateLabel(d.subscription_until)],["Умный ПК до",dateLabel(d.smart_pc_until)],["Google ID",d.google_id||"—"],["Firebase UID",d.firebase_uid||"—"],["Аватар",d.avatar||"—"],["Активный бан",d.access?.banned?tr("Да","Yes"):tr("Нет","No")],["Ограничение функций",d.access?.restricted?tr("Да","Yes"):tr("Нет","No")],["Всего обращений",(d.reports||[]).length],["Всего действий",(d.actions||[]).length],["Предупреждения",(d.actions||[]).filter(x=>x.kind==='warning'&&!x.revoked_at).length+" / 3"]];for(const [k,v] of rows){const line=node("div",undefined,"admin-detail-line");line.append(node("strong",String(k)),node("span",String(v??"—")));detailsContent.append(line);}detailsContent.append(node("h3",tr("История действий","Action history")));for(const a of d.actions||[]){const line=node("div",undefined,"admin-detail-action");line.append(node("span",a.kind+" · "+(a.reason||"—")+" · "+dateLabel(a.created_at)));if(!a.revoked_at){const revoke=button(tr("Снять","Revoke"),async()=>{await ctx.api("/api/admin/moderation/actions/"+a.id+"/revoke",{method:"POST",body:{}});await showUserDetails(user);});line.append(revoke);}detailsContent.append(line);}detailsContent.append(node("h3",tr("Обращения и апелляции","Reports and appeals")));for(const r of d.reports||[])detailsContent.append(node("p",r.category+" · "+r.status+" · "+dateLabel(r.created_at)+"\n"+r.details,"settings-hint"));}catch(e){detailsContent.replaceChildren(node("p",e.message,"settings-hint"));}}
+    async function showUserActions(user,reportId){selectedUser=user;actionsModal.heading.textContent=tr("Действия","Actions");actionsIdentity.replaceChildren(node("strong",user.name||"—"),node("span",user.email||"—"));try{const d=await ctx.api("/api/admin/users/"+user.id+"/details");selectedDetails=d;actionsIdentity.append(node("small",tr("Активных предупреждений: ","Active warnings: ")+((d.actions||[]).filter(x=>x.kind==='warning'&&!x.revoked_at).length)+" / 3","settings-hint"));selectedReport=(d.reports||[]).find(x=>x.id===reportId)||(d.reports||[]).find(x=>x.category!=="appeal")||null;reportBox.value=selectedReport?selectedReport.details:"";reportHead.replaceChildren(node("span",selectedReport?tr("Обращение №","Report #")+selectedReport.id.slice(0,8)+" · "+dateLabel(selectedReport.created_at):tr("Жалоб нет","No report attached")),reportStatusToggle);reportPanel.hidden=!selectedReport;reportStatusMenu.hidden=true;reportStatusToggle.hidden=!selectedReport;reportStatusToggle.textContent=selectedReport?({accepted:tr("✓ Согласие","✓ Accepted"),investigation:tr("◷ Разбирательства","◷ Under review"),rejected:tr("× Отказ","× Rejected")}[selectedReport.status]||tr("Статус обращения","Report status")):tr("Жалоб нет","No report attached");reportStatusSave.hidden=true;if(selectedReport){reportStatus.value=selectedReport.status;reportStatusSave.textContent=tr("Сохранить статус","Save status");}actionButtons.replaceChildren();for(const [kind,r,e] of [["ban","Бан","Ban"],["restrict","Ограничить доступ к функциям","Restrict AI access"],["warning","Предупреждение","Warning"]]){const b=button(tr(r,e),()=>openAction(kind));b.classList.add("admin-action-"+kind);actionButtons.append(b);}actionsModal.dialog.showModal();}catch(e){reportHead.textContent=e.message;actionsModal.dialog.showModal();}}
+    async function loadUsers(reset=false){if(usersBusy)return;if(reset){usersOffset=0;usersBody.replaceChildren();usersLoaded=false;}usersBusy=true;usersMore.disabled=true;usersStatus.textContent=tr("Загрузка…","Loading…");try{const data=await ctx.api("/api/admin/users?offset="+usersOffset);for(const u of data.users||[]){const row=node("tr"),until=Number(u.subscription?.plusUntil||0),smart=Number(u.subscription?.smartPcUntil||0),subscription=until>Date.now()?tr("Plus до ","Plus until ")+dateLabel(until):tr("Бесплатная","Free");row.classList.add("admin-user-row");row.append(node("td",u.name||"—"),node("td",u.email||"—"),node("td",accountAge(u.createdAt)),node("td",subscription+(smart>Date.now()?" · Smart PC":"")),node("td",paymentLabel(u.payments)),node("td",dateLabel(u.lastVisitAt)));usersBody.append(row);row.tabIndex=0;row.setAttribute("role","button");row.setAttribute("aria-label",tr("Выбрать пользователя ","Select user ")+(u.name||u.email));const expand=()=>{const old=row.nextElementSibling;if(old?.classList.contains("admin-user-expanded")){old.remove();row.classList.remove("selected");return;}usersBody.querySelectorAll(".admin-user-expanded").forEach(x=>x.remove());usersBody.querySelectorAll(".admin-user-row").forEach(x=>x.classList.remove("selected"));row.classList.add("selected");const trRow=node("tr",undefined,"admin-user-expanded"),cell=node("td");cell.colSpan=6;const bar=node("div",undefined,"admin-user-action-bar");bar.append(button(tr("Сведения","Details"),()=>showUserDetails(u)),button(tr("Действия","Actions"),()=>showUserActions(u)));cell.append(bar);trRow.append(cell);row.after(trRow);};row.addEventListener("click",expand);row.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();expand();}});}usersOffset+=Array.isArray(data.users)?data.users.length:0;usersStatus.textContent=tr("Пользователей: ","Users: ")+usersOffset;usersMore.hidden=!data.hasMore;usersMore.textContent=tr("Загрузить ещё","Load more");usersLoaded=true;}catch(error){usersStatus.textContent=error.message||tr("Не удалось загрузить пользователей","Could not load users");usersLoaded=false;usersMore.hidden=false;usersMore.textContent=tr("Повторить загрузку","Retry loading");}finally{usersBusy=false;usersMore.disabled=false;}}
+    const usersMore=button(tr("Загрузить ещё","Load more"),()=>loadUsers(false));usersMore.id="adminUsersMore";usersMore.hidden=true;usersActions.append(usersMore);users.append(usersActions);users.addEventListener("toggle",()=>{if(users.open&&!usersLoaded)void loadUsers(true);});p.append(users);p._openModerationReport=async reportId=>{selectTab("developer");users.open=true;if(!usersLoaded)await loadUsers(true);const data=await ctx.api("/api/admin/moderation/reports?limit=200"),report=(data.reports||[]).find(x=>x.id===reportId);if(!report)throw Error(tr("Обращение не найдено","Report not found"));await showUserActions({id:report.user_id,name:report.nickname||report.user_email,email:report.user_email},reportId);};
     const dialog = node("dialog");
     dialog.id = "adminCheckDialog";
     dialog.className = "admin-check-dialog";
@@ -1794,6 +1889,26 @@
   async function refresh() {
     const user = ctx.user(),
       id = user?.email || "";
+    if (user?.guest) {
+      $("accountEmailLabel")?.remove();
+      $("accountEmail")?.remove();
+      $("settings-tab-beta").hidden = false;
+      $("settings-panel-beta").hidden = active !== "beta";
+      $("settings-tab-developer").hidden = true;
+      return;
+    }
+    if (!$("accountEmailLabel") && user) {
+      const emailLabel = node("label",tr("Почта аккаунта", "Account email"),"settings-field");
+      const emailField = node("input");
+      emailLabel.id = "accountEmailLabel";
+      emailField.id = "accountEmail";
+      emailField.type = "email";
+      emailField.readOnly = true;
+      emailField.className = "inp";
+      emailField.autocomplete = "off";
+      emailLabel.append(emailField);
+      $("settings-panel-account").insertBefore(emailLabel,$("logoutBtnSettings"));
+    }
     if ($("accountEmail")) $("accountEmail").value = id;
     if (account !== id) {
       account = id;
@@ -1936,6 +2051,10 @@
   root.addEventListener("pongy-products-updated",()=>{if($("settingsModal").classList.contains("open"))void usage();});
   root.PongySettings = {
     init,
+    openAccount() { selectTab("account"); },
+    openMain() { selectTab("main"); },
+    openDeveloper() { if ($("settings-tab-developer")?.hidden) return false; selectTab("developer"); return active === "developer"; },
+    openModerationReport(id) { return $("settings-panel-developer")?._openModerationReport?.(id); },
     refresh,
     refreshUsage: usage,
     checkSite: siteState,

@@ -36,14 +36,14 @@ jobs:
           PONGY_SIGNING_DIR: ${{ runner.temp }}/pongy-signing
         run: |
           bash native/android/build.sh
-          sha256sum public/downloads/Pongy-AI-0.29.1-android.apk > public/downloads/Pongy-AI-0.29.1-android.apk.sha256
+          sha256sum public/downloads/Pongy-AI-0.29.2-android.apk > public/downloads/Pongy-AI-0.29.2-android.apk.sha256
       - uses: actions/upload-artifact@v6
         with:
-          name: Pongy-AI-0.29.1-android-signed
+          name: Pongy-AI-0.29.2-android-signed
           if-no-files-found: error
           path: |
-            public/downloads/Pongy-AI-0.29.1-android.apk
-            public/downloads/Pongy-AI-0.29.1-android.apk.sha256
+            public/downloads/Pongy-AI-0.29.2-android.apk
+            public/downloads/Pongy-AI-0.29.2-android.apk.sha256
       - name: Remove signing material
         if: always()
         run: rm -rf "$RUNNER_TEMP/pongy-signing"

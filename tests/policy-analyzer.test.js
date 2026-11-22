@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createPolicyAnalyzer} from '../lib/policy-analyzer.js';
+test('model moderation accepts only known categories at the confidence threshold',async()=>{const analyzer=createPolicyAnalyzer({config:{openrouterKey:'test',frontendUrl:'https://example.test'},fetchImpl:async(_url,options)=>{const body=JSON.parse(options.body);assert.equal(body.messages[0].role,'system');return{ok:true,json:async()=>({choices:[{message:{content:'{"categories":["malware","invented"],"confidence":0.97}'}}]})}}});assert.deepEqual(await analyzer('create a malicious keylogger'),['malware']);});
+test('model moderation ignores low-confidence output and safely falls back when provider fails',async()=>{const low=createPolicyAnalyzer({config:{openrouterKey:'test'},fetchImpl:async()=>({ok:true,json:async()=>({choices:[{message:{content:'{"categories":["policy_bypass"],"confidence":0.51}'}}]})})});assert.deepEqual(await low('hello'),[]);const down=createPolicyAnalyzer({config:{openrouterKey:'test'},fetchImpl:async()=>{throw Error('offline')}});assert.deepEqual(await down('hello'),[]);});

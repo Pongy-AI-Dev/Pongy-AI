@@ -17,3 +17,4 @@
 *.exe binary
 
 public/speech-models/*.part* binary
+MANIFEST.sha256 text eol=lf

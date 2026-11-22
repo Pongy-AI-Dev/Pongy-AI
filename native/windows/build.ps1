@@ -1,6 +1,7 @@
 param(
   [string]$WebView2SdkPath = $env:WEBVIEW2_SDK,
-  [string]$WixPath
+  [string]$WixPath,
+  [string]$VisualStudioPath = $env:VSINSTALLDIR
 )
 
 $ErrorActionPreference = 'Stop'
@@ -8,7 +9,7 @@ $nativeDir = $PSScriptRoot
 $repoRoot = (Resolve-Path (Join-Path $nativeDir '..\..')).Path
 $buildDir = Join-Path $nativeDir 'build'
 $downloadsDir = Join-Path $repoRoot 'public\downloads'
-$output = Join-Path $downloadsDir 'Pongy-AI-0.29.1-windows-x64.msi'
+$output = Join-Path $downloadsDir 'Pongy-AI-0.29.3-windows-x64.msi'
 
 if (-not $WebView2SdkPath -or -not (Test-Path (Join-Path $WebView2SdkPath 'build\native\x64\WebView2LoaderStatic.lib'))) {
   throw 'Set WEBVIEW2_SDK to the extracted Microsoft.Web.WebView2 1.0.3537.50 NuGet package.'
@@ -23,10 +24,20 @@ if (-not $WixPath -or -not (Test-Path $WixPath)) {
 }
 
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-if (-not (Test-Path $vswhere)) { throw 'Visual Studio Build Tools with the C++ x64 toolchain are required.' }
-$env:PATH = (Split-Path $vswhere)+';'+$env:PATH
-$vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-if (-not $vsPath) { throw 'Could not find the Visual Studio C++ x64 build tools.' }
+$vsPath = $null
+if (Test-Path $vswhere) {
+  $env:PATH = (Split-Path $vswhere)+';'+$env:PATH
+  $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+}
+if (-not $vsPath -or -not (Test-Path (Join-Path $vsPath 'VC\\Auxiliary\\Build\\vcvars64.bat'))) {
+  $candidates = @($VisualStudioPath,
+    (Join-Path $env:ProgramFiles 'Microsoft Visual Studio\2022\Community'),
+    (Join-Path $env:ProgramFiles 'Microsoft Visual Studio\2022\Professional'),
+    (Join-Path $env:ProgramFiles 'Microsoft Visual Studio\2022\Enterprise'),
+    (Join-Path $env:ProgramFiles 'Microsoft Visual Studio\2022\BuildTools'))
+  $vsPath = $candidates | Where-Object { $_ -and (Test-Path (Join-Path $_ 'VC\Auxiliary\Build\vcvars64.bat')) } | Select-Object -First 1
+}
+if (-not $vsPath) { throw 'Visual Studio Build Tools with the C++ x64 toolchain are required.' }
 $vcvars = Join-Path $vsPath 'VC\Auxiliary\Build\vcvars64.bat'
 if (-not (Test-Path $vcvars)) { throw 'The Visual Studio x64 build environment script is missing.' }
 
@@ -38,7 +49,7 @@ $logo = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $repoRoot '
 $offline = $offline.Replace('/welcome-logo.png',"data:image/png;base64,$logo")
 $offlineScript = [IO.File]::ReadAllText((Join-Path $repoRoot 'public\offline-page.js')).Replace(
   'location.reload()',
-  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.29.1")'
+  'location.assign("https://pongy-ai.devs.surf/?pongy_app=windows&client_version=0.29.3")'
 )
 $offline = $offline.Replace(
   '<script src="/offline-page.js"></script>',
@@ -65,4 +76,32 @@ try {
   Pop-Location
 }
 
-Write-Output "Built unsigned MSI: $output"
+$thumbprint = ($env:PONGY_CODESIGN_THUMBPRINT -replace '\s','').ToUpperInvariant()
+if ($thumbprint) {
+  $certificate = Get-Item -LiteralPath ("Cert:\CurrentUser\My\" + $thumbprint) -ErrorAction SilentlyContinue
+  if (-not $certificate) { throw 'The requested code-signing certificate was not found in CurrentUser\\My.' }
+  if (-not $certificate.HasPrivateKey -or $certificate.EnhancedKeyUsageList.ObjectId -notcontains '1.3.6.1.5.5.7.3.3') {
+    throw 'The selected certificate must have a private key and the Code Signing EKU.'
+  }
+  $signTool = Get-Command signtool.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+  $signToolPath = if ($signTool) { $signTool.Source } else { $null }
+  if (-not $signToolPath) {
+    $kits = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
+    if (Test-Path $kits) {
+      $candidate = Get-ChildItem -Path $kits -Filter signtool.exe -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -match '\\x64\\signtool\.exe$' } |
+        Sort-Object FullName -Descending | Select-Object -First 1
+      if ($candidate) { $signToolPath = $candidate.FullName }
+    }
+  }
+  if (-not $signToolPath) { throw 'Windows SDK SignTool is required to sign the MSI.' }
+  $timestamp = if ($env:PONGY_TIMESTAMP_URL) { $env:PONGY_TIMESTAMP_URL } else { 'http://timestamp.digicert.com' }
+  & $signToolPath sign /fd SHA256 /td SHA256 /tr $timestamp /sha1 $thumbprint /s My $output
+  if ($LASTEXITCODE -ne 0) { throw "Authenticode signing failed with exit code $LASTEXITCODE." }
+  & $signToolPath verify /pa /all /v $output
+  if ($LASTEXITCODE -ne 0) { throw "Authenticode verification failed with exit code $LASTEXITCODE." }
+  Write-Output "Built and signed MSI: $output"
+} else {
+  Write-Warning 'MSI built successfully but remains unsigned. Set PONGY_CODESIGN_THUMBPRINT to a trusted Code Signing certificate in CurrentUser\\My; do not use a self-signed certificate for public release.'
+  Write-Output "Built unsigned MSI: $output"
+}

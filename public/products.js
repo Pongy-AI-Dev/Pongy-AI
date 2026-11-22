@@ -48,7 +48,7 @@
   window.addEventListener("pagehide",stopWatch);
   window.addEventListener("pageshow",()=>{alive=true;void watchProducts();});
   function labels() {
-    title.textContent = tr("Умный дом", "Smart Home");
+    title.textContent = tr("Умный ПК", "Smart PC");
     btn.title = title.textContent;
     btn.querySelector("span").textContent = title.textContent;
     close.setAttribute("aria-label", tr("Закрыть", "Close"));
@@ -70,7 +70,7 @@
       ].map((t) => el("li", t)),
     );
     buy.textContent = tr("Подключить Умный ПК", "Get Smart PC");
-    launch.textContent = tr("Открыть помощника", "Open assistant");
+    launch.textContent = tr("\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0423\u043c\u043d\u044b\u0439 \u041f\u041a", "Open Smart PC");
   }
   function native() {
     return window.PongyNative?.platform === "windows";
@@ -118,7 +118,9 @@
       });
     const active = data.smart_pc.active;
     launch.hidden = !active || !native();
+    launch.disabled = !active || !native();
     buy.hidden = active;
+    if (native()) launch.textContent = tr("Открыть Умный ПК", "Open Smart PC");
     status.textContent = active
       ? tr("Доступ до ", "Access until ") +
         new Date(data.smart_pc.until).toLocaleString(ru() ? "ru-RU" : "en-US")
@@ -157,14 +159,7 @@
   }
   void watchProducts();
   btn.onclick = open;
-  launch.onclick = () => {
-    if (window.PongyDesktop?.openSmartPC) window.PongyDesktop.openSmartPC();
-    else
-      status.textContent = tr(
-        "Нужна новая Windows-сборка приложения.",
-        "An updated Windows build is required.",
-      );
-  };
+  launch.onclick = () => { if (!current?.smart_pc?.active || !native()) { launch.hidden = true; return; } if (window.PongyDesktop?.openSmartPC) window.PongyDesktop.openSmartPC(); };
   buy.onclick = async () => {
     if (busy) return;
     busy = true;
@@ -209,7 +204,7 @@
         } finally {
           checking = false;
         }
-      }, 5000);
+      }, 2000);
     } catch (e) {
       status.textContent = e.message;
     } finally {

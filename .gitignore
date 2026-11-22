@@ -9,6 +9,9 @@ data/
 *.db-*
 *.log
 .ci-logs/
+.local-agent-state/
+
+
 tests/artifacts/
 playwright-report/
 test-results/

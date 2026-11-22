@@ -1,0 +1,9 @@
+{
+  "name": "pongx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": { "pongx": "./bin/pongx.js" },
+  "scripts": { "start": "node ./bin/pongx.js" },
+  "engines": { "node": ">=22" }
+}

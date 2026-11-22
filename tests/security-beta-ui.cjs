@@ -14,6 +14,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  const page=await browser.newPage({viewport:{width:1024,height:768}});
  const errors=[];
  page.on('pageerror',error=>errors.push(error.message));
+ await page.addInitScript(()=>{const native=window.setInterval.bind(window);window.setInterval=(callback,delay,...args)=>native(callback,delay===120000?250:delay,...args);});
  try{
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.locator('#authEmail').fill('beta@example.test');
@@ -23,21 +24,21 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   if(await page.evaluate(()=>PongyDisplay.mobile()&&!document.querySelector('#sidebar').classList.contains('open')))await page.locator('#menuBtn').click();
   await page.locator('#settingsBtn').click();
   await page.locator('#settingsModal.open').waitFor();
-  if(await page.locator('#settings-tab-beta').isVisible())throw Error('beta section visible while beta mode is off');
+  if(!await page.locator('#settings-tab-beta').isVisible())throw Error('Beta features section is missing');if(await page.locator('#settings-tab-beta').getAttribute('aria-selected')==='true')throw Error('Beta features section opened without selection');
   await page.locator('#settings-tab-interface').click();
-  await page.locator('#langGrid button').filter({hasText:'Русский'}).click();
+  await page.locator('#languageDropdownTrigger').click();await page.locator('#languageDropdownMenu button').filter({hasText:'Русский'}).click();
   await page.locator('#betaFunctions').check();
   await page.locator('#settings-tab-beta').waitFor({state:'visible'});
   await page.waitForFunction(async()=>!!(await(await fetch('/api/preferences')).json()).betaFunctions);
   if(await page.locator('#settings-tab-beta').getAttribute('aria-selected')!=='true')throw Error('beta section did not open after enabling beta mode');
-  const message=page.locator('#settings-panel-beta .beta-empty-state');
-  if((await message.textContent()).trim()!=='Здесь появятся новые функции для тестирования')throw Error('beta section placeholder text is incorrect');
-  const style=await page.evaluate(element=>({align:getComputedStyle(element).textAlign,color:getComputedStyle(element).color,bodyColor:getComputedStyle(document.body).color}),await message.elementHandle());
-  if(style.align!=='center'||style.color===style.bodyColor)throw Error('beta placeholder is not centered and gray');
+  for(const key of ['earlyAccess','developerFeatures']){
+    if(await page.locator('#betaFeature-'+key).count()!==1)throw Error('beta feature switch missing: '+key);
+  }
+  if(!(await page.locator('#settings-panel-beta').innerText()).includes('Ранний доступ'))throw Error('early access description missing');
   if(await page.locator('.security-beta-scene, #betaScenarioButton').count())throw Error('legacy simulation controls remain');
   await page.locator('#settings-tab-interface').click();
   await page.locator('#betaFunctions').uncheck();
-  await page.locator('#settings-tab-beta').waitFor({state:'hidden'});
+  await page.locator('#settings-tab-beta').waitFor({state:'visible'});if(await page.locator('#settings-panel-beta').isVisible())throw Error('beta panel stayed open after disabling beta mode');
   if(await page.locator('#settings-tab-interface').getAttribute('aria-selected')!=='true')throw Error('turning beta mode off changed the selected settings section');
   await page.waitForFunction(async()=>!(await(await fetch('/api/preferences')).json()).betaFunctions);
   if(errors.length)throw Error('browser errors: '+errors.join(';'));
