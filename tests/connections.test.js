@@ -1,7 +1,7 @@
-import test from 'node:test';import assert from 'node:assert/strict';import Database from 'better-sqlite3';import {createConnections,requestedConnections} from '../lib/connections.js';import {createTools} from '../lib/tools.js';import {identityAnswer,IDENTITY_PROMPT} from '../lib/identity.js';import {productFacts} from '../lib/product-facts.js';import {creatorContext} from '../lib/product.js';import {culturalReply} from '../lib/culture.js';import {extractPage} from '../lib/web.js';
+import test from 'node:test';import assert from 'node:assert/strict';import Database from 'better-sqlite3';import {createConnections,requestedConnections,CONNECTION_TOOL} from '../lib/connections.js';import {createTools} from '../lib/tools.js';import {identityAnswer,IDENTITY_PROMPT} from '../lib/identity.js';import {productFacts} from '../lib/product-facts.js';import {creatorContext} from '../lib/product.js';import {culturalReply} from '../lib/culture.js';import {extractPage} from '../lib/web.js';
 const secret='fixture-connection-secret-'.repeat(3),token='fixture-private-token-123';
 function fixture({fetchImpl,clock=()=>1000000}={}){const db=new Database(':memory:');db.exec('CREATE TABLE users(id INTEGER PRIMARY KEY);INSERT INTO users VALUES(1),(2)');const config={sessionSecret:secret,frontendUrl:'https://pongy.example.org',connectionGoogleId:'fixture-id',connectionGoogleSecret:'fixture-secret',connectionSlackId:'slack-id',connectionSlackSecret:'slack-secret'};const calls=[];const manager=createConnections({db,config,now:clock,fetchImpl:async(url,options)=>{calls.push({url,options});return fetchImpl?fetchImpl(url,options):Response.json({id:3,login:'fixture-user'})}});return {db,config,manager,calls,close:()=>db.close()}}
-test('connection catalogue never falsely reports unconfigured OAuth or leaks credentials',()=>{const f=fixture();try{const rows=f.manager.list(1);assert.equal(rows.length,5);assert(rows.every(v=>!v.connected&&v.readOnly));assert.equal(rows.find(v=>v.id==='github').tokenAvailable,true);assert.equal(rows.find(v=>v.id==='github').oauthAvailable,false);assert.equal(rows.find(v=>v.id==='gmail').oauthAvailable,true);assert(!JSON.stringify(rows).includes('fixture-secret'))}finally{f.close()}});
+test('connection catalogue never falsely reports unconfigured OAuth or leaks credentials',()=>{const f=fixture();try{const rows=f.manager.list(1);assert.equal(rows.length,6);assert(rows.every(v=>!v.connected&&v.readOnly));assert.equal(rows.find(v=>v.id==='github').tokenAvailable,true);assert.equal(rows.find(v=>v.id==='github').oauthAvailable,false);assert.equal(rows.find(v=>v.id==='gmail').oauthAvailable,true);assert(!JSON.stringify(rows).includes('fixture-secret'))}finally{f.close()}});
 test('GitHub token is verified remotely, encrypted at rest and isolated by account',async()=>{const f=fixture();try{await f.manager.connectToken(1,'github',token);assert.equal(f.calls[0].url,'https://api.github.com/user');assert.equal(f.calls[0].options.redirect,'error');assert.equal(f.calls[0].options.headers.Authorization,'Bearer '+token);const row=f.db.prepare('SELECT * FROM user_connections').get();assert(!row.sealed.includes(token));assert(f.manager.list(1)[0].connected);assert(!f.manager.list(2)[0].connected);assert(!JSON.stringify(f.manager.list(1)).includes(token));await assert.rejects(f.manager.read(2,{service:'github',action:'list'}),e=>e.code==='CONNECTION_NOT_CONNECTED');f.db.prepare('INSERT INTO user_connections SELECT 2,service,sealed,label,updated_at FROM user_connections WHERE user_id=1').run();await assert.rejects(f.manager.read(2,{service:'github',action:'list'}),e=>e.code==='CONNECTION_RECONNECT')}finally{f.close()}});
 test('bad tokens do not create a fake connected status or expose upstream errors',async()=>{const f=fixture({fetchImpl:async()=>new Response('secret upstream body',{status:401})});try{await assert.rejects(f.manager.connectToken(1,'github',token),e=>e.code==='CONNECTION_RECONNECT'&&!e.message.includes('secret'));assert(!f.manager.list(1)[0].connected);await assert.rejects(f.manager.connectToken(1,'gmail',token),e=>e.code==='CONNECTION_INPUT')}finally{f.close()}});
 test('Google OAuth uses account-bound one-time state, browser nonce, PKCE and read-only scope',async()=>{const f=fixture({fetchImpl:async()=>Response.json({access_token:token,refresh_token:'refresh-private',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.readonly'})});try{const flow=f.manager.start(1,'google-drive'),u=new URL(flow.url);assert.equal(u.hostname,'accounts.google.com');assert.equal(u.searchParams.get('code_challenge_method'),'S256');assert.equal(u.searchParams.get('scope'),'https://www.googleapis.com/auth/drive.readonly');assert(!u.href.includes('fixture-secret'));for(const [uid,browser]of [[2,flow.browser],[1,'wrong-browser']])await assert.rejects(f.manager.complete(uid,'google-drive',u.searchParams.get('state'),browser,'code'),e=>e.code==='CONNECTION_STATE');await f.manager.complete(1,'google-drive',u.searchParams.get('state'),flow.browser,'code');const sent=new URLSearchParams(f.calls[0].options.body);assert(sent.get('code_verifier').length>=43);assert.equal(sent.get('redirect_uri'),'https://pongy.example.org/api/connections/google-drive/callback');assert(f.manager.list(1).find(x=>x.id==='google-drive').connected);await assert.rejects(f.manager.complete(1,'google-drive',u.searchParams.get('state'),flow.browser,'code'),e=>e.code==='CONNECTION_STATE');assert(!JSON.stringify(f.manager.list(1)).includes('refresh-private'))}finally{f.close()}});
@@ -22,3 +22,42 @@ test('Slack user OAuth reads public-channel history and cannot read direct messa
 
 test('GitHub directories return bounded selectable file resources without pretending contents were read',async()=>{const f=fixture({fetchImpl:async url=>url.endsWith('/user')?Response.json({id:7,login:'fixture-user'}):Response.json(Array.from({length:55},(_,i)=>({name:'f'+i+'.js',path:'lib/f'+i+'.js',type:'file',html_url:'https://github.com/f/r'})))});try{await f.manager.connectToken(1,'github',token);const result=await f.manager.read(1,{service:'github',action:'read',resource:'fixture/repo'});assert.equal(result.data.entries.length,50);assert.equal(result.data.entries[0].resource,'fixture/repo/lib/f0.js');assert.equal(result.data.complete,false);assert(!result.data.text)}finally{f.close()}});
 test('Gmail listing hydrates sender and subject, bounded to ten envelopes and no message bodies',async()=>{const f=fixture({fetchImpl:async(url)=>url.includes('/token')?Response.json({access_token:token,scope:'https://www.googleapis.com/auth/gmail.readonly'}):url.includes('/messages?')?Response.json({messages:[{id:'abc'}],resultSizeEstimate:1}):Response.json({id:'abc',payload:{headers:[{name:'From',value:'boss@example.test'},{name:'Subject',value:'Meeting'},{name:'X-Secret',value:'not-for-model'}],body:{data:'private-body'}}})});try{const flow=f.manager.start(1,'gmail');await f.manager.complete(1,'gmail',new URL(flow.url).searchParams.get('state'),flow.browser,'code');const result=await f.manager.read(1,{service:'gmail',action:'list'});assert.equal(result.data.messages[0].headers.length,2);assert.equal(result.data.messages[0].headers[1].value,'Meeting');assert(!JSON.stringify(result).includes('private-body'));assert(!JSON.stringify(result).includes('not-for-model'));assert(f.calls.some(c=>c.url.includes('format=metadata')))}finally{f.close()}});
+
+test('Render API key is verified, encrypted at rest and exposes only bounded read-only service and deploy data',async()=>{
+ const f=fixture({fetchImpl:async(url,options)=>{
+  assert.equal(options.headers.Authorization,'Bearer '+token);
+  assert.equal(options.redirect,'error');
+  if(url.endsWith('/services?limit=1'))return Response.json([{service:{id:'srv-12345',name:'Pongy AI'}}]);
+  if(url.endsWith('/services?limit=50'))return Response.json([{service:{id:'srv-12345',name:'Pongy AI',type:'web_service',repo:'https://github.com/Pongy-AI-Dev/Pongy-AI',branch:'main',serviceDetails:{url:'https://pongy.example.org'},dashboardUrl:'https://dashboard.render.com/web/srv-12345',suspended:'not_suspended'}}]);
+  if(url.endsWith('/services/srv-12345'))return Response.json({id:'srv-12345',name:'Pongy AI',type:'web_service',branch:'main',repo:'https://github.com/Pongy-AI-Dev/Pongy-AI',serviceDetails:{url:'https://pongy.example.org'}});
+  if(url.endsWith('/services/srv-12345/deploys?limit=10'))return Response.json([{deploy:{id:'dep-12345',status:'live',trigger:'new_commit',commit:{id:'abc123',message:'UI update'},createdAt:'2026-11-22T10:00:00Z'}}]);
+  throw new Error('Unexpected Render URL '+url);
+ }});
+ try{
+  const list=await f.manager.connectToken(1,'render',token);
+  assert.equal(list.find(v=>v.id==='render').connected,true);
+  assert.equal(list.find(v=>v.id==='render').tokenAvailable,true);
+  assert.equal(list.find(v=>v.id==='render').readOnly,true);
+  const row=f.db.prepare("SELECT * FROM user_connections WHERE service='render'").get();
+  assert(!row.sealed.includes(token));
+  const services=await f.manager.read(1,{service:'render',action:'list'});
+  assert.equal(services.data.services[0].name,'Pongy AI');
+  const searched=await f.manager.read(1,{service:'render',action:'search',query:'Pongy'});
+  assert.equal(searched.data.services.length,1);
+  const detail=await f.manager.read(1,{service:'render',action:'read',resource:'srv-12345'});
+  assert.equal(detail.data.deploys[0].status,'live');
+  assert.equal(detail.data.deploys[0].commit.message,'UI update');
+  assert(!JSON.stringify(detail).includes(token));
+  assert(f.calls.every(call=>call.url.startsWith('https://api.render.com/v1/')&&(!call.options.method||call.options.method==='GET')));
+  assert(requestedConnections('Check my Render services and recent deploys').includes('render'));
+  assert(CONNECTION_TOOL.function.parameters.properties.service.enum.includes('render'));
+  await assert.rejects(f.manager.read(1,{service:'render',action:'read',resource:'../secrets'}),e=>e.code==='CONNECTION_INPUT');
+ }finally{f.close()}
+});
+test('invalid Render API keys never create a connected service',async()=>{
+ const f=fixture({fetchImpl:async()=>new Response('private upstream error',{status:401})});
+ try{
+  await assert.rejects(f.manager.connectToken(1,'render',token),e=>e.code==='CONNECTION_RECONNECT'&&!e.message.includes('private'));
+  assert.equal(f.manager.list(1).find(v=>v.id==='render').connected,false);
+ }finally{f.close()}
+});

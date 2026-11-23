@@ -38,3 +38,22 @@ test('encrypted payload tampering is rejected rather than returned as an empty c
  const parts=encrypted.split(':');parts[3]=(parts[3][0]==='A'?'B':'A')+parts[3].slice(1);doc.fields.json.stringValue=parts.join(':');
  await assert.rejects(store.get('user-1','token','chats','tamper'),/integrity|целостност/i);
 });
+
+test('Firestore retries one transient upstream failure before acknowledging a write',async()=>{
+ for(const first of ['http','network']){
+  let calls=0;
+  const store=new CloudStore({firestoreEnabled:true,firebaseProject:'fixture',jwtSecret:key},async()=>{
+   calls++;
+   if(calls===1){if(first==='network')throw new Error('temporary network failure');return Response.json({},{status:503});}
+   return Response.json({});
+  });
+  await store.set('user-1','token','preferences','main',{theme:'dark',updated_at:5});
+  assert.equal(calls,2);
+ }
+});
+test('Firestore never acknowledges a write after both transient attempts fail',async()=>{
+ let calls=0;
+ const store=new CloudStore({firestoreEnabled:true,firebaseProject:'fixture',jwtSecret:key},async()=>{calls++;return Response.json({},{status:503})});
+ await assert.rejects(store.set('user-1','token','preferences','main',{theme:'dark'}),e=>e.code==='FIRESTORE_UNAVAILABLE');
+ assert.equal(calls,2);
+});

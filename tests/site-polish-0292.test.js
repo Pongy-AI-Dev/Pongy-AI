@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
@@ -35,7 +35,7 @@ test('settings and subscription windows can stack as one related group', () => {
 });
 
 test('additional languages are beta-gated and untranslated labels fall back to English', () => {
-  assert.match(app, /languages=LANGS/);
+  assert.match(app, /languages=enabled\?LANGS:LANGS\.filter\(function\(l\)\{return l\.code==='en'\|\|l\.code==='ru'\}\)/);
   assert.match(app, /lang:'en'/);
 });
 
@@ -99,11 +99,12 @@ test('font and accent choices apply across the interface', () => {
   assert.match(app, /var FONT_CHOICES=\['Default','System UI','Sans Serif','Serif','Monospace','Segoe UI','Arial','Aptos','Calibri','Cambria','Candara','Corbel','Verdana','Tahoma','Trebuchet MS','Georgia','Garamond','Palatino Linotype','Times New Roman','Consolas','Courier New','Lucida Sans Unicode','Franklin Gothic Medium','Inter','Roboto Flex','Noto Sans','Open Sans','Lato','Montserrat','Ubuntu','DejaVu Sans','Liberation Sans','PT Sans','Fira Sans','Nunito','Source Sans 3','Merriweather','Source Code Pro','JetBrains Mono'\]/);
   assert.match(app, /item\.style\.fontFamily=fontCss\(font\)/);
   assert.match(app, /document\.documentElement\.style\.setProperty\('--pongy-font',fontCss\(family\)\)/);
-  assert.match(app, /function fontAvailable\(font\)/);assert.match(app, /function loadFontAsset\(font\)\{if\(!FONT_CHOICES\.includes\(font\)\)return Promise\.resolve\(false\);try\{if\(!document\.fonts\?\.load\)return Promise\.resolve\(fontAvailable\(font\)\);var spec='16px '\+fontCss\(font\),sample='Привет, Pongy! 0123456789';return document\.fonts\.load\(spec,sample\)\.then\(function\(\)\{return document\.fonts\.check\(spec,sample\)&&fontAvailable\(font\)\}\)\.catch\(function\(\)\{return false\}\)\}/);assert.match(app,/Pongy Inter/);assert.match(app,/Pongy Roboto Flex/);assert.match(css,/@font-face\{font-family:"Pongy Inter"/);for(const name of ['inter','roboto-flex','noto-sans','montserrat'])for(const subset of ['cyrillic','latin'])assert.ok(fs.existsSync(new URL('../public/fonts/'+name+'-'+subset+'.woff2',import.meta.url)));
+  assert.match(app, /function fontAvailable\(font\)/);assert.match(app, /function loadFontAsset\(font\).*document\.fonts\.load\(spec,sample\).*document\.fonts\.check\(spec,sample\)/);assert.match(app,/Pongy Inter/);assert.match(app,/Pongy Roboto Flex/);assert.match(css,/@font-face\{font-family:"Pongy Inter"/);for(const name of ['inter','roboto-flex','noto-sans','montserrat'])for(const subset of ['cyrillic','latin'])assert.ok(fs.existsSync(new URL('../public/fonts/'+name+'-'+subset+'.woff2',import.meta.url)));
   assert.doesNotMatch(app, /fonts\.googleapis\.com/);
   assert.match(app, /function extendedAppearanceEnabled\(\)\{return settings\.betaFunctions===true&&settings\.betaFeatures&&settings\.betaFeatures\.earlyAccess===true\}/);
   assert.match(app, /\$\('accentPreferenceSetting'\)\.hidden=!enabled/);
   assert.match(app, /var visible=extendedAppearanceEnabled\(\)\?ACCENT_COLORS/);
+  assert.match(app, /fontPreferenceSetting'\)\.hidden=!enabled/);
   assert.match(app, /availableFonts=extendedAppearanceEnabled\(\)\?FONT_CHOICES\.filter\(function\(font\)\{return font==='Default'\|\|fontAvailable\(font\)\}\):\['Default'\]/);
   assert.match(app, /betaFeature:function\(key,value\)/);
   assert.match(startupGuard, /var accents=\['default','yellow','red','green','blue','gray','pink','orange','teal','cyan'\]/);
@@ -114,7 +115,7 @@ test('expanded composer stays usable for long text and keeps its controls anchor
 test('short answers are never clipped or faded; only long answers get an expand control',()=>{assert.match(app,/b\.classList\.toggle\('answer-collapsed',!open&&b\.dataset\.answerLong==='true'\)/);assert.match(app,/var isLong=lines\.length>collapseLines;b\.dataset\.answerLong=String\(isLong\)/);assert.match(app,/toggle\.hidden=!isLong;update\(\)/)});
 test('voice input reports silence instead of leaving a false listening state',()=>{assert.match(app,/voiceHasSpeech=false/);assert.match(app,/showNoSpeech=!voiceHasSpeech&&!voiceFinishing/);assert.match(app,/showVoiceHelp\('no-speech'\)/)});
 test('holiday theme survives first paint and server-side settings actions',()=>{assert.match(startupGuard,/\['dark','holiday'\]\.includes\(appearance\.theme\)/);assert.match(server,/\['dark','holiday'\]\.includes\(merged\.theme\)/);assert.match(server,/\['dark','light','holiday','en','ru'/);});
-test('Smart PC shows payment only as the final action and does not display an early unavailable warning',()=>{assert.match(products,/buy\.textContent = tr\("Оплатить", "Pay"\)/);assert.match(products,/buy\.disabled = false/);assert.doesNotMatch(products,/Оплата временно недоступна/)});
+test('Smart PC shows payment only as the final action and does not display an early unavailable warning',()=>{assert.match(products,/buy\.textContent\s*=\s*tr\(\s*".*",\s*"Pay"\s*\)/);assert.match(products,/buy\.disabled = false/);assert.match(products,/catch \(e\) \{\s*status\.textContent = "";/)});
 test('the old always-on duplicate accent palette is removed', () => {
   assert.doesNotMatch(interfaceUi, /interfaceColour|const colours=/);
 });

@@ -143,6 +143,10 @@
       "Чтение доступных публичных каналов. Без личных сообщений и отправки.",
       "Read accessible public channels. No DMs or posting.",
     ],
+    render: [
+      "Просмотр сервисов и последних деплоев Render. Используйте API-ключ только с правами Read. Изменения и запуск деплоев недоступны.",
+      "View Render services and recent deploys. Use a Read-only API key. No edits or deploy triggers.",
+    ],
   };
   const icons = {
     github:
@@ -155,6 +159,8 @@
       '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>',
     slack:
       '<path d="M8 3v13m8-8v13M3 8h13M8 16h13"/><circle cx="4" cy="16" r="1"/><circle cx="16" cy="4" r="1"/>',
+    render:
+      '<path d="M4 19V5h16v14H4Z"/><path d="M8 15V9h2.5a2 2 0 0 1 0 4H8m6 2V9h2.5a2 2 0 0 1 0 4H14"/>',
   };
 
   function labels() {
@@ -280,6 +286,33 @@
           ),
         ),
       );
+    } else if (s.tokenAvailable && !s.oauthAvailable) {
+      const tokenLabel = node("label", tr("API-ключ","API key"), "connection-token-label");
+      const tokenInput = node("input", undefined, "connection-token-input");
+      tokenInput.type = "password";
+      tokenInput.autocomplete = "off";
+      tokenInput.spellcheck = false;
+      tokenInput.placeholder = s.id === "render" ? "rnd_…" : tr("Токен GitHub", "GitHub token");
+      tokenInput.setAttribute("aria-label", tr("Секретный API-ключ", "Secret API key"));
+      const connect = node("button", tr("Проверить и подключить", "Verify and connect"), "connection-primary");
+      connect.type = "button";
+      connect.onclick = () => perform(async () => {
+        const value = tokenInput.value.trim();
+        if (!value) throw Error("CONNECTION_INPUT");
+        const d = await request("/" + s.id + "/token", {
+          method: "POST",
+          body: JSON.stringify({ token: value }),
+        });
+        services = d.services;
+        const updated = services.find(item => item.id === s.id);
+        status(tr("Подключение подтверждено.", "Connection verified."));
+        if (updated) details(updated);
+        void refreshSettings();
+      });
+      panel.append(tokenLabel, tokenInput, connect,
+        node("p", s.id === "render"
+          ? tr("Ключ проверяется сервером и хранится в зашифрованном виде. Выдайте ему только Read-доступ к сервисам и деплоям.", "The key is verified server-side and encrypted at rest. Grant only Read access to services and deploys.")
+          : tr("Токен проверяется сервером и хранится в зашифрованном виде.", "The token is verified server-side and encrypted at rest."), "connection-token-note"));
     } else if (s.oauthAvailable) {
       const oauth = node(
         "button",
