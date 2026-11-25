@@ -1,4 +1,4 @@
-/* Pongy AI — visual refresh only. Preserve existing controls, dimensions and behavior. */
+﻿/* Pongy AI вЂ” visual refresh only. Preserve existing controls, dimensions and behavior. */
 :root { --chat-content-width: 900px; --chat-panel-radius: 20px; }
 #sidebar { background: var(--bg); border-right-color: color-mix(in srgb, var(--border) 78%, transparent); }
 .sb-head { min-height: 62px; }
@@ -41,3 +41,73 @@ body.dark .msg.user .bubble { box-shadow: none; }
 
 /* Keep the auth logo mask inside its 64px logo frame. */
 #authLogo { position: relative; isolation: isolate; }
+/* Sidebar: a clean, ChatGPT-inspired navigation rail, keeping Pongy branding. */
+#sidebar{width:260px;background:var(--bg);border-right:1px solid var(--border);}
+.sb-head{height:56px;min-height:56px;padding:8px 12px;gap:9px;justify-content:flex-start;}
+.sb-head .logo{width:30px;height:30px;border-radius:9px;}
+.sb-title{margin-left:0;font-size:15px;font-weight:680;letter-spacing:-.025em;}
+#collapseBtn{position:static;flex:0 0 32px;width:32px;height:32px;margin-left:auto;transform:none;border:0;border-radius:9px;background:transparent;color:var(--fg2);}
+#collapseBtn:hover{transform:none;background:var(--hover);color:var(--fg);}
+.sb-new-chat{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;gap:11px;width:calc(100% - 24px);min-height:42px;margin:7px 12px 6px;padding:9px 11px;border:1px solid var(--border);border-radius:11px;background:var(--bg2);color:var(--fg);font-size:13.5px;font-weight:560;text-align:left;}
+.sb-new-chat svg{flex:0 0 18px;color:var(--fg2);}
+.sb-new-chat:hover{background:var(--hover);border-color:color-mix(in srgb,var(--accent) 28%,var(--border));color:var(--fg);}
+.sb-search{padding:4px 12px 12px;}
+.sb-search-inner{min-height:38px;padding:8px 11px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);}
+#sbSearchInput{font-size:13px;}
+.sb-workspace-nav{display:flex;flex-direction:column;gap:2px;padding:3px 8px 7px;}
+.sb-workspace-nav .sb-btn,.archive-nav{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;gap:11px;width:100%;min-height:38px;margin:0;padding:8px 11px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--fg2);font-size:13.5px;font-weight:480;text-align:left;}
+.sb-workspace-nav .sb-btn:hover,.archive-nav:hover{background:var(--hover);color:var(--fg);}
+.sb-workspace-nav .sb-btn[aria-pressed=true],.archive-nav[aria-pressed=true]{background:var(--hover2);border-color:transparent;color:var(--fg);font-weight:570;}
+.sb-workspace-nav .sb-btn span:first-child,.archive-nav span:first-child{display:inline-flex;align-items:center;justify-content:center;width:19px;flex:0 0 19px;font-size:16px;}
+.archive-nav{width:calc(100% - 16px);margin:0 8px 7px;}
+.sb-list{padding:8px 8px 12px;}
+.chat-item{min-height:38px;margin:1px 0;padding:8px 10px;border-radius:9px;}
+.chat-item.active{background:var(--hover2);}
+.chat-title{font-size:13px;font-weight:450;}
+.sb-bottom{gap:2px;padding:8px;border-top:1px solid var(--border);}
+.sb-row{display:flex;flex-direction:column;gap:2px;}
+#sidebar .sb-row .sb-btn{display:flex;flex:0 0 auto;justify-content:flex-start;gap:11px;width:100%;min-height:38px;padding:8px 11px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--fg2);font-size:13.5px;font-weight:480;text-align:left;}
+#sidebar .sb-row .sb-btn:hover{background:var(--hover);color:var(--fg);}
+#sidebar .sb-row .sb-btn svg{width:18px;height:18px;flex:0 0 18px;}
+body.collapsed #sidebar{width:64px;}
+body.collapsed .sb-head{justify-content:center;padding-inline:8px;}
+body.collapsed #collapseBtn{margin:0;}
+body.collapsed .sb-new-chat{justify-content:center;width:42px;margin:7px auto 6px;padding:9px;}
+body.collapsed .sb-workspace-nav .sb-btn,body.collapsed .archive-nav,body.collapsed #sidebar .sb-row .sb-btn{justify-content:center;width:42px;margin-inline:auto;padding:9px;}
+body.collapsed #sidebar .sb-btn span{display:none;}
+body.collapsed #sidebar .sb-workspace-nav .sb-btn span:first-child,body.collapsed #sidebar .archive-nav span:first-child{display:inline-flex;}
+body.collapsed .sb-search{display:none;}
+@media(max-width:1024px){#sidebar{width:min(290px,86vw);}}
+
+/* Expand control appears only when the draft actually overflows the composer. */
+.composer-expand[hidden]{display:none!important;}
+.composer-expand{top:7px;right:6px;width:30px;height:30px;border:1px solid var(--border);border-radius:9px;background:var(--bg2);color:var(--fg2);opacity:1;}
+.composer-expand:hover{background:var(--hover);border-color:color-mix(in srgb,var(--accent) 35%,var(--border));color:var(--fg);}
+.composer-editor:has(#composerExpand:not([hidden])) #userInput{padding-right:42px;}
+body.composer-expanded #composerExpand{top:7px;right:6px;}
+@media(prefers-reduced-motion:reduce){.sb-new-chat,.sb-btn,.chat-item{transition:none!important;}}
+/* Mobile drawer ignores the desktop compact preference while it is open. */
+@media(max-width:1024px){
+  :where(html[data-layout="mobile"]) body.collapsed #sidebar{width:min(290px,86vw)!important;}
+  :where(html[data-layout="mobile"]) body.collapsed .sb-title,
+  :where(html[data-layout="mobile"]) body.collapsed .sb-search,
+  :where(html[data-layout="mobile"]) body.collapsed .chat-body{display:flex!important;}
+  :where(html[data-layout="mobile"]) body.collapsed .sb-btn span{display:inline-flex!important;}
+  :where(html[data-layout="mobile"]) body.collapsed .chat-actions{display:flex!important;}
+  :where(html[data-layout="mobile"]) body.collapsed .sb-new-chat{width:calc(100% - 24px);margin:7px 12px 6px;justify-content:flex-start;padding:9px 11px;}
+  :where(html[data-layout="mobile"]) body.collapsed .sb-workspace-nav .sb-btn,
+  :where(html[data-layout="mobile"]) body.collapsed .archive-nav,
+  :where(html[data-layout="mobile"]) body.collapsed #sidebar .sb-row .sb-btn{width:100%;margin-inline:0;justify-content:flex-start;padding:8px 11px;}
+}
+@media(max-width:1024px){
+  :where(html[data-layout="mobile"]) body.hidden #sidebar.open,
+  :where(html[data-layout="mobile"]) body.collapsed #sidebar.open{width:min(290px,86vw)!important;}
+  :where(html[data-layout="mobile"]) body.collapsed .sb-search{display:block!important;}
+}
+@media(max-width:1024px){:where(html[data-layout="mobile"]) body.collapsed #sidebar .sb-row{flex-direction:column!important;}}
+#sidebar{min-height:0;}
+.sb-list{min-height:0;}
+@media(max-width:1024px){
+  :where(html[data-layout="mobile"]) #sidebar .sb-bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--bg);}
+  :where(html[data-layout="mobile"]) #sidebar .sb-list{padding-bottom:165px;}
+}
