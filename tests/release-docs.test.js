@@ -7,6 +7,7 @@ import {createRequire} from 'node:module';
 
 const require = createRequire(import.meta.url);
 const version = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
+const pongxVersion = JSON.parse(fs.readFileSync('pongx/package.json', 'utf8')).version;
 
 function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
@@ -31,13 +32,17 @@ test('web, native installers and download metadata all use the current release',
   for (const platform of ['windows', 'android', 'pongx']) {
     const file = downloads.files[platform];
     const bytes = fs.readFileSync(path.join('public/downloads', file.name));
-    assert.equal(file.version, platform === 'pongx' ? '0.1.0' : version);
+    assert.equal(file.version, platform === 'pongx' ? pongxVersion : version);
+    if (platform === 'pongx') assert.equal(file.name, 'PongX-' + pongxVersion + '-windows-x64.zip');
     assert.equal(file.bytes, bytes.length, platform + ' byte count');
     assert.equal(file.sha256, sha256(bytes), platform + ' SHA-256');
   }
 
   assert.equal(downloads.files.windows.name, 'Pongy-AI-0.29.4-windows-x64.msi');
   assert.equal(downloads.files.android.name, 'Pongy-AI-0.29.4-android.apk');
+  const legacyPongx = fs.readFileSync('public/downloads/PongX-0.1.0-windows-x64.zip');
+  assert.equal(legacyPongx.length, 9099);
+  assert.equal(sha256(legacyPongx), '635e80503bd556777097ce59d0b401db4c87886962c5d13dc693efc2f890bdf4');
   assert.equal(JSON.parse(fs.readFileSync('public/release-notes.json', 'utf8')).version, version);
 });
 

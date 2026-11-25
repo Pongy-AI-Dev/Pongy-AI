@@ -10,6 +10,8 @@ Android APK пересобран как 0.29.4 (versionCode 294). Подпись
 
 Расширение Pongy Wake Focus обновлено до 0.29.4; ZIP проверяется на точное соответствие исходным файлам.
 
+PongX обновлён до 0.1.1; новый файл `PongX-0.1.1-windows-x64.zip` имеет отдельный immutable URL. Архив 0.1.0 сохранён без изменений для старых ссылок.
+
 ## 0.29.3 — Android stability and safer installation
 
 Android APK обновлён до 0.29.3 (versionCode 293): контейнер WebView учитывает системные панели, вырезы экрана и клавиатуру (включая Android 15+ edge-to-edge), запуск при сетевом сбое ограничен 25 секундами, разрешение REQUEST_INSTALL_PACKAGES удалено, автоматический запуск установщика отключён. Сохранён прежний сертификат APK. Исходники веб-сайта и серверная часть имеют версию 0.29.3. Windows MSI rebuilt with WebView2 SDK 1.0.3537.50 and WiX 6.0.2; ProductVersion and administrative extraction verified; package unsigned.

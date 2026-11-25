@@ -20,7 +20,8 @@ function asset(name, versionValue) {
 manifest.version = version;
 manifest.files.windows = asset('Pongy-AI-' + version + '-windows-x64.msi', version);
 manifest.files.android = asset('Pongy-AI-' + version + '-android.apk', version);
-manifest.files.pongx = asset('PongX-0.1.0-windows-x64.zip', '0.1.0');
+const pongxVersion = require(path.join(root, 'pongx', 'package.json')).version;
+manifest.files.pongx = asset('PongX-' + pongxVersion + '-windows-x64.zip', pongxVersion);
 
 if (!manifest.androidCertificate) throw new Error('Published Android signing certificate is missing');
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');

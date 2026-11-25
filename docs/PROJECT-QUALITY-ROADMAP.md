@@ -92,17 +92,17 @@
 
 - [x] Windows MSI 0.29.4 собран; извлечение MSI подтвердило версию PongyAI.exe 0.29.4.
 - [x] Android APK 0.29.4, versionCode 294, пересобран после выравнивания нативного моста, User-Agent и startup URL. Подпись v1/v2/v3 проверена; сертификат совпадает с ранее опубликованной идентичностью.
-- [x] PongX ZIP 0.1.0 собран из текущих исходников; SHA-256 и содержимое проверяются тестом.
+- [x] PongX ZIP 0.1.1 собран из текущих исходников; SHA-256 и содержимое проверяются тестом. Старый 0.1.0 архив восстановлен побайтно и сохранён для старых URL.
 - [x] Pongy Wake Focus ZIP 0.29.4 собран; тест сверяет каждый файл архива с исходником.
-- [x] README.md, RELEASES.md, CHANGELOG.md, releases.json и MANIFEST.sha256 обновлены.
+- [x] README.md, RELEASES.md, CHANGELOG.md, releases.json и MANIFEST.sha256 обновлены; PongX получил отдельный versioned URL 0.1.1, старый immutable URL 0.1.0 не перезаписывается.
 - [~] Windows MSI пока unsigned. По решению пользователя цифровые подписи отложены; не использовать самоподписанный сертификат и явно сообщать об отсутствии доверенной подписи при публикации.
 - [~] Установку MSI/APK на физических устройствах, обновление поверх предыдущей версии, разрешения и восстановление после перезапуска отложить по решению пользователя.
-- [ ] Перед публикацией повторить все тесты, проверить live API/сайт, Render deploy и скачивание каждого файла.
-- [x] 25.11.2026: полный Node-набор — 959 passed, 1 skipped (реальная SMTP TLS-сессия), 0 failed. Добавлен тест уникальности ключей и корректных значений в `.env.example`; исправлены дублирующий `MAX_OUTPUT_TOKENS` и опечатка адреса обратной связи; добавлена проверка разделения UI- и speech-языков.
+- [~] Полные локальные проверки завершены; после follow-up Render deploy проверить live API/сайт, скачивание каждого файла, размеры и SHA-256.
+- [x] 25.11.2026: полный Node-набор после выпуска PongX 0.1.1 — 959 passed, 1 skipped (реальная SMTP TLS-сессия), 0 failed. Release-docs и PongX tests: 11/11; отдельный Chromium download/update UI: 33 assertions passed.
 - [x] 25.11.2026: полный Chromium-runner прошёл 74/74 suites за 701,03 секунды; `products-ui.cjs` прошёл без повторного сбоя.
-- [x] 25.11.2026: `npm run check` и `npm run check:release` прошли; проверено 624 файла, 353 JS и 9 JSON. `npm audit --omit=dev` — 0 уязвимостей; `git diff --check` прошёл (только предупреждения Git о LF/CRLF).
-- [x] Live site, `/healthz` и `/api/config` отвечают HTTP 200; `/api/config` сообщает appVersion 0.29.4, AI configured, Tavily search configured, image generation configured, Firebase auth, Google/GitHub OAuth и cloud history enabled; payments и neural speech disabled. Это проверка конфигурации, не подтверждение живой доступности каждого провайдера.
-- [ ] На production `/api/downloads` сообщает 0.29.3; локальный каталог подготовлен к 0.29.4. Прямая проверка обоих production-доменов: MSI 0.29.4 и APK 0.29.4 возвращают HTTP 404; PongX ZIP отдаёт старый файл 9 099 байт вместо локального 9 269 байт, SHA-256 не совпадает. Требуется обновление сайта/Render из проверенного коммита, затем повторная проверка всех файлов и SHA-256.
+- [x] 25.11.2026: `npm run check` и `npm run check:release` после обновления PongX прошли; проверено 626 файлов, 353 JS и 9 JSON. `npm audit --omit=dev` — 0 уязвимостей; `git diff --check` прошёл (только предупреждения Git о LF/CRLF).
+- [x] Первый production smoke-check: live site, `/healthz` и `/api/config` отвечали HTTP 200; API сообщал appVersion 0.29.4, AI/Tavily/image generation configured, Firebase auth, Google/GitHub OAuth и cloud history enabled; payments и neural speech disabled. Это конфигурационный статус, не подтверждение живой доступности каждого провайдера. После follow-up дополнительно проверить, что `interfaceLanguages` содержит 6 UI-языков, `speechLanguages` — 38 голосовых локалей.
+- [~] Первый production deploy `3fe801d` обновил сайт/API до 0.29.4 и новые MSI/APK. При последующей проверке обнаружен риск immutable-кэша PongX: содержимое 0.1.0 было изменено под прежним именем. Исправлено локально: старый 0.1.0 восстановлен (9 099 bytes, исходный SHA-256), новый 0.1.1 (9 269 bytes) имеет отдельный URL. Ожидает публикации follow-up commit и повторной проверки production-файлов.
 - [~] Массовые запросы ко всем моделям отложены. Локальные `.env`-файлы отсутствуют; в локальном окружении и `data/secrets.json` не обнаружены ключи AI/search/image-провайдеров. Render API не раскрывает значения секретов; они не извлекались и не выводились. Отдельный бесплатный guest AI smoke test выполнен через production server-side credentials.
 - [~] Подписывающий сертификат Code Signing с закрытым ключом и signtool на рабочем компьютере отсутствуют. Подпись отложена по решению пользователя; не создавать фиктивную или самоподписанную подпись.
 
@@ -114,5 +114,5 @@
 
 - JavaScript baseline сохранён; TypeScript-миграция не используется.
 - Рабочая ветка: `quality/js-baseline`.
-- Production, GitHub `main` и Render в рамках этой проверки не изменялись.
-- Пользователь явно запросил публикацию 25.11.2026; отдельное согласование не требуется. Подписи, физические испытания и массовые запросы ко всем моделям отложены по его решению. Production guest AI API проверен: HTTP 200, ответ `pong`, корректное завершение SSE, гостевая сессия закрыта. Node 959/960, Chromium 74/74, check/check:release и audit прошли. Единственный подтверждённый блокер перед публикацией — production всё ещё отдаёт каталог 0.29.3 и старые/отсутствующие файлы; после обновления main/Render требуется проверить новые URL, размеры и SHA-256. MSI должен быть явно обозначен как unsigned.
+- GitHub `main` обновлён коммитом `3fe801d`; первый Render deploy live. Follow-up с PongX 0.1.1 готовится к отправке.
+- Пользователь явно запросил публикацию 25.11.2026; отдельное согласование не требуется. Подписи, физические испытания и массовые запросы ко всем моделям отложены по его решению. Production guest AI API проверен: HTTP 200, ответ `pong`, корректное завершение SSE, гостевая сессия закрыта. Node 959/960, Chromium 74/74, release checks и audit прошли; отдельный download UI 33/33 assertions. Первый deploy `3fe801d` live; follow-up исправляет cache-safe версионирование PongX. После его deploy проверить URL, версии, размеры и SHA-256 всех загрузок. MSI явно обозначен как unsigned.

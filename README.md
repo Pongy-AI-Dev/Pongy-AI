@@ -12,7 +12,7 @@
 - **Год выпуска:** 2026
 - **Актуальная версия веб-сайта:** 0.29.4
 - **Платформы:** веб-сайт, Windows и Android
-- **Версии приложений:** Windows MSI 0.29.4 (unsigned); Android APK 0.29.4; PongX ZIP 0.1.0 (для Windows доступны ровно два приложения)
+- **Версии приложений:** Windows MSI 0.29.4 (unsigned); Android APK 0.29.4; PongX ZIP 0.1.1 (для Windows доступны ровно два приложения)
 - **Сайт:** [pongy-ai.devs.surf](https://pongy-ai.devs.surf/)
 
 ## Предыдущий выпуск 0.29.0

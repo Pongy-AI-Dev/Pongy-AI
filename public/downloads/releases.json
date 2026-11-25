@@ -1,27 +1,27 @@
 {
- "version": "0.29.4",
- "publisher": "Pongy AI Dev",
- "androidCertificate": "fb65962bf41adde6e07bfba8915216d391c1d787861fd1341e589cd525b28167",
- "files": {
-  "windows": {
-   "name": "Pongy-AI-0.29.4-windows-x64.msi",
-   "version": "0.29.4",
-   "sha256": "938b962a15437b6711d37744f7960758500f3ada0a430dd92c691f6d281a9454",
-   "bytes": 1134592
+  "version": "0.29.4",
+  "publisher": "Pongy AI Dev",
+  "androidCertificate": "fb65962bf41adde6e07bfba8915216d391c1d787861fd1341e589cd525b28167",
+  "files": {
+    "windows": {
+      "name": "Pongy-AI-0.29.4-windows-x64.msi",
+      "version": "0.29.4",
+      "sha256": "938b962a15437b6711d37744f7960758500f3ada0a430dd92c691f6d281a9454",
+      "bytes": 1134592
+    },
+    "android": {
+      "name": "Pongy-AI-0.29.4-android.apk",
+      "version": "0.29.4",
+      "sha256": "14c8c52251c1d5feda1e03ef6436e2a3e52385b7f1d29975f8d45387c9122d1f",
+      "bytes": 229909
+    },
+    "pongx": {
+      "name": "PongX-0.1.1-windows-x64.zip",
+      "version": "0.1.1",
+      "sha256": "c1464ff4ec883a4b6b112f901e2cdb4fd5f2529a7a73661c896e6e50a23b04af",
+      "bytes": 9269
+    }
   },
-  "android": {
-   "name": "Pongy-AI-0.29.4-android.apk",
-   "version": "0.29.4",
-   "sha256": "14c8c52251c1d5feda1e03ef6436e2a3e52385b7f1d29975f8d45387c9122d1f",
-   "bytes": 229909
-  },
-  "pongx": {
-   "name": "PongX-0.1.0-windows-x64.zip",
-   "version": "0.1.0",
-   "sha256": "fe0ee78d2c31022434ac4c2dd0a62e025b3ad93b278d5013423df8459c42ac22",
-   "bytes": 9269
-  }
- },
- "windowsEngine": "WebView2",
- "androidEngine": "Android WebView"
+  "windowsEngine": "WebView2",
+  "androidEngine": "Android WebView"
 }
