@@ -1,4 +1,4 @@
-﻿/* Pongy AI — visual refresh only. Preserve existing controls, dimensions and behavior. */
+/* Pongy AI — visual refresh only. Preserve existing controls, dimensions and behavior. */
 :root { --chat-content-width: 900px; --chat-panel-radius: 20px; }
 #sidebar { background: var(--bg); border-right-color: color-mix(in srgb, var(--border) 78%, transparent); }
 .sb-head { min-height: 62px; }
@@ -38,3 +38,6 @@ body.dark .msg.user .bubble { box-shadow: none; }
 }
 @media (max-width: 390px) { #agentBtn { max-width: 180px; } #agentLabel { max-width: 145px; } }
 @media (prefers-reduced-motion: reduce) { .input-box { transition: none !important; } }
+
+/* Keep the auth logo mask inside its 64px logo frame. */
+#authLogo { position: relative; isolation: isolate; }
