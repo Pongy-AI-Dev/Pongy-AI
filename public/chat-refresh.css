@@ -1,0 +1,40 @@
+﻿/* Pongy AI — visual refresh only. Preserve existing controls, dimensions and behavior. */
+:root { --chat-content-width: 900px; --chat-panel-radius: 20px; }
+#sidebar { background: var(--bg); border-right-color: color-mix(in srgb, var(--border) 78%, transparent); }
+.sb-head { min-height: 62px; }
+.sb-title { font-weight: 720; letter-spacing: -.025em; }
+.sb-search-inner { border-radius: 13px; background: color-mix(in srgb, var(--bg3) 78%, transparent); }
+.sb-btn, .chat-item { border-radius: 11px; }
+#main { background: var(--bg); }
+#topbar { border-bottom-color: color-mix(in srgb, var(--border) 75%, transparent); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(16px); }
+.tb-title { font-weight: 650; letter-spacing: -.015em; }
+#chatModelBar { width: min(var(--chat-content-width), calc(100% - 40px)); }
+#chatModelName { border: 1px solid var(--border); border-radius: 999px; background: var(--bg2); font-weight: 650; }
+#chatModelName:hover { border-color: color-mix(in srgb, var(--accent) 48%, var(--border)); }
+.chat-model-popup { border-radius: 16px; box-shadow: 0 18px 54px rgba(0,0,0,.18); }
+.chat-model-option, .agent-model-opt { border-radius: 11px; }
+#messages { width: min(100%, var(--chat-content-width)); margin-inline: auto; }
+.msg-wrap { margin-block: 18px; }
+.msg.user .bubble { border-radius: 20px 20px 7px 20px; background: color-mix(in srgb, var(--accent) 94%, #111 6%); box-shadow: 0 2px 10px rgba(20,24,50,.06); }
+.msg.ai .answer-body { line-height: 1.78; letter-spacing: .002em; }
+.msg.ai .bubble { max-width: 100%; }
+#inputArea { border-top-color: color-mix(in srgb, var(--border) 72%, transparent); background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 96%, transparent) 18%); }
+.input-box { border-radius: var(--chat-panel-radius); border-color: color-mix(in srgb, var(--border) 88%, transparent); background: var(--bg2); box-shadow: 0 7px 28px rgba(20,24,50,.055), 0 1px 2px rgba(20,24,50,.04); transition: border-color .18s ease, box-shadow .18s ease; }
+.input-box:focus-within { border-color: color-mix(in srgb, var(--accent) 58%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent), 0 8px 28px rgba(20,24,50,.06); }
+#sendBtn.ready { box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 25%, transparent); }
+#footerText { opacity: .76; }
+.legal-links { opacity: .7; }
+body.dark #topbar { background: color-mix(in srgb, var(--bg) 91%, transparent); }
+body.dark .input-box { box-shadow: 0 8px 30px rgba(0,0,0,.2); }
+body.dark .msg.user .bubble { box-shadow: none; }
+@media (max-width: 760px) {
+  #messages { width: 100%; }
+  .msg-wrap { margin-block: 14px; }
+  #topbar { padding-inline: 10px; }
+  #chatModelBar { width: calc(100% - 24px); }
+  .modes { scrollbar-width: none; }
+  .modes::-webkit-scrollbar { display: none; }
+  #agentBtn { max-width: min(220px, 52vw); }
+}
+@media (max-width: 390px) { #agentBtn { max-width: 180px; } #agentLabel { max-width: 145px; } }
+@media (prefers-reduced-motion: reduce) { .input-box { transition: none !important; } }
