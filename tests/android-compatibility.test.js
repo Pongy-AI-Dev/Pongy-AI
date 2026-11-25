@@ -9,7 +9,7 @@ const activity = read('native/android/dev/pongy/app/MainActivity.java');
 test('Android package keeps the declared broad OS support floor and current target', () => {
   assert.match(manifest, /android:minSdkVersion="23"/);
   assert.match(manifest, /android:targetSdkVersion="35"/);
-  assert.match(manifest, /android:versionCode="293" android:versionName="0\.29\.3"/);
+  assert.match(manifest, /android:versionCode="294" android:versionName="0\.29\.4"/);
 });
 
 test('camera and microphone are optional hardware capabilities, not installation requirements', () => {
@@ -19,8 +19,8 @@ test('camera and microphone are optional hardware capabilities, not installation
 });
 
 test('Android native bridge and startup URL report the exact packaged release version', () => {
-  assert.match(activity, /PongyNative=Object\.freeze\(\{platform:'android',version:'0\.29\.3'/);
-  assert.match(activity, /pongy_app=android&client_version=0\.29\.3/);
+  assert.match(activity, /PongyNative=Object\.freeze\(\{platform:'android',version:'0\.29\.4'/);
+  assert.match(activity, /pongy_app=android&client_version=0\.29\.4/);
   assert.doesNotMatch(activity, /0\.29\.2/);
 });
 

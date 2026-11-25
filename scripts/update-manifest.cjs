@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..');
-const excluded=new Set(['.git','node_modules','data','.ci-logs','artifacts','playwright-report','test-results']);
+const excluded=new Set(['.git','node_modules','data','.ci-logs','.quality-logs','artifacts','playwright-report','test-results']);
 function walk(dir){
  return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
   if(excluded.has(entry.name))return[];

@@ -30,3 +30,22 @@ test('all six interface dictionaries contain every base key and a localized gree
   for(const key of ['siteDescription','siteTitle','language','theme','signOut','attach','send','stop','voice','guideIntro','guide1','guide2','guide3','guide4','searchPh'])assert.ok(typeof all[code][key]==='string'&&all[code][key].trim(),code+' is missing '+key);
  }
 });
+
+const serverSource=fs.readFileSync(new URL('../server.js',import.meta.url),'utf8');
+
+test('public config distinguishes translated UI locales from speech recognition locales',()=>{
+ const uiBlock=source.match(/var LANGS=\[([\s\S]*?)\];/);
+ const speechBlock=source.match(/var SPEECH_LANGS=\{([^}]+)\}/);
+ const apiUi=serverSource.match(/interfaceLanguages:\[([^\]]*)\]/);
+ const apiSpeech=serverSource.match(/speechLanguages:\[([^\]]*)\]/);
+ assert.ok(uiBlock&&speechBlock&&apiUi&&apiSpeech,'UI and speech locale declarations must exist');
+ const ui=[...uiBlock[1].matchAll(/code:'([^']+)'/g)].map(x=>x[1]);
+ const speech=[...speechBlock[1].matchAll(/(?:^|,)\s*(?:'([^']+)'|([A-Za-z][\w-]*)):/g)].map(x=>x[1]||x[2]);
+ const configUi=[...apiUi[1].matchAll(/'([^']+)'/g)].map(x=>x[1]);
+ const configSpeech=[...apiSpeech[1].matchAll(/'([^']+)'/g)].map(x=>x[1]);
+ assert.deepEqual(ui,['en','ru','es','de','fr','nl']);
+ assert.deepEqual(configUi,ui,'API must advertise only fully translated UI locales');
+ assert.deepEqual([...configSpeech].sort(),[...speech].sort(),'API speech locales must match browser speech locales');
+ assert.equal(new Set(configSpeech).size,configSpeech.length,'speech locale list must not contain duplicates');
+ assert.equal(configSpeech.length,38,'all 38 configured speech locales must remain available');
+});

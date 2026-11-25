@@ -8,16 +8,17 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  runtime.db.prepare('INSERT INTO users(email,password,email_verified) VALUES(?,?,1)').run('pongy.support@gmail.com',bcrypt.hashSync('fixture-password',4));
  const server=await new Promise(resolve=>{const s=runtime.app.listen(0,'127.0.0.1',()=>resolve(s))});
  const browser=await launchBrowser(),page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
- page.on('pageerror',e=>errors.push(e.message));const out=path.resolve('tests/artifacts');fs.mkdirSync(out,{recursive:true});let checks=0;
+ const traffic=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/api/'))traffic.push('REQ '+r.method()+' '+new URL(r.url()).pathname)});page.on('requestfailed',r=>{if(r.url().includes('/api/'))traffic.push('FAIL '+r.method()+' '+new URL(r.url()).pathname+' '+r.failure()?.errorText)});page.on('response',r=>{if(r.url().includes('/api/')){const item='RES '+r.status()+' '+r.request().method()+' '+new URL(r.url()).pathname;traffic.push(item);}});const out=path.resolve('tests/artifacts');fs.mkdirSync(out,{recursive:true});let checks=0;
  function check(value,message){if(!value)throw Error(message);checks++;}
  async function visibleTab(id){return page.locator('#settings-tab-'+id).evaluate(el=>{const r=el.getBoundingClientRect(),rail=el.closest('.settings-tabs').getBoundingClientRect();return r.width>0&&r.left>=rail.left-1&&r.right<=rail.right+1;});}
  try{
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.locator('#authEmail').fill('pongy.support@gmail.com');await page.locator('#authPassword').fill('fixture-password');await page.locator('#authBtn').click();
   await page.waitForFunction(()=>!document.getElementById('userInput').disabled);
+  await page.locator('#settingsBtn').click();await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('open'));
   const initialFirmwareLoad=page.waitForResponse(response=>response.url().includes('/api/admin/ai-firmware')&&response.request().method()==='GET');
-  await page.locator('#userInput').fill('Открой раздел для разрабов');await page.locator('#sendBtn').click();await initialFirmwareLoad;
-  await page.waitForFunction(()=>document.querySelector('#settingsModal').classList.contains('open')&&document.querySelector('#settings-tab-developer').getAttribute('aria-selected')==='true');
+  await page.locator('#settings-tab-developer').click();await initialFirmwareLoad;
+  await page.waitForFunction(()=>document.querySelector('#settings-tab-developer').getAttribute('aria-selected')==='true');
   check(await page.locator('#settings-panel-developer').isVisible(),'chat command did not open Developer settings directly');
   const maskPolicy=await page.evaluate(async()=>{const response=await fetch('/api/admin/ai-firmware',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({style:'balanced',discussion:'contextual',maskModels:false})});return response.json();});
   check(maskPolicy.maskModels===true&&await page.locator('#aiFirmwareMaskModels').isDisabled(),'internal model-name masking can be disabled');
@@ -74,6 +75,6 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
    check(await visibleTab('developer'),name+': keyboard End does not reveal Developer');
   }
   check(errors.length===0,'browser errors: '+errors.join('; '));console.log('Settings navigation and centered top-layer check UI assertions passed:',checks);
- }catch(e){console.error('navigation diagnostics',await page.locator('.settings-tabs').evaluate(e=>({scroll:e.scrollLeft,width:e.clientWidth,total:e.scrollWidth,tabs:[...e.querySelectorAll('[role=tab]')].map(t=>({id:t.id,left:t.offsetLeft,selected:t.getAttribute('aria-selected')}))})));await page.screenshot({path:out+'/settings-navigation-failure.png'}).catch(()=>{});throw e;}
+ }catch(e){console.error('navigation network',traffic.slice(-40));console.error('navigation diagnostics',await page.locator('.settings-tabs').evaluate(e=>({scroll:e.scrollLeft,width:e.clientWidth,total:e.scrollWidth,tabs:[...e.querySelectorAll('[role=tab]')].map(t=>({id:t.id,left:t.offsetLeft,selected:t.getAttribute('aria-selected')}))})));await page.screenshot({path:out+'/settings-navigation-failure.png'}).catch(()=>{});throw e;}
  finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));runtime.close();fs.rmSync(dir,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const root = process.cwd();
-const excluded = new Set(['.git', 'node_modules', 'data', '.ci-logs', 'artifacts', 'playwright-report', 'test-results', 'downloads']);
+const excluded = new Set(['.git', 'node_modules', 'data', '.ci-logs', '.quality-logs', 'artifacts', 'playwright-report', 'test-results', 'downloads']);
 const sourcePattern = /\.(?:[cm]?js|jsx|tsx?|json|html|css|py|ya?ml|toml|xml|sql|sh|ps1|go|rs|java|kt|swift|php|rb|cs|cpp?|h)$/i;
 function walk(dir) {
   const out = [];

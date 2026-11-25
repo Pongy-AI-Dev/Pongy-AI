@@ -167,11 +167,18 @@ async function undo(){
  }
  console.log(yellow('No backup exists for this workspace.'));
 }
+function resolveNpmCli(){
+ const candidates=[process.env.npm_execpath,path.join(path.dirname(process.execPath),'node_modules','npm','bin','npm-cli.js'),path.resolve(path.dirname(process.execPath),'..','lib','node_modules','npm','bin','npm-cli.js')];
+ const cli=candidates.find(value=>typeof value==='string'&&value.trim()&&path.basename(value).toLowerCase()==='npm-cli.js'&&fs.existsSync(value));
+ if(!cli)throw new Error('npm CLI could not be located. Install Node.js with npm and reopen the terminal.');
+ return cli;
+}
 async function runTests(){
  if(!workspace)throw new Error('Open a project first.');const pkg=path.join(workspace,'package.json');if(!fs.existsSync(pkg))throw new Error('No package.json found in this project.');
  const scripts=JSON.parse(fs.readFileSync(pkg,'utf8')).scripts||{},tasks=['test','check'].filter(name=>typeof scripts[name]==='string');if(!tasks.length)throw new Error('This project has no npm test or check script.');
  if(!['y','yes','да'].includes((await ask('Run '+tasks.map(x=>'npm run '+x).join(' and ')+'? [y/N]: ')).trim().toLowerCase()))return;
- for(const task of tasks){console.log(cyan(NL+'> npm run '+task));const result=spawnSync(process.platform==='win32'?'npm.cmd':'npm',['run',task],{cwd:workspace,stdio:'inherit',shell:process.platform==='win32'});if(result.error)throw result.error;if(result.status!==0){console.log(red('Test command failed: '+task));return;}}
+ const npmCli=resolveNpmCli();
+ for(const task of tasks){console.log(cyan(NL+'> npm run '+task));const result=spawnSync(process.execPath,[npmCli,'run',task],{cwd:workspace,stdio:'inherit',shell:false});if(result.error)throw result.error;if(result.status!==0){console.log(red('Test command failed: '+task));return;}}
  console.log(green('Project checks completed successfully.'));
 }
 const SYSTEM='You are PongX, the coding assistant inside the user-selected local project. Work only inside the supplied workspace. Never ask to read or change passwords, API keys, .env files, credentials, private keys, .git data or dependency folders. Never claim that you ran commands. Do not execute shell commands. When a code change is needed, return ONLY valid JSON with this exact shape: {"message":"short explanation","changes":[{"path":"relative/path","content":"complete new file content"}]}. Use forward-slash relative paths. Keep paths inside the workspace. Do not return partial patches; provide complete file contents. If no file changes are needed, return {"message":"answer","changes":[]}.';

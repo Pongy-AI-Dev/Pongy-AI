@@ -28,3 +28,6 @@ native/**/build/
 *.auth-secrets.json.*.tmp
 *.reminder-vapid.json
 *.reminder-vapid.json.*.tmp
+
+# Local verification logs
+.quality-logs/

@@ -103,7 +103,8 @@ test('font and accent choices apply across the interface', () => {
   assert.doesNotMatch(app, /fonts\.googleapis\.com/);
   assert.match(app, /function extendedAppearanceEnabled\(\)\{return settings\.betaFunctions===true&&settings\.betaFeatures&&settings\.betaFeatures\.earlyAccess===true\}/);
   assert.match(app, /\$\('accentPreferenceSetting'\)\.hidden=!enabled/);
-  assert.match(app, /var visible=extendedAppearanceEnabled\(\)\?ACCENT_COLORS/);
+  assert.match(app, /var enabled=extendedAppearanceEnabled\(\)/);
+  assert.match(app, /visible=enabled\?ACCENT_COLORS:ACCENT_COLORS\.filter\(function\(color\)\{return color\.id==='default'\|\|color\.id==='blue'\}\)/);
   assert.match(app, /fontPreferenceSetting'\)\.hidden=!enabled/);
   assert.match(app, /availableFonts=extendedAppearanceEnabled\(\)\?FONT_CHOICES\.filter\(function\(font\)\{return font==='Default'\|\|fontAvailable\(font\)\}\):\['Default'\]/);
   assert.match(app, /betaFeature:function\(key,value\)/);
