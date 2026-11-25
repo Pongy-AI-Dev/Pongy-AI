@@ -4,6 +4,8 @@
 
 ## 0.29.4 — Интерфейс и удобство работы
 
+- WebKit video UI coverage now accepts both valid outcomes: successful WebM decoding or a clear unsupported-format fallback. This avoids assuming identical codec support across platforms.
+
 - Исправлено ожидание декодирования видео в WebKit: первичное ожидание ограничено 15 секундами; при отсутствии события декодирования показывается понятное сообщение с рекомендацией MP4.
 - Исправлен конфликт обработчиков закрытия окна напоминаний; добавлены регрессионные проверки.
 
