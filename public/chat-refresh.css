@@ -291,8 +291,8 @@ html[data-theme=holiday] .site-proposal button:not(.site-proposal-dismiss){backg
 html[data-theme=holiday] .site-proposal-dismiss{background:#fffaf2;color:#563a2c;border-color:#dfc5ae}
 #settingsBtn{width:100%!important;min-height:42px;justify-content:flex-start;padding-inline:14px;text-align:left;}
 /* UI polish overrides */
-#sidebar .sb-row .sb-btn,#sidebar .sb-workspace-nav .sb-btn,#sidebar .sb-bottom .sb-btn,#sidebar .archive-nav{display:flex!important;visibility:visible!important;opacity:1!important;width:100%;min-width:0;min-height:38px;flex:0 0 auto;justify-content:flex-start;align-items:center;gap:11px;padding:8px 11px!important;margin:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;border-radius:9px;color:var(--fg2);font-size:13.5px;font-weight:480;text-align:left;line-height:1.35}
-#sidebar .sb-row .sb-btn:hover,#sidebar .sb-workspace-nav .sb-btn:hover,#sidebar .sb-bottom .sb-btn:hover,#sidebar .archive-nav:hover{color:var(--fg);background:var(--hover)!important}
+#sidebar .sb-row .sb-btn:not(#sidebarPlus),#sidebar .sb-workspace-nav .sb-btn:not(#sidebarPlus),#sidebar .sb-bottom .sb-btn:not(#sidebarPlus),#sidebar .archive-nav{display:flex!important;visibility:visible!important;opacity:1!important;width:100%;min-width:0;min-height:38px;flex:0 0 auto;justify-content:flex-start;align-items:center;gap:11px;padding:8px 11px!important;margin:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;border-radius:9px;color:var(--fg2);font-size:13.5px;font-weight:480;text-align:left;line-height:1.35}
+#sidebar .sb-row .sb-btn:not(#sidebarPlus):hover,#sidebar .sb-workspace-nav .sb-btn:not(#sidebarPlus):hover,#sidebar .sb-bottom .sb-btn:not(#sidebarPlus):hover,#sidebar .archive-nav:hover{color:var(--fg);background:var(--hover)!important}
 #sidebar .sb-btn svg,#sidebar .archive-nav svg{display:block;flex:0 0 19px;width:19px;height:19px}
 #sidebar .sb-btn span:last-child,#sidebar .archive-nav span:last-child{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #sidebar .sb-workspace-nav{display:flex;flex-direction:column;gap:2px}
@@ -309,3 +309,9 @@ html[data-theme=holiday] #sidebar .sb-btn:hover{background:rgba(120,54,34,.08)!i
 
 /* Preserve native hidden states after sidebar visibility overrides. */
 #sidebar [hidden],#sidebar .sb-btn[hidden],#sidebar .archive-nav[hidden]{display:none!important;visibility:hidden!important;}
+
+/* Guest mode keeps account-only workspace sections unavailable. */
+body.guest-mode #newNoteBtn,body.guest-mode #sectionLibrary,body.guest-mode #archiveChatsBtn,body.guest-mode #guideBtn,body.guest-mode #sidebarNotesSection,body.guest-mode #sidebarProjectsSection{display:none!important;}
+
+/* Guest restrictions outrank the general navigation display rule. */
+body.guest-mode #sidebar #newNoteBtn,body.guest-mode #sidebar .sb-workspace-nav #sectionLibrary,body.guest-mode #sidebar .sb-workspace-nav #archiveChatsBtn,body.guest-mode #sidebar .sb-workspace-nav #guideBtn,body.guest-mode #sidebar #sidebarNotesSection,body.guest-mode #sidebar #sidebarProjectsSection{display:none!important;}
