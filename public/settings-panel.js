@@ -414,10 +414,7 @@
       .querySelectorAll("[data-beta-only]")
       .forEach((n) => (n.hidden = !ctx.beta()));
   }
-  function syncBetaTab() {
-    const enabled = !!$("betaFunctions")?.checked;
-    $("settings-tab-beta").hidden = !enabled;
-    $("settings-panel-beta").hidden = !enabled || active !== "beta";
+  function syncBetaTab() { const enabled = !!ctx?.beta?.(); const tab = $("settings-tab-beta"), panel = $("settings-panel-beta"); if (!tab || !panel) return; tab.hidden = !enabled; panel.hidden = !enabled || active !== "beta";
     if (!enabled && active === "beta") selectTab("interface");
   }
   function setup() {
@@ -1992,6 +1989,8 @@
       void refreshApiKeyStatus();
       void refreshMcpStatus();
     }
+    const betaToggle = $("betaFunctions"); if (betaToggle) betaToggle.checked = !!ctx.beta();
+    syncBetaTab();
     const keyField = $("personalApiKey");
     if (keyField && !keyField.value) {
       const stored = readStoredKey();
