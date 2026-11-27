@@ -315,3 +315,6 @@ body.guest-mode #newNoteBtn,body.guest-mode #sectionLibrary,body.guest-mode #arc
 
 /* Guest restrictions outrank the general navigation display rule. */
 body.guest-mode #sidebar #newNoteBtn,body.guest-mode #sidebar .sb-workspace-nav #sectionLibrary,body.guest-mode #sidebar .sb-workspace-nav #archiveChatsBtn,body.guest-mode #sidebar .sb-workspace-nav #guideBtn,body.guest-mode #sidebar #sidebarNotesSection,body.guest-mode #sidebar #sidebarProjectsSection{display:none!important;}
+
+/* Keep dismiss controls above transient service notices. */
+#backgroundAccessBanner{position:relative;z-index:20}#backgroundAccessBanner .device-access-close{z-index:21;pointer-events:auto}
