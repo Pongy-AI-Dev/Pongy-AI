@@ -9,7 +9,7 @@ const {launchBrowser}=require('./browser.cjs');
  const runtime=createApp({config:loadConfig({DATA_DIR:dir,JWT_SECRET:'support-ui-jwt-'.repeat(4),SESSION_SECRET:'support-ui-session-'.repeat(4),FRONTEND_URL:'http://127.0.0.1:'+port,CORS_ORIGINS:'http://localhost:'+port+',http://127.0.0.1:'+port,PONGY_LOCAL_DEV_AUTH:'true',NODE_ENV:'development',OPENROUTER_API_KEY:''},dir)});
  const server=await new Promise(resolve=>{const instance=runtime.app.listen(port,'127.0.0.1',()=>resolve(instance));});
  const browser=await launchBrowser(),page=await browser.newPage(),errors=[],accountProductRequests=[];
- page.on('request',request=>{const url=new URL(request.url());if(/^\/api\/products(?:\?|$)/.test(url.pathname+url.search))accountProductRequests.push(request.url());});
+ page.on('request',request=>{const path=new URL(request.url()).pathname;if(path.startsWith('/api/products')||path.startsWith('/api/notes'))accountProductRequests.push(request.url());});
  page.on('pageerror',error=>errors.push(error.message));
  try{
   const base='http://127.0.0.1:'+server.address().port;
@@ -17,7 +17,7 @@ const {launchBrowser}=require('./browser.cjs');
   const login=await page.evaluate(async()=>{const r=await fetch('/api/local-developer/session',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'});return r.status});
   if(login!==200)throw Error('local developer test login failed: '+login);
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(async()=>{try{return (await fetch('/api/me',{credentials:'include'})).ok}catch{return false}},{timeout:10000});await page.waitForTimeout(250);if(accountProductRequests.length)throw Error('admin guest session requested account-only product data: '+accountProductRequests.join(', '));
+  await page.waitForFunction(async()=>{try{return (await fetch('/api/me',{credentials:'include'})).ok}catch{return false}},{timeout:10000});await page.waitForTimeout(250);if(accountProductRequests.length)throw Error('admin guest session requested account-only product or notes data: '+accountProductRequests.join(', '));
   await page.locator('#directSupportLauncher').click();
   await page.waitForFunction(()=>!document.querySelector('#directSupportPanel').hidden);
   await page.waitForFunction(()=>document.querySelectorAll('#directSupportMessages article').length>=1,{timeout:10000});
