@@ -43,7 +43,7 @@
   if (parent) parent.insertBefore(btn, parent.children[2] || null);
   let refreshSerial=0,watchController=null,watchAccount="",watchRevision="";
   function stopWatch(){watchAccount="";watchController?.abort();watchController=null;}
-  async function watchProducts(){const email=window.PongyAppSession?.user()?.email;if(!email||watchAccount===email||!alive)return;stopWatch();watchAccount=email;const controller=new AbortController();watchController=controller;while(alive&&!controller.signal.aborted&&watchAccount===email&&window.PongyAppSession?.user()?.email===email){try{const data=await api("/api/products/watch?revision="+encodeURIComponent(watchRevision),{signal:controller.signal});if(controller.signal.aborted||window.PongyAppSession?.user()?.email!==email)break;const previous=watchRevision;watchRevision=data.revision||"";applyProductData(data,email,++refreshSerial);if(previous!==watchRevision)window.dispatchEvent(new CustomEvent("pongy-products-updated"));}catch(error){if(controller.signal.aborted)break;if(error.status===401||error.code==="ACCOUNT_CHANGED")break;await new Promise(resolve=>setTimeout(resolve,5000));}}if(watchController===controller){watchController=null;watchAccount="";}}
+  async function watchProducts(){const user=window.PongyAppSession?.user();const email=user?.email;if(!email||user.adminGuest||user.guest||watchAccount===email||!alive)return;stopWatch();watchAccount=email;const controller=new AbortController();watchController=controller;while(alive&&!controller.signal.aborted&&watchAccount===email&&window.PongyAppSession?.user()?.email===email&&!window.PongyAppSession?.user()?.adminGuest&&!window.PongyAppSession?.user()?.guest){try{const data=await api("/api/products/watch?revision="+encodeURIComponent(watchRevision),{signal:controller.signal});if(controller.signal.aborted||window.PongyAppSession?.user()?.email!==email)break;const previous=watchRevision;watchRevision=data.revision||"";applyProductData(data,email,++refreshSerial);if(previous!==watchRevision)window.dispatchEvent(new CustomEvent("pongy-products-updated"));}catch(error){if(controller.signal.aborted)break;if(error.status===401||error.code==="ACCOUNT_CHANGED")break;await new Promise(resolve=>setTimeout(resolve,5000));}}if(watchController===controller){watchController=null;watchAccount="";}}
   window.addEventListener("pongy-session-ready",()=>{stopWatch();watchRevision="";void refresh().then(watchProducts).catch(()=>{});});
   window.addEventListener("pagehide",stopWatch);
   window.addEventListener("pageshow",()=>{alive=true;void watchProducts();});
@@ -85,8 +85,8 @@
       current = null;
       status.textContent = "";
     }
-    btn.hidden = !user;
-    if (!user) {
+    btn.hidden = !user || !!user.adminGuest || !!user.guest;
+    if (!user || user.adminGuest || user.guest) {
       if (dialog.open) dialog.close();
       return;
     }
