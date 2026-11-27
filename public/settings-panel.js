@@ -38,6 +38,7 @@
     };
   function node(tag, text, cls) {
     const n = document.createElement(tag);
+    if (tag === "input") { n.autocomplete = "off"; n.setAttribute("data-lpignore", "true"); }
     if (text !== undefined) {
       n.textContent = text;
       if (translations.has(text)) translated.set(n, translations.get(text));
@@ -239,8 +240,9 @@
     apiRevealTimer = 0;
     const input = $("personalApiKey"),
       eye = $("personalApiToggle");
-    if (input) input.type = "password";
+    if (input) { input.type = "password"; input.style.webkitTextSecurity = ""; }
     if (eye) {
+      eye.hidden = !input || !input.value;
       eye.classList.remove("revealed");
       eye.setAttribute("aria-pressed", "false");
       const label = tr(
@@ -254,9 +256,10 @@
   function revealApiKey() {
     const input = $("personalApiKey"),
       eye = $("personalApiToggle");
-    if (!input) return;
+    if (!input || !input.value) return;
     clearTimeout(apiRevealTimer);
     input.type = "text";
+    input.style.webkitTextSecurity = "";
     if (eye) {
       eye.classList.add("revealed");
       eye.setAttribute("aria-pressed", "true");
@@ -412,8 +415,10 @@
       .forEach((n) => (n.hidden = !ctx.beta()));
   }
   function syncBetaTab() {
-    $("settings-tab-beta").hidden = false;
-    $("settings-panel-beta").hidden = active !== "beta";
+    const enabled = !!$("betaFunctions")?.checked;
+    $("settings-tab-beta").hidden = !enabled;
+    $("settings-panel-beta").hidden = !enabled || active !== "beta";
+    if (!enabled && active === "beta") selectTab("interface");
   }
   function setup() {
     const body = $("settingsModal").querySelector(".modal-body"),
@@ -648,7 +653,7 @@
         $("logoutBtnSettings"),
       );
     }
-    const moderationAccount=node("section",undefined,"settings-subsection moderation-account"),moderationTitle=node("h3",tr("Предупреждения и апелляции","Warnings and appeals")),moderationHint=node("p",tr("Здесь отображаются действующие и прошлые решения модерации. Если вы не согласны с решением, можно подать апелляцию.","View moderation decisions and submit an appeal if you disagree."),"settings-hint"),moderationList=node("div",undefined,"moderation-account-list"),moderationStatus=node("p","","settings-hint"),moderationLoad=button(tr("Проверить решения","Refresh decisions"),async()=>loadMyModeration());moderationAccount.append(moderationTitle,moderationHint,moderationList,moderationLoad,moderationStatus);if(ctx.user()?.guest)moderationAccount.hidden=true;
+    const moderationAccount=node("section",undefined,"settings-subsection moderation-account"),moderationTitle=node("h3",tr("Предупреждения и апелляции","Warnings and appeals")),moderationHint=node("p",tr("Здесь отображаются действующие и прошлые решения модерации. Если вы не согласны с решением, можно подать апелляцию.","View moderation decisions and submit an appeal if you disagree."),"settings-hint"),moderationList=node("div",undefined,"moderation-account-list"),moderationStatus=node("p","","settings-hint"),moderationLoad=button(tr("Проверить решения","Refresh decisions"),async()=>loadMyModeration());moderationAccount.append(moderationTitle,moderationHint,moderationList,moderationLoad,moderationStatus);if(ctx.user()?.guest){moderationStatus.textContent=tr("Войдите в аккаунт, чтобы просматривать предупреждения и подавать апелляции.","Sign in to view warnings and submit appeals.");moderationLoad.disabled=true;}
     const appealDialog=node("dialog",undefined,"admin-user-dialog moderation-appeal-dialog"),appealTitle=node("h2",tr("Апелляция","Appeal")),appealInput=node("textarea",undefined,"inp"),appealSubmit=button(tr("Отправить апелляцию","Submit appeal"),async()=>{if(!appealAction||appealInput.value.trim().length<8){appealStatus.textContent=tr("Опишите причину подробнее (не менее 8 символов).","Please provide at least 8 characters.");return;}appealSubmit.disabled=true;try{await ctx.api("/api/moderation/appeal",{method:"POST",body:{actionId:appealAction,details:appealInput.value.trim()}});appealDialog.close();appealInput.value="";moderationStatus.textContent=tr("Апелляция отправлена разработчикам.","Your appeal was sent to the developers.");await loadMyModeration();}catch(e){appealStatus.textContent=e.message;}finally{appealSubmit.disabled=false;}}),appealStatus=node("p","","settings-hint"),appealClose=button(tr("Закрыть","Close"),()=>appealDialog.close());let appealAction="";appealInput.rows=6;appealInput.maxLength=2000;appealInput.placeholder=tr("Почему вы считаете это решение ошибочным?","Why do you believe this decision was incorrect?");appealDialog.append(appealTitle,appealInput,appealStatus,appealSubmit,appealClose);$("settingsModal").append(appealDialog);
     let moderationActions=[];
     async function loadMyModeration(){if(ctx.user()?.guest)return;moderationLoad.disabled=true;moderationStatus.textContent=tr("Загрузка…","Loading…");try{const data=await ctx.api("/api/moderation/my-actions");moderationList.replaceChildren();const items=data.actions||[];moderationActions=items;moderationAccount.hidden=!items.length;if(!items.length){moderationStatus.textContent=tr("Модерационных решений нет.","No moderation decisions.");return;}for(const a of items){const card=node("div",undefined,"moderation-account-card"),name={ban:tr("Блокировка аккаунта","Account ban"),restrict:tr("Ограничение доступа к функциям","AI access restriction"),warning:tr("Предупреждение","Warning")}[a.kind]||a.kind;card.append(node("strong",name),node("p",(a.reason||"—")+" · "+dateLabel(a.createdAt)+(a.expiresAt?" · "+tr("до ","until ")+dateLabel(a.expiresAt):""),"settings-hint"));if(a.revokedAt)card.append(node("span",tr("Отменено","Revoked"),"moderation-revoked"));else{const appeal=button(tr("Подать апелляцию","Appeal"),()=>{appealAction=a.id;appealInput.value="";appealStatus.textContent="";appealDialog.showModal();});card.append(appeal);}moderationList.append(card);}moderationStatus.textContent=tr("Записей: ","Records: ")+items.length;}catch(e){moderationStatus.textContent=e.message;}finally{moderationLoad.disabled=false;}}if(!ctx.user()?.guest)void loadMyModeration();
@@ -694,12 +699,12 @@
     speechLabel.append(speechSelect);
     $("voicePreferenceSetting").after(speechLabel);
     const sound = node("details", undefined, "sound-settings"), soundTitle = node("summary", tr("\u0417\u0432\u0443\u043a", "Sound")), soundRow = node("label", undefined, "display-option"), soundText = node("span", tr("\u0417\u0432\u0443\u043a", "Sound")), soundToggle = node("input");
-    soundTitle.insertAdjacentHTML("beforeend", '<svg class="settings-section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>');
+    const soundChevron = '<svg class="settings-section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
     sound.id = "soundSettings"; sound.open = false; soundToggle.id = "soundEnabled"; soundToggle.type = "checkbox"; soundToggle.className = "display-switch"; soundToggle.setAttribute("role", "switch");
     try { soundToggle.checked = localStorage.getItem("pongy_sound") !== "off"; } catch { soundToggle.checked = true; }
     soundToggle.onchange = () => { try { localStorage.setItem("pongy_sound", soundToggle.checked ? "on" : "off"); } catch { soundToggle.checked = true; } if (!soundToggle.checked) { root.speechSynthesis?.cancel(); root.PongyNeuralSpeech?.stop(); $("musicStop")?.click(); } root.dispatchEvent(new root.CustomEvent("pongy-sound-change", { detail: { enabled: soundToggle.checked } })); };
     sound.id = "soundSettings";
-    soundTitle.textContent = tr("Звук", "Sound"); translated.set(soundTitle, ["Звук", "Sound"]);
+    soundTitle.textContent = tr("Звук", "Sound"); translated.set(soundTitle, ["Звук", "Sound"]); soundTitle.insertAdjacentHTML("beforeend", soundChevron);
     sound.classList.add("settings-subsection");
     soundText.textContent = tr("Звук", "Sound");
     soundRow.append(soundText, soundToggle); sound.append(soundTitle);
@@ -782,20 +787,28 @@
       "Подключите ключ одного из поддерживаемых провайдеров. Каталог не охватывает все сервисы: доступность моделей и сведения об их разработчике зависят от ответа API провайдера. Ключ отправляется только на официальный endpoint выбранного провайдера и хранится зашифрованным.",
       "Connect an API key from a supported provider. This catalog does not cover every service; model availability and developer details depend on the provider API. Keys are sent only to the selected provider’s official endpoint and stored encrypted.",
     );
+    const providerField = node("label", tr("Провайдер", "Provider"), "settings-field");
     const provider = node("select");
     provider.id = "personalApiProvider";
     provider.className = "inp";
     provider.setAttribute("aria-label", tr("Провайдер", "Provider"));
+    provider.autocomplete = "off";
     provider.disabled = true;
-    p.append(provider);
-    const keyField = node("label", tr("API-ключ", "API key"), "settings-field"),
+    provider.append(node("option", tr("Войдите в аккаунт, чтобы подключить API", "Sign in to connect an API")));
+    providerField.append(provider);
+    p.append(providerField);
+    const keyField = node("div", undefined, "settings-field"),
+      keyLabel = node("label", tr("API-ключ", "API key")),
       keyWrap = node("div", undefined, "api-key-field"),
       key = node("input"),
       keyEye = node("button");
     key.className = "inp";
     key.type = "password";
     key.id = "personalApiKey";
-    key.autocomplete = "new-password";
+    keyLabel.htmlFor = key.id;
+    key.autocomplete = "off";
+    key.setAttribute("autocapitalize", "off");
+    key.setAttribute("data-lpignore", "true");
     key.spellcheck = false;
     key.maxLength = 512;key.placeholder = tr("Вставьте API-ключ провайдера", "Paste provider API key");
     keyEye.type = "button";
@@ -803,6 +816,8 @@
     keyEye.className = "api-key-eye";
     keyEye.setAttribute("aria-pressed", "false");
     keyEye.setAttribute("aria-controls", "personalApiKey");
+    keyEye.hidden = true;
+    key.addEventListener("input", () => { keyEye.hidden = !key.value; if (!key.value) hideApiKey(); });
     keyEye.innerHTML =
       '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="api-eye-pupil" cx="12" cy="12" r="3"/><path class="api-eye-slash" pathLength="1" d="M3 3 21 21"/></svg>';
     keyEye.onclick = function (event) {
@@ -811,7 +826,7 @@
       else revealApiKey();
     };
     keyWrap.append(key, keyEye);
-    keyField.append(keyWrap);
+    keyField.append(keyLabel, keyWrap);
     p.append(keyField);
     hideApiKey();
     const modelLabel = node("label", tr("Модель", "Model"), "settings-field"),
@@ -1278,7 +1293,7 @@
       "Create a connection token first.",
     );
     secret.hidden=true;
-    const mcpEndpoint=node('input'),mcpSecret=node('input');mcpEndpoint.id='mcpEndpoint';mcpSecret.id='mcpSecret';mcpSecret.type='password';[mcpEndpoint,mcpSecret].forEach(field=>{field.readOnly=true;field.className='credential-value';field.autocomplete='off';});
+    const mcpEndpoint=node('input'),mcpSecret=node('input');mcpEndpoint.id='mcpEndpoint';mcpSecret.id='mcpSecret';mcpSecret.type='password';[mcpEndpoint,mcpSecret].forEach(field=>{field.readOnly=true;field.className='credential-value';field.autocomplete='off';field.setAttribute('data-lpignore','true');});
     const endpointLabel=node('label',tr('Адрес сервера','Server address'),'credential-label');endpointLabel.htmlFor=mcpEndpoint.id;const secretLabel=node('label',tr('Секретный токен','Secret token'),'credential-label');secretLabel.htmlFor=mcpSecret.id;
     pre.append(node("summary", tr("Настройки для подключения", "Connection settings")),endpointLabel,mcpEndpoint,secretLabel,mcpSecret, copy, secret);
     parent.append(status, pre, create, revoke);
@@ -1929,8 +1944,7 @@
     if (user?.guest) {
       $("accountEmailLabel")?.remove();
       $("accountEmail")?.remove();
-      $("settings-tab-beta").hidden = false;
-      $("settings-panel-beta").hidden = active !== "beta";
+      syncBetaTab();
       $("settings-tab-developer").hidden = true;
       return;
     }

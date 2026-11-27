@@ -158,3 +158,78 @@ body.collapsed .sidebar-head-action{display:none}
 
 /* Keep collapsed answer edges on a complete text-line boundary. */
 .answer-body.answer-collapsed{max-height:17.2em}
+
+/* Sidebar: stacked ChatGPT-style actions and independent content sections. */
+#sidebar .sb-new-chat,#sidebar .sb-new-note{width:calc(100% - 24px);min-height:40px;margin:5px 12px 0;display:flex;align-items:center;justify-content:flex-start;gap:11px;padding:0 12px;border-radius:10px}
+#sidebar .sb-new-note{margin-top:4px}
+#sidebar .sb-workspace-nav{display:flex;flex-direction:column;gap:3px;padding:7px 10px 5px}
+#sidebar .sb-workspace-nav .sb-btn{width:100%;min-height:36px;justify-content:flex-start;padding:0 10px;gap:11px}
+#sidebar .sb-sections{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:3px 9px 12px;scrollbar-gutter:stable}
+#sidebar .sb-section{margin:8px 0 12px;min-width:0}
+#sidebar .sb-section-heading{display:flex;align-items:center;min-height:29px;padding:0 5px}
+#sidebar .sb-section-title{display:flex;align-items:center;gap:8px;width:100%;min-width:0;padding:5px 4px;border:0;background:transparent;color:var(--fg2);font-size:11.5px;font-weight:650;letter-spacing:.015em;text-align:left;cursor:pointer}
+#sidebar .sb-section-title:hover{color:var(--fg)}
+#sidebar .sb-section-label{padding:5px 9px 6px;color:var(--fg2);font-size:11.5px;font-weight:650;letter-spacing:.015em}
+#sidebar #chatList,#sidebar #notesList{display:flex;flex-direction:column;gap:2px;overflow:visible;min-height:0;padding:0 2px}
+#sidebar .sb-project-folder{min-width:0}
+#sidebar .sb-project-item{display:flex;align-items:center;gap:9px;width:100%;min-height:34px;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:var(--fg);text-align:left;cursor:pointer}
+#sidebar .sb-project-item>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
+#sidebar .sb-project-item:hover,#sidebar .sb-project-folder.active>.sb-project-item{background:var(--bg3)}
+#sidebar .sb-project-chevron{flex:none;transition:transform .18s ease}
+#sidebar .sb-project-folder.open .sb-project-chevron{transform:rotate(90deg)}
+#sidebar .sb-project-chats{display:none;flex-direction:column;gap:2px;margin:2px 0 5px 19px;padding-left:9px;border-left:1px solid var(--border)}
+#sidebar .sb-project-folder.open .sb-project-chats{display:flex}
+#sidebar .sb-project-chat{width:100%;min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--fg2);font-size:12px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+#sidebar .sb-project-chat:hover{background:var(--bg3);color:var(--fg)}
+#sidebar .sb-section-list{display:flex;flex-direction:column;gap:2px;min-width:0}
+#sidebar .sb-recent-item{display:flex;align-items:center;gap:9px;width:100%;min-height:31px;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:var(--fg2);text-align:left;cursor:pointer}
+#sidebar .sb-recent-item:hover{background:var(--bg3);color:var(--fg)}
+#sidebar .sb-recent-item>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+#sidebar .sb-recent-icon{display:grid;place-items:center;flex:none;width:18px;height:18px}
+#sidebar .sb-empty-hint{padding:5px 9px;color:var(--fg2);font-size:11.5px;line-height:1.45}
+#sidebar .sb-bottom{flex:0 0 auto;margin-top:0}
+#sidebar .sb-bottom .sb-row{display:flex;flex-direction:column;gap:4px}
+#sidebar .sb-bottom .sb-btn{width:100%;justify-content:flex-start}
+body.collapsed #sidebar .sb-sections{display:none}
+body.collapsed #sidebar .sb-new-note{width:42px;justify-content:center;padding:0;margin-inline:auto}
+body.collapsed #sidebar .sb-new-note span{display:none}
+body.collapsed #sidebar .sb-workspace-nav{padding-inline:8px}
+body.collapsed #sidebar .sb-workspace-nav .sb-btn{justify-content:center;padding-inline:0}
+body.collapsed #sidebar .sb-workspace-nav .sb-btn span:last-child{display:none}
+:where(html[data-layout="mobile"]) body.collapsed #sidebar .sb-sections{display:block!important}
+/* Consistent hit areas and correctly positioned row actions. */
+.chat-item{position:relative}
+.chat-actions{position:relative;z-index:4;flex-shrink:0;align-items:center;gap:3px;pointer-events:auto}
+.chat-act{position:relative;z-index:1;width:30px;min-width:30px;height:32px;min-height:32px;border-radius:8px;cursor:pointer;pointer-events:auto}
+.chat-act svg{width:15px;height:15px;display:block;pointer-events:none}
+.chat-act:hover{background:var(--bg3);color:var(--fg)}
+.chat-item .chat-body{min-width:0}
+@media(hover:none){.chat-item .chat-actions{display:flex;opacity:.86}.chat-act{width:28px;min-width:28px}}
+/* A real search affordance, without changing the existing settings search behavior. */
+.settings-tabs-shell .settings-nav-search{padding-left:36px;background-repeat:no-repeat;background-position:12px center;background-size:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818b99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E")}
+.settings-tabs-shell .settings-nav-search:focus{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b8cff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E")}
+.settings-section input[type="checkbox"]:not(.display-switch){width:18px;height:18px;min-width:18px;accent-color:var(--accent);vertical-align:middle}
+.settings-section input[type="range"]{display:block;width:100%;min-width:0;height:6px;margin:12px 0 8px;accent-color:var(--accent);cursor:pointer}
+.settings-section .inp,.settings-section input:not([type="checkbox"]):not([type="range"]),.settings-section select,.settings-section textarea{box-sizing:border-box;max-width:100%;min-height:42px;border-radius:10px}
+.settings-section textarea{min-height:82px;resize:vertical}
+.api-key-field{display:flex;align-items:center;position:relative;width:100%;min-width:0}
+.api-key-field>.inp{flex:1 1 auto;width:auto;min-width:0;min-height:44px;padding-right:12px}
+.api-key-eye{position:relative;right:auto;top:auto;transform:none;flex:0 0 34px;width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:var(--fg2);cursor:pointer}
+.api-key-eye[hidden]{display:none!important}
+.api-key-eye:hover{background:var(--bg3);color:var(--fg)}
+.credential-value{box-sizing:border-box;width:100%;min-height:42px;border-radius:10px;padding:9px 12px}
+.api-key-field>.inp{position:relative;z-index:auto}.api-key-eye{position:relative;z-index:1;pointer-events:auto}
+/* Per-chat generation status: visible on normal and project chat rows. */
+.chat-loading-indicator{display:inline-grid;place-items:center;flex:0 0 18px;width:18px;height:18px;margin-inline:3px;color:var(--accent);pointer-events:none;animation:chat-loading-appear .18s ease-out both}
+.chat-loading-indicator svg{display:block;width:17px;height:17px;overflow:visible;animation:chat-loading-spin .9s linear infinite}
+.chat-loading-indicator circle{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:29 15;transform-origin:10px 10px}
+.chat-item .chat-loading-indicator{margin-left:auto;margin-right:3px}
+#sidebar .sb-project-chat{display:flex;align-items:center;gap:7px}
+#sidebar .sb-project-chat-title{display:block;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sidebar .sb-project-chat .chat-loading-indicator{margin-left:auto;flex-basis:17px;width:17px;height:17px}
+#sidebar .sb-project-chat .chat-loading-indicator svg{width:16px;height:16px}
+@keyframes chat-loading-spin{to{transform:rotate(360deg)}}
+@keyframes chat-loading-appear{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.chat-loading-indicator,.chat-loading-indicator svg{animation:none!important}.chat-loading-indicator svg{transform:rotate(35deg)}}
+/* Keep the desktop sidebar above the chat viewport hit-testing layer. */
+@media(min-width:1025px){#sidebar{position:relative;z-index:2}#main{position:relative;z-index:1}}

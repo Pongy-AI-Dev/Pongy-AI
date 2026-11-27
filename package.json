@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start:local": "node scripts/start-local.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node tests/project-check.cjs",
     "test:ui": "node tests/ui-runner.cjs",
