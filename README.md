@@ -5,6 +5,7 @@
 - Сайт: [pongy-ai.devs.surf](https://pongy-ai.devs.surf/)
 - Версия: **0.29.4**
 - Доступно: сайт, Windows и Android
+- Windows MSI 0.29.4 (unsigned); Android APK 0.29.4.
 - Для Windows доступны два приложения: Pongy AI и PongX
 
 ## Что нового
