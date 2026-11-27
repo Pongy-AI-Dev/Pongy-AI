@@ -2692,3 +2692,4 @@ label:has(> input[type=checkbox]:not(.display-switch)),label.memory-setting:has(
 #personalApiConsent{align-self:center;flex:0 0 18px;margin:0!important;}
 .site-proposal{padding:9px 11px;gap:8px;min-height:0;}
 .site-proposal button{min-height:32px;padding:6px 10px;line-height:1.2;}
+html[data-theme="holiday"] .chat-model-bar,html[data-theme="holiday"] .sb-bottom{position:relative;}
