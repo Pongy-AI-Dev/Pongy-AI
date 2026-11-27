@@ -17,6 +17,10 @@ test('all brand surfaces reference one asset and head exposes browser/touch icon
  assert.match(html,/href="\/app-logo-192\.png" rel="icon" sizes="192x192"/);assert.match(html,/og:image" content="https:\/\/pongy-ai\.devs\.surf\/favicon\.png"/);assert.match(html,/href="\/favicon\.ico"/);assert.match(html,/rel="apple-touch-icon"/);
  assert.match(js,/function logo\(\).*src="\/app-logo-192\.png"/);assert(!js.includes('pongy-gradient-'));assert(!js.includes('var LOGO='));
 });
+test('HTML document ends cleanly without visible escape artifacts',()=>{
+ const html=fs.readFileSync('public/index.html','utf8');
+ assert.match(html,/<\/html>\s*$/);
+});
 test('public scripts do not evaluate strings',()=>{
  const files=['public/app.js','public/app-config.js','public/persistence.js','public/vendor/purify.min.js','public/index.html'];
  for(const file of files){const code=fs.readFileSync(file,'utf8');assert(!/\beval\s*\(|\bnew\s+Function\s*\(|\bFunction\s*\(|set(?:Timeout|Interval)\s*\(\s*["'`]/.test(code),file+' contains dynamic evaluation');}

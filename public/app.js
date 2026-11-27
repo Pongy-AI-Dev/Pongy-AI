@@ -9,7 +9,7 @@ var SUB_PRICE=190;var UI_VERSION='0.29.4';
 
 // Shared brand image; the empty-chat version isolates the same mark on transparency.
 function logo(){return '<img class="app-logo" src="/app-logo-192.png" alt="Pongy AI" width="512" height="512" decoding="async" draggable="false"><span class="brand-mark" aria-hidden="true"></span>'}
-function welcomeLogo(){return '<img class="app-logo welcome-icon" src="/welcome-logo.png" alt="Pongy AI" width="256" height="256" decoding="async" draggable="false" aria-hidden="true">'}
+function welcomeLogo(){return '<img class="app-logo welcome-icon" src="/app-logo-192.png" alt="Pongy AI" width="256" height="256" decoding="async" draggable="false" aria-hidden="true">'}
 
 /* ============ SVG ICONS ============ */
 var SVGS={

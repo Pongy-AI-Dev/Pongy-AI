@@ -422,6 +422,13 @@
   async function refreshSettings() {
     const catalog = $("settingsConnectionsCatalog");
     if (!catalog) return;
+    const user = window.PongyAppSession?.user?.();
+    if (!user || user.guest) {
+      settingsEpoch++;
+      catalog.replaceChildren();
+      $("settingsConnectionsStatus").textContent = user?.guest ? tr("Войдите в аккаунт, чтобы использовать подключения.", "Sign in to use connections.") : "";
+      return;
+    }
     const token = ++settingsEpoch;
     const hint = $("settingsConnectionsStatus");
     const previous = cached();

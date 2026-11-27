@@ -7,12 +7,12 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  const runtime=createApp({config:loadConfig({DATA_DIR:dir,JWT_SECRET:'guest-experience-jwt-'.repeat(4),SESSION_SECRET:'guest-experience-session-'.repeat(4)},dir),fetchImpl:async()=>Response.json({data:[]})});
  const server=await new Promise(resolve=>{const s=runtime.app.listen(0,'127.0.0.1',()=>resolve(s));});
  const browser=await launchBrowser(),page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
- page.on('pageerror',e=>errors.push(e.message));
+ const accountProductRequests=[];page.on('request',r=>{const path=new URL(r.url()).pathname;if(path.startsWith('/api/products')||path.startsWith('/api/notes'))accountProductRequests.push(r.url());});page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.addInitScript(()=>{const original=Element.prototype.animate;Element.prototype.animate=function(...args){if(this.closest?.('#logoTop'))document.documentElement.dataset.logoAnimated='yes';return original.apply(this,args)}});
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.locator('#guestLoginBtn').click();
-  await page.waitForFunction(()=>document.body.classList.contains('guest-mode')&&!document.querySelector('#userInput').disabled,{timeout:15000});
+  await page.waitForFunction(()=>document.body.classList.contains('guest-mode')&&!document.querySelector('#userInput').disabled,{timeout:15000});await page.waitForTimeout(250);if(accountProductRequests.length)throw Error('guest session requested account-only product or notes data: '+accountProductRequests.join(', '));for(const selector of ['#newNoteBtn','#sectionLibrary','#archiveChatsBtn','#guideBtn','#sidebarNotesSection','#sidebarProjectsSection'])if(await page.locator(selector).isVisible())throw Error('guest sidebar shows unavailable section: '+selector);
   if(await page.locator('#composerExpand').isVisible())throw Error('composer expand control is visible before overflow');
   await page.locator('#userInput').fill('long draft '.repeat(100));
   await page.waitForFunction(()=>!document.querySelector('#composerExpand').hidden);
