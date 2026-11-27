@@ -2596,3 +2596,10 @@ html[data-theme="holiday"] .accent-swatch[aria-pressed="true"]{outline-color:var
 .response-recovery-action:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 15%,var(--bg));border-color:var(--accent)}
 @media(max-width:560px){.response-recovery{align-items:flex-start;flex-direction:column;gap:10px}.response-recovery-action{align-self:flex-start}}
 @media(prefers-reduced-motion:reduce){.response-recovery-action{transition:none;transform:none!important}}
+
+/* A user-selected mobile layout remains a real drawer on wide screens too. */
+html[data-layout="mobile"] #sidebar{position:fixed!important;top:0;left:0;}
+
+/* Forced mobile layout uses the same accessible drawer stack at desktop widths. */
+html[data-layout="mobile"] #sidebar{position:fixed!important;z-index:40;top:0;left:0;width:min(290px,88vw);height:var(--app-height,100vh);transform:translateX(-100%);}
+html[data-layout="mobile"] #sidebar.open{transform:translateX(0);}
