@@ -233,3 +233,37 @@ body.collapsed #sidebar .sb-workspace-nav .sb-btn span:last-child{display:none}
 @media(prefers-reduced-motion:reduce){.chat-loading-indicator,.chat-loading-indicator svg{animation:none!important}.chat-loading-indicator svg{transform:rotate(35deg)}}
 /* Keep the desktop sidebar above the chat viewport hit-testing layer. */
 @media(min-width:1025px){#sidebar{position:relative;z-index:2}#main{position:relative;z-index:1}}
+
+
+/* Guest mode: show only actions that are available without an account. */
+body.guest-mode #newNoteBtn,
+body.guest-mode #sectionLibrary,
+body.guest-mode #archiveChatsBtn,
+body.guest-mode #guideBtn,
+body.guest-mode #sidebarNotesSection { display:none!important; }
+body.guest-mode #sidebarProjectsSection { opacity:1!important; filter:none!important; }
+body.guest-mode #sidebarProjectsSection .sb-section-title { color:var(--fg2); cursor:default; }
+body.guest-mode .modes #smartBtn,
+body.guest-mode .modes #searchBtn,
+body.guest-mode .modes #agentBtn,
+body.guest-mode .modes #multiAgentBtn,
+body.guest-mode #attachBtn,
+body.guest-mode #fileBtn,
+body.guest-mode #micBtn,
+body.guest-mode #shareBtn { display:none!important; }
+body.guest-mode #sidebar .sb-bottom { padding-inline:0!important; }
+body.guest-mode #sidebar .sb-bottom .sb-row { width:100%; padding:0; }
+body.guest-mode #sidebar .sb-bottom .sb-btn { box-sizing:border-box; width:100%!important; min-height:42px; margin:0!important; border-radius:10px; }
+
+/* Guest mode: keep available navigation interactive and remove unavailable sections. */
+body.guest-mode #sidebarSearchToggle,
+body.guest-mode #collapseBtn,
+body.guest-mode #newChatBtn,
+body.guest-mode #settingsBtn { opacity:1!important; filter:none!important; cursor:pointer!important; }
+body.guest-mode #sectionProjects { opacity:1!important; filter:none!important; cursor:default!important; }
+body.guest-mode .tb-actions #downloadAppTop,
+body.guest-mode .tb-actions #hideSidebarBtn,
+body.guest-mode .tb-actions #changelogBtn { opacity:1!important; filter:none!important; cursor:pointer!important; }
+body.guest-mode #notificationsBtn,
+body.guest-mode #sidebarPlus,
+body.guest-mode #smartPCButton { display:none!important; }
