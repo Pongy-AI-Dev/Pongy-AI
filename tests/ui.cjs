@@ -69,6 +69,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   const metaSafe=await page.evaluate(()=>{const el=window.pongyTest.renderMsg({role:'assistant',text:'test',meta:{retries:'<img src=x onerror=alert(1)>',startTime:1,endTime:2}},false,0);return !el.querySelector('img,[onerror]');});if(!metaSafe)throw Error('legacy metadata XSS');count++;
   const sourcesOnly=await page.evaluate(()=>{const el=window.pongyTest.renderMsg({role:'assistant',text:'Answer [source](https://nodejs.org/en/docs) https://nodejs.org/en/docs',meta:{sources:[{title:'Node.js',url:'https://nodejs.org/en/docs'}],pages:[{title:'Node.js',url:'https://nodejs.org/en/docs',kind:'web'}]}},false,9);return !el.querySelector('.bubble a')&&!el.querySelector('.bubble').textContent.includes('https://')&&!el.querySelector('.wiki-card')&&el.querySelectorAll('.source-list a').length===1&&el.querySelector('.source-list').hidden;});if(!sourcesOnly)throw Error('sources escaped into answer text');count++;
   // Sidebar regressions: transparent controls, keyboard, title layout, theme, touch.
+  await page.waitForTimeout(450);if(await page.evaluate(()=>document.querySelector('#sidebar').getBoundingClientRect().right<80))await page.locator('#hideSidebarBtn').click();await page.waitForFunction(()=>{const r=document.querySelector('#sidebar').getBoundingClientRect();return r.left>=-1&&r.right>80});
   const row=page.locator('.chat-item.active');
   await row.hover();
   const transparent=()=>page.evaluate(()=>{const row=document.querySelector('.chat-item.active');return [row.querySelector('.chat-actions'),...row.querySelectorAll('.chat-act')].every(el=>{const s=getComputedStyle(el);return s.backgroundImage==='none'&&s.backgroundColor==='rgba(0, 0, 0, 0)'});});
@@ -92,7 +93,7 @@ const fs=require('fs'),os=require('os'),path=require('path');
   await page.screenshot({path:output+'/sidebar-long-title.png'});
   await row.locator('.chat-act').nth(1).click();await row.locator('.rename-input').press('Escape');
   if(!await page.evaluate(()=>document.activeElement.classList.contains('chat-item')))throw Error('rename cancellation lost focus');count++;
-  await page.evaluate(()=>document.body.classList.add('collapsed'));await row.hover();
+  await page.evaluate(()=>document.body.classList.add('collapsed'));
   if(await row.locator('.chat-actions').isVisible())throw Error('collapsed actions cover sidebar');count++;
   await page.screenshot({path:output+'/sidebar-collapsed.png'});
   await page.evaluate(()=>document.body.classList.remove('collapsed'));

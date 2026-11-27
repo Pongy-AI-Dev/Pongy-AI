@@ -5,7 +5,7 @@ import {smartCommand} from './lib/smart-pc.js';
 import {timeInstruction} from './lib/request-time.js';
 import {mailFailure} from './lib/mail.js';
 import {speechConfigured,createLocalSpeech} from './lib/speech.js';
-import {createExtensions,SKILL_BUILDER,cleanExtensionBadges} from './lib/extensions.js';
+import {createExtensions,EXTENSIONS,SKILL_BUILDER,cleanExtensionBadges} from './lib/extensions.js';
 import {connectionSnapshot} from './lib/connection-context.js';
 import {reminderConversation} from './lib/reminder-conversation.js';
 import {culturalReply} from './lib/culture.js';
@@ -225,6 +225,7 @@ export function createApp({config=loadConfig(process.env,moduleRoot),fetchImpl=f
  app.get('/api/speech',auth,(_req,res)=>res.json({piper:speechConfigured(config),voice:'ru_RU-denis-medium'}));
  app.post('/api/speech',auth,speechLimit,asyncRoute(async(req,res)=>{if(speechBusy)return res.status(429).json({error:'SPEECH_BUSY'});speechBusy=true;const controller=new AbortController();res.once('close',()=>controller.abort());try{const wav=await localSpeech.synthesize(req.body?.text,{signal:controller.signal});if(!res.destroyed)res.set({'Content-Type':'audio/wav','Cache-Control':'no-store'}).send(wav);}finally{speechBusy=false;}}));
  const extensions=createExtensions(db);
+app.get('/api/extensions/catalog/:kind',(req,res)=>{const kind=req.params.kind;if(!Object.hasOwn(EXTENSIONS,kind))return res.status(404).json({error:'Unknown extension category'});return res.set('Cache-Control','public, max-age=300').json({items:EXTENSIONS[kind].map(item=>({...item,enabled:false}))});});
  app.post('/api/extension-command',auth,(req,res)=>{if(typeof req.body?.text!=='string'||req.body.text.length>20000)return res.status(400).json({error:'Invalid extension command'});const uid=req.user.id,catalog={skills:extensions.list(uid,'skills'),plugins:extensions.list(uid,'plugins')},command=extensionCommand(req.body.text,catalog);if(!command)return res.json({applied:false});db.transaction(()=>{if(command.kind==='skills'&&command.enabled)for(const item of catalog.skills.filter(item=>item.enabled&&item.id!==command.id))extensions.put(uid,'skills',item.id,{...item,enabled:false});const item=catalog[command.kind].find(item=>item.id===command.id);extensions.put(uid,command.kind,command.id,{...item,enabled:command.enabled});})();res.set('Cache-Control','no-store').json({applied:true,kind:command.kind,items:extensions.list(uid,command.kind)});});
  app.get('/api/extension-selection',auth,(req,res)=>res.json({items:cleanExtensionBadges(extensions.selection(req.user.id))}));
  app.get('/api/extensions/:kind',auth,(req,res)=>res.json({items:extensions.list(req.user.id,req.params.kind)}));

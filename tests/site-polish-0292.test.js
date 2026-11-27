@@ -84,12 +84,14 @@ test('chat export remains the only local history action', () => {
   assert.doesNotMatch(app, /importHistory|historyImport/i);
 });
 
-test('guest settings hide account email, lock the localized guest name and retain sign-out', () => {
+test('guest settings hide account email, allow a local nickname and retain sign-out', () => {
   assert.match(app, /if\(email\)\{email\.hidden=guest/);
   assert.match(app, /emailInput\.value=guest\?'':/);
   assert.match(app, /guestDisplayName\(\)/);
   assert.match(app, /function guestDisplayName\(\)\{var names=\{/);
-  assert.match(app, /\$\('nickInput'\)\.disabled=guest\|\|admin/);
+  assert.match(app, /\$\('nickInput'\)\.disabled=admin/);
+  assert.match(app, /guest\?\(settings\.nickname\|\|guestDisplayName\(\)\)/);
+  assert.match(app, /if\(currentUser&&currentUser\.guest\)\{notify\(authText/);
   assert.match(app, /el!==nickRow&&el!==email&&el!==\$\('logoutBtnSettings'\)/);
   assert.match(app, /guestHistoryFromWarning/);
   assert.match(app, /local-history-card/);
