@@ -1,4 +1,4 @@
-﻿/* Pongy AI вЂ” visual refresh only. Preserve existing controls, dimensions and behavior. */
+/* Pongy AI вЂ” visual refresh only. Preserve existing controls, dimensions and behavior. */
 :root { --chat-content-width: 900px; --chat-panel-radius: 20px; }
 #sidebar { background: var(--bg); border-right-color: color-mix(in srgb, var(--border) 78%, transparent); }
 .sb-head { min-height: 62px; }
@@ -306,3 +306,6 @@ body.guest-mode #nickInput,body.guest-mode #nickInput:disabled,body.guest-mode :
 html[data-theme=holiday] #sidebar .sb-btn:hover{background:rgba(120,54,34,.08)!important}html[data-theme=holiday] .input-box{border-color:color-mix(in srgb,var(--border) 80%,#a86d42);border-radius:18px 18px 20px 20px}
 @media(prefers-reduced-motion:no-preference){#sidebar .sb-btn svg,#sidebar .archive-nav svg{transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s ease}#sidebar .sb-btn:hover svg,#sidebar .archive-nav:hover svg{transform:translateY(-1px) scale(1.06)}.settings-section:not([hidden]){animation:settings-enter .24s ease both}}
 #settingsModal .settings-nav-search{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23838b9b' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:13px center!important;background-size:17px!important}
+
+/* Preserve native hidden states after sidebar visibility overrides. */
+#sidebar [hidden],#sidebar .sb-btn[hidden],#sidebar .archive-nav[hidden]{display:none!important;visibility:hidden!important;}
