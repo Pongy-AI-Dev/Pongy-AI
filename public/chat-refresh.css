@@ -241,8 +241,7 @@ body.guest-mode #sectionLibrary,
 body.guest-mode #archiveChatsBtn,
 body.guest-mode #guideBtn,
 body.guest-mode #sidebarNotesSection { display:none!important; }
-body.guest-mode #sidebarProjectsSection { opacity:1!important; filter:none!important; }
-body.guest-mode #sidebarProjectsSection .sb-section-title { color:var(--fg2); cursor:default; }
+body.guest-mode #sidebarProjectsSection { display:none!important; }
 body.guest-mode .modes #smartBtn,
 body.guest-mode .modes #searchBtn,
 body.guest-mode .modes #agentBtn,
@@ -260,7 +259,7 @@ body.guest-mode #sidebarSearchToggle,
 body.guest-mode #collapseBtn,
 body.guest-mode #newChatBtn,
 body.guest-mode #settingsBtn { opacity:1!important; filter:none!important; cursor:pointer!important; }
-body.guest-mode #sectionProjects { opacity:1!important; filter:none!important; cursor:default!important; }
+
 body.guest-mode .tb-actions #downloadAppTop,
 body.guest-mode .tb-actions #hideSidebarBtn,
 body.guest-mode .tb-actions #changelogBtn { opacity:1!important; filter:none!important; cursor:pointer!important; }
