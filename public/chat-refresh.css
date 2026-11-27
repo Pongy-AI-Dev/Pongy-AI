@@ -111,3 +111,50 @@ body.composer-expanded #composerExpand{top:7px;right:6px;}
   :where(html[data-layout="mobile"]) #sidebar .sb-bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--bg);}
   :where(html[data-layout="mobile"]) #sidebar .sb-list{padding-bottom:165px;}
 }
+
+/* 0.30.1 - readable base theme and duplicate-logo cleanup */
+#logoTop::before,.big-logo::before,#authLogo::before{display:none!important}.big-logo .welcome-icon{opacity:1!important}
+:root{--fg:#202633;--fg2:#586477;--border:#d9dee8;--hover:rgba(35,48,72,.055);--hover2:rgba(35,48,72,.09)}
+html[data-theme=dark]{--bg:#171a21;--bg2:#202530;--bg3:#2a3140;--fg:#f1f4f9;--fg2:#b7c0cf;--border:#3b4556;--accent:#9ba9ff;--accent-h:#c2cbff;--hover:rgba(225,232,246,.07);--hover2:rgba(225,232,246,.12)}
+body,#sidebar,#main,.topbar,#topbar,.input-box,.modal-box,.auth-box{color:var(--fg)}
+.msg.ai .bubble,.msg.ai .answer-body,.answer-body,.answer-body p,.answer-body li,.answer-body td,.answer-body th{color:var(--fg)!important}
+.msg.ai .answer-body{font-size:15px;line-height:1.72;letter-spacing:0}.answer-body :is(h1,h2,h3,strong,b){color:var(--fg);font-weight:680}
+.answer-body a{color:var(--accent);text-decoration-thickness:1.5px}.answer-body code,.answer-body pre{color:var(--fg)}
+.msg.user .bubble{color:#fff!important;background:#343b49!important}html[data-theme=dark] .msg.user .bubble{background:#35435d!important;color:#fff!important}
+button,.sb-btn,.tb-btn,.icon-btn{color:inherit}button:disabled{opacity:.48}
+.sb-head{gap:8px}.sb-list{padding-top:4px}.chat-item{min-height:40px}
+.welcome{padding:clamp(16px,3vh,34px) clamp(14px,3vw,32px)}.welcome-inner{width:min(100%,560px);padding:18px 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
+#messages{padding-inline:clamp(12px,3vw,28px)}#inputArea{background:linear-gradient(to bottom,transparent,var(--bg) 24%)}
+.input-box{box-shadow:0 2px 12px rgba(20,28,44,.055),0 0 0 1px color-mix(in srgb,var(--border) 75%,transparent)}
+html[data-theme=dark] .input-box{box-shadow:0 4px 18px rgba(0,0,0,.22),0 0 0 1px var(--border)}
+#footerText,.legal-links{color:var(--fg2);opacity:1}
+.appearance-select-option{display:flex;align-items:center;justify-content:space-between;gap:12px}.appearance-font-preview{flex:0 0 auto;color:var(--fg2);font-size:15px;line-height:1.2;opacity:.9}
+.appearance-select-option:hover .appearance-font-preview,.appearance-select-option.active .appearance-font-preview{color:var(--fg)}
+@media(prefers-reduced-motion:no-preference){:where(.sb-btn,.tb-btn,.icon-btn,.chat-act,.appearance-select-trigger,.note-tool):hover svg{animation:icon-hover-arrive .34s cubic-bezier(.2,.8,.2,1) both}@keyframes icon-hover-arrive{0%{transform:translateY(1px) scale(.88);opacity:.65}65%{transform:translateY(-1px) scale(1.08);opacity:1}100%{transform:none;opacity:1}}}
+@media(prefers-reduced-motion:reduce){:where(.sb-btn,.tb-btn,.icon-btn,.chat-act,.appearance-select-trigger,.note-tool):hover svg{animation:none!important}}
+/* Winter palette: cool snow, evergreen, cranberry and warm gold. */
+html[data-theme=holiday]{color-scheme:light;--bg:#f5f8fc;--bg2:#edf3f8;--bg3:#e3ebf3;--fg:#1d2b3d;--fg2:#52667b;--border:#d0dce7;--accent:#236b9b;--accent-h:#1b5279;--hover:rgba(35,107,155,.07);--hover2:rgba(35,107,155,.12);--holiday-red:#a83d50;--holiday-green:#28745b;--holiday-gold:#b58a3d}
+html[data-theme=holiday] body{background-color:var(--bg);background-image:radial-gradient(1px 1px at 9% 12%,rgba(255,255,255,.95) 50%,transparent 100%),radial-gradient(1.5px 1.5px at 76% 22%,rgba(255,255,255,.9) 50%,transparent 100%),radial-gradient(1px 1px at 43% 79%,rgba(255,255,255,.85) 50%,transparent 100%),linear-gradient(145deg,rgba(40,116,91,.035),transparent 46%,rgba(168,61,80,.035));background-attachment:fixed}
+html[data-theme=holiday] #sidebar{border-right:1px solid color-mix(in srgb,var(--holiday-green) 20%,var(--border))}
+html[data-theme=holiday] .sb-head{position:relative}
+html[data-theme=holiday] .sb-head:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:3px;background:linear-gradient(90deg,var(--holiday-green),var(--holiday-gold),var(--holiday-red),var(--holiday-green));opacity:.62}
+html[data-theme=holiday] .logo{box-shadow:0 0 0 1px color-mix(in srgb,var(--holiday-gold) 30%,transparent)}
+html[data-theme=holiday] #sendBtn.ready,html[data-theme=holiday] .avatar.ai{background:linear-gradient(135deg,var(--holiday-green),var(--accent) 58%,var(--holiday-red))}
+html[data-theme=holiday] .input-box{border-color:color-mix(in srgb,var(--holiday-green) 28%,var(--border))}
+html[data-theme=holiday] .msg.user .bubble{background:#315f76!important;color:#fff!important}
+html[data-theme=holiday] .mode-btn.active{border-color:color-mix(in srgb,var(--holiday-green) 40%,var(--border));background:color-mix(in srgb,var(--holiday-green) 8%,var(--bg2))}
+@media(prefers-reduced-motion:no-preference){html[data-theme=holiday] #sidebar:before{content:"";position:absolute;z-index:2;top:0;left:0;right:0;height:3px;pointer-events:none;background:linear-gradient(90deg,var(--holiday-red),var(--holiday-gold),var(--holiday-green),var(--holiday-red));background-size:200% 100%;animation:winter-garland 14s linear infinite}@keyframes winter-garland{to{background-position:200% 0}}}
+
+/* Sidebar header actions: search sits immediately left of collapse. */
+#collapseBtn{margin-left:0!important;flex:0 0 32px}
+.sidebar-head-action{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;padding:0;border:0;border-radius:9px;background:transparent;color:var(--fg2);cursor:pointer;transition:background-color .16s,color .16s}
+.sidebar-head-action:hover{background:var(--hover);color:var(--fg)}
+.sb-head .sb-title{margin-right:auto}
+#sidebar:not(.search-open) .sb-search{display:none!important}
+#sidebar.search-open .sb-search{display:block!important;animation:sidebar-search-in .18s ease-out both}
+@keyframes sidebar-search-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+body.collapsed .sidebar-head-action{display:none}
+@media(max-width:1024px){:where(html[data-layout="mobile"]) body.collapsed #sidebar.search-open .sb-search{display:block!important}}
+
+/* Keep collapsed answer edges on a complete text-line boundary. */
+.answer-body.answer-collapsed{max-height:17.2em}

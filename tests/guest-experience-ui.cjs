@@ -55,7 +55,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
   if(saveStyle.disabled||saveStyle.opacity!=='1'||saveStyle.background==='rgba(0, 0, 0, 0)'||saveStyle.border==='0px')throw Error('chat title confirmation does not look enabled');
   await rename.fill('Guest renamed chat');await rename.press('Enter');
   if(!await page.locator('#chatList').getByText('Guest renamed chat',{exact:true}).count())throw Error('guest chat rename did not persist');
-  await page.locator('#sbSearchInput').fill('Guest renamed chat');
+  await page.locator('#sidebarSearchToggle').click();await page.locator('#sbSearchInput').fill('Guest renamed chat');
   if(await page.locator('#chatList .chat-item').count()!==1)throw Error('guest chat search did not filter the local history');
   await page.locator('#chatList .chat-act').first().click();if(await page.locator('#chatList .chat-item .pin-icon.on').count()!==1)throw Error('guest chat pin did not persist');await page.locator('#chatList .chat-act.danger').click();await page.locator('#confirmModal.open').waitFor();await page.locator('#confirmYes').click();await page.waitForFunction(()=>!document.querySelector('#chatList').textContent.includes('Guest renamed chat'));
   // A guest's email field must be restored when the same page signs into a regular account.
