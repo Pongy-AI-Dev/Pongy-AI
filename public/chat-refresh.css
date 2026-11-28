@@ -318,3 +318,109 @@ body.guest-mode #sidebar #newNoteBtn,body.guest-mode #sidebar .sb-workspace-nav 
 
 /* Keep dismiss controls above transient service notices. */
 #backgroundAccessBanner{position:relative;z-index:20}#backgroundAccessBanner .device-access-close{z-index:21;pointer-events:auto}
+
+/* Guest mode: keep useful local areas visible; only account-synced workspaces require sign-in. */
+body.guest-mode #sidebar #newNoteBtn,
+body.guest-mode #sidebar #sectionLibrary,
+body.guest-mode #sidebar #archiveChatsBtn,
+body.guest-mode #sidebar #guideBtn{display:flex!important;visibility:visible!important;opacity:1!important;filter:none!important;pointer-events:auto!important;cursor:pointer!important;}
+body.guest-mode #sidebar #sidebarNotesSection,
+body.guest-mode #sidebar #sidebarProjectsSection{display:block!important;visibility:visible!important;opacity:1!important;}
+body.guest-mode #sidebar #sidebarNotesSection .sb-section-label,
+body.guest-mode #sidebar #sidebarProjectsSection .sb-section-heading{display:flex!important;}
+body.guest-mode #sidebar #newNoteBtn{min-height:40px!important;}
+body.guest-mode #sidebar #sectionLibrary,
+body.guest-mode #sidebar #archiveChatsBtn,
+body.guest-mode #sidebar #guideBtn{min-height:40px!important;}
+/* A single row rhythm for chats, notes and recent items. */
+#chatList .chat-item,#notesList .chat-item,#recentList .sb-recent-item{box-sizing:border-box;min-height:48px!important;height:auto;display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;line-height:1.35;}
+#recentList .sb-recent-item{width:100%;border:1px solid transparent;background:transparent;color:var(--fg2);font:inherit;font-size:13.5px;text-align:left;cursor:pointer;transition:background-color .18s ease,color .18s ease,border-color .18s ease;}
+#recentList .sb-recent-item>span:first-child{display:inline-flex;align-items:center;justify-content:center;flex:0 0 19px;width:19px;height:19px;}
+#recentList .sb-recent-item>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#recentList .sb-recent-item:hover{background:var(--hover);color:var(--fg);}
+/* Keep the top bar from compressing controls into one another. */
+#topbar{box-sizing:border-box;min-height:52px;height:auto;gap:10px;align-items:center;overflow:visible;}
+#topbar .tb-left{display:flex;align-items:center;gap:9px;flex:1 1 auto;min-width:0;}
+#topbar .tb-title{display:block;min-width:0;max-width:100%;line-height:1.3;}
+#topbar .tb-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex:0 0 auto;min-width:0;max-width:52%;white-space:nowrap;}
+#topbar .tb-actions>button{box-sizing:border-box;flex:0 0 38px;width:38px;min-width:38px;height:38px;min-height:38px;padding:0;}
+#topbar .tb-actions>#downloadAppTop{flex:0 1 auto;width:auto;min-width:38px;max-width:142px;padding:0 10px;overflow:hidden;text-overflow:ellipsis;}
+/* Message action icons use one consistent optical size and hit area. */
+.msg-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.msg-actions .msg-act{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 34px;width:34px;min-width:34px;height:34px;min-height:34px;padding:0;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--fg2);line-height:1;transition:background-color .18s ease,color .18s ease,border-color .18s ease;}
+.msg-actions .msg-act svg{display:block;flex:0 0 17px;width:17px!important;height:17px!important;min-width:17px;max-width:17px;stroke-width:1.8;transform:none!important;}
+.msg-actions .msg-act:hover:not(:disabled){background:var(--hover);color:var(--fg);border-color:color-mix(in srgb,var(--border) 70%,transparent);}
+.msg-actions .msg-act:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* Soft, consistent hover feedback across all themes. */
+:where(.sb-btn,.icon-btn,.tb-btn,.chat-act,.settings-nav-item,.mode-btn,.appearance-select-trigger,.appearance-select-option,.msg-act,.sb-recent-item):not(:disabled){transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease;}
+:where(.sb-btn,.icon-btn,.tb-btn,.chat-act,.settings-nav-item,.mode-btn,.appearance-select-trigger,.appearance-select-option,.msg-act,.sb-recent-item):hover:not(:disabled){filter:none!important;}
+/* A fuller winter finish without covering text, logos or controls with decorations. */
+html[data-theme="holiday"] body{background-image:radial-gradient(ellipse at 12% 8%,rgba(255,255,255,.94),transparent 30%),radial-gradient(ellipse at 88% 18%,rgba(255,255,255,.72),transparent 28%),linear-gradient(145deg,#fffaf3 0%,#f8eadc 46%,#edf4ed 100%);background-attachment:fixed;}
+html[data-theme="holiday"] #sidebar{background:linear-gradient(180deg,#fffaf2 0%,#f8ecdf 54%,#f3e5d7 100%);border-right-color:#dfc5ae;}
+html[data-theme="holiday"] .sb-head{position:relative;background:linear-gradient(110deg,rgba(38,120,90,.09),rgba(255,250,242,.5) 48%,rgba(184,50,80,.08));}
+html[data-theme="holiday"] .sb-head::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:5px;border-radius:0 0 5px 5px;background:repeating-linear-gradient(90deg,#26785a 0 7px,transparent 7px 17px,#b83250 17px 24px,transparent 24px 34px);opacity:.42;pointer-events:none;}
+html[data-theme="holiday"] #topbar{position:relative;background:linear-gradient(100deg,#fffaf2 0%,#f8eadc 56%,#f4e7dc 100%);border-bottom-color:#dfc5ae;box-shadow:0 3px 14px rgba(112,67,39,.045);}
+html[data-theme="holiday"] #topbar::before{content:"";position:absolute;left:8px;right:8px;top:0;height:4px;background:repeating-linear-gradient(90deg,#b83250 0 5px,transparent 5px 17px,#26785a 17px 22px,transparent 22px 34px);opacity:.48;pointer-events:none;}
+html[data-theme="holiday"] .welcome-inner{padding:clamp(24px,3.8vw,40px);border:1px solid #dfc5ae;background:linear-gradient(145deg,rgba(255,252,246,.98),rgba(247,232,216,.9));box-shadow:0 16px 42px rgba(112,67,39,.1);}
+html[data-theme="holiday"] .welcome-inner h1{font-size:clamp(25px,3vw,34px);letter-spacing:-.025em;}
+html[data-theme="holiday"] .welcome-inner p{font-size:15px;line-height:1.65;}
+html[data-theme="holiday"] .chat-item{min-height:50px;background:rgba(255,250,242,.32);border-color:rgba(185,122,78,.12);}
+html[data-theme="holiday"] .sb-section-label,html[data-theme="holiday"] .sb-section-heading{font-size:13px;font-weight:700;letter-spacing:.015em;}
+html[data-theme="holiday"] .sb-btn,html[data-theme="holiday"] .sb-recent-item{font-size:14px;min-height:42px;}
+html[data-theme="holiday"] .bubble{box-shadow:0 4px 14px rgba(112,67,39,.055);}
+html[data-theme="holiday"] .input-box{border:1.5px solid #d8b99d;background:linear-gradient(145deg,#fffdf8,#f7e9dc);box-shadow:0 8px 24px rgba(112,67,39,.1),inset 0 1px #fff;}
+html[data-theme="holiday"] .holiday-effects-controls{padding:16px;border-radius:15px;background:linear-gradient(145deg,#fffdf8,#f5e5d5);border-color:#d8b99d;box-shadow:0 5px 16px rgba(112,67,39,.07);}
+html[data-theme="holiday"] .holiday-snow-toggle{font-size:14px;}
+html[data-theme="holiday"] .holiday-snow-intensity{font-size:13px;}
+html[data-theme="holiday"] .accent-swatch:disabled{opacity:.32!important;filter:grayscale(.45);cursor:not-allowed;outline-color:transparent!important;transform:none!important;}
+html[data-theme="holiday"] #accentCustomControls[hidden]{display:none!important;}
+html[data-theme="holiday"] :where(.sb-btn,.icon-btn,.tb-btn,.chat-act,.settings-nav-item,.mode-btn,.appearance-select-trigger,.appearance-select-option,.msg-act,.sb-recent-item):hover:not(:disabled){background-color:rgba(166,82,43,.075)!important;color:var(--fg2)!important;border-color:rgba(185,122,78,.22)!important;box-shadow:none!important;}
+html[data-theme="holiday"] .msg-actions .msg-act:hover:not(:disabled){color:#563a2c!important;background:rgba(166,82,43,.09)!important;}
+@media(max-width:640px){
+ #topbar{gap:5px;padding-inline:8px;}
+ #topbar .tb-left{gap:5px;}
+ #topbar .tb-actions{gap:2px;max-width:58%;}
+ #topbar .tb-actions>button{flex-basis:34px;width:34px;min-width:34px;height:34px;min-height:34px;}
+ #topbar .tb-actions>#downloadAppTop{font-size:0;width:34px;min-width:34px;max-width:34px;padding:0;}
+ #topbar .tb-actions>#downloadAppTop svg{margin:0;}
+ #recentList .sb-recent-item{min-height:46px;}
+}
+
+/* Guest share/export is local and does not need an account. */
+body.guest-mode #topbar #shareBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;filter:none!important;pointer-events:auto!important;cursor:pointer!important;}
+/* Dynamic top-right actions stay reachable on narrow viewports instead of being clipped. */
+#topbar .tb-actions{overflow-x:auto;overflow-y:visible;scrollbar-width:none;overscroll-behavior-x:contain;}
+#topbar .tb-actions::-webkit-scrollbar{display:none;}
+#topbar .tb-actions>#changelogBtn{display:inline-flex;visibility:visible;flex:0 0 38px;}
+#topbar .tb-actions>button[hidden]{display:none!important;}
+
+/* Override legacy account-only hiding with explicit guest-safe navigation. */
+body.guest-mode #sidebar .sb-workspace-nav #sectionLibrary,
+body.guest-mode #sidebar .sb-workspace-nav #archiveChatsBtn,
+body.guest-mode #sidebar .sb-workspace-nav #guideBtn{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
+body.guest-mode #sidebar #sidebarNotesSection,
+body.guest-mode #sidebar #sidebarProjectsSection{display:block!important;visibility:visible!important;opacity:1!important;}
+
+/* Chat, note and recent rows share the same height in every layout. */
+#chatList .chat-item,#notesList .chat-item,#recentList .sb-recent-item{min-height:50px!important;}
+@media(max-width:640px){#recentList .sb-recent-item{min-height:50px;}}
+
+/* Override legacy hover rules that used stronger, abrupt theme-specific colors. */
+:where(.sb-btn,.icon-btn,.tb-btn,.chat-act,.settings-nav-item,.mode-btn,.appearance-select-trigger,.appearance-select-option,.msg-act,.sb-recent-item):not(:disabled){transition-duration:.18s!important;transition-timing-function:ease!important;}
+html[data-theme="holiday"] #settingsModal .appearance-select-trigger:hover:not(:disabled),
+html[data-theme="holiday"] #settingsModal .appearance-select-option:hover:not(:disabled),
+html[data-theme="holiday"] #sidebar .sb-btn:hover:not(:disabled),
+html[data-theme="holiday"] #sidebar .sb-recent-item:hover:not(:disabled),
+html[data-theme="holiday"] #topbar .tb-actions button:hover:not(:disabled),
+html[data-theme="holiday"] .msg-actions .msg-act:hover:not(:disabled){background-color:rgba(166,82,43,.075)!important;color:var(--fg2)!important;border-color:rgba(185,122,78,.22)!important;box-shadow:none!important;filter:none!important;}
+
+/* Desktop message actions keep their labels; touch layouts use equal icon-only buttons. */
+.msg-actions .msg-act{flex:0 0 auto;width:auto;min-width:34px;height:auto;min-height:34px;padding:6px 9px;gap:6px;}
+.msg-actions .msg-act>span{display:inline-flex;align-items:center;white-space:nowrap;font-size:12px;line-height:1.2;}
+.msg-actions .msg-act svg{flex:0 0 17px;width:17px!important;height:17px!important;min-width:17px;max-width:17px;}
+@media(max-width:600px),(hover:none){.msg-actions .msg-act{flex:0 0 40px;width:40px;min-width:40px;height:40px;min-height:40px;padding:8px;}.msg-actions .msg-act>span{display:none;}}
+html[data-layout=mobile] .msg-actions .msg-act{flex:0 0 40px;width:40px;min-width:40px;height:40px;min-height:40px;padding:8px;}
+html[data-layout=mobile] .msg-actions .msg-act>span{display:none!important;}
+
+html[data-theme="holiday"] #settingsModal .appearance-select-trigger{transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease!important;}
+html[data-theme="holiday"] #settingsModal .appearance-select-trigger:hover{background:rgba(166,82,43,.075)!important;color:var(--fg2)!important;border-color:rgba(185,122,78,.22)!important;box-shadow:none!important;}

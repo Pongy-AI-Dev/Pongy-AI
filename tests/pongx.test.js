@@ -8,11 +8,12 @@ import yauzl from 'yauzl';
 
 const cli = path.resolve('pongx/bin/pongx.js');
 const source = fs.readFileSync(cli, 'utf8');
+const pongxVersion = JSON.parse(fs.readFileSync('pongx/package.json', 'utf8')).version;
 
 test('PongX launches and reports its version without requiring credentials', () => {
   const result = spawnSync(process.execPath, [cli, '--version'], {encoding: 'utf8'});
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /PongX 0\.1\.0/);
+  assert.match(result.stdout, new RegExp('PongX '+pongxVersion.replaceAll('.', '\\.' )));
 });
 
 test('PongX help documents workspace, file context, undo and test workflows', () => {

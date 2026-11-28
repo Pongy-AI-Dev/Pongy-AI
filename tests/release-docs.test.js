@@ -13,26 +13,26 @@ function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
-test('web, native installers and download metadata all use the current release', () => {
+test('web release advances while native installers retain their packaged version', () => {
   const readme = fs.readFileSync('README.md', 'utf8');
   const releases = fs.readFileSync('RELEASES.md', 'utf8');
   const changes = fs.readFileSync('CHANGELOG.md', 'utf8');
   const downloads = JSON.parse(fs.readFileSync('public/downloads/releases.json', 'utf8'));
 
-  assert.equal(version, '0.29.4');
+  assert.equal(version, '0.29.5');
   assert(readme.includes('Windows MSI 0.29.4 (unsigned)'));
   assert(readme.includes('Android APK 0.29.4'));
   assert(releases.includes('Windows MSI: 0.29.4 (unsigned)'));
   assert(releases.includes('Android APK: 0.29.4'));
   assert(changes.includes(version));
   assert(changes.split('\n').find(line => line.startsWith('## ')).startsWith('## ' + version + ' '));
-  assert.equal(downloads.version, version);
+  assert.equal(downloads.version, '0.29.4');
   assert.deepEqual(Object.keys(downloads.files).sort(), ['android', 'pongx', 'windows']);
 
   for (const platform of ['windows', 'android', 'pongx']) {
     const file = downloads.files[platform];
     const bytes = fs.readFileSync(path.join('public/downloads', file.name));
-    assert.equal(file.version, platform === 'pongx' ? pongxVersion : version);
+    assert.equal(file.version, platform === 'pongx' ? pongxVersion : '0.29.4');
     if (platform === 'pongx') assert.equal(file.name, 'PongX-' + pongxVersion + '-windows-x64.zip');
     assert.equal(file.bytes, bytes.length, platform + ' byte count');
     assert.equal(file.sha256, sha256(bytes), platform + ' SHA-256');

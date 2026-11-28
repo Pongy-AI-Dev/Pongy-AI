@@ -99,16 +99,16 @@ test('guest settings hide account email, lock nickname and retain sign-out', () 
 
 test('font and accent choices apply across the interface', () => {
   assert.match(app, /var FONT_CHOICES=\['Default','System UI','Sans Serif','Serif','Monospace','Segoe UI','Arial','Aptos','Calibri','Cambria','Candara','Corbel','Verdana','Tahoma','Trebuchet MS','Georgia','Garamond','Palatino Linotype','Times New Roman','Consolas','Courier New','Lucida Sans Unicode','Franklin Gothic Medium','Inter','Roboto Flex','Noto Sans','Open Sans','Lato','Montserrat','Ubuntu','DejaVu Sans','Liberation Sans','PT Sans','Fira Sans','Nunito','Source Sans 3','Merriweather','Source Code Pro','JetBrains Mono'\]/);
-  assert.match(app, /item\.style\.fontFamily=fontCss\(font\)/);
+  assert.match(app, /item\.style\.setProperty\('font-family',fontCss\(font\),'important'\)/);
   assert.match(app, /document\.documentElement\.style\.setProperty\('--pongy-font',fontCss\(family\)\)/);
   assert.match(app, /function fontAvailable\(font\)/);assert.match(app, /function loadFontAsset\(font\).*document\.fonts\.load\(spec,sample\).*document\.fonts\.check\(spec,sample\)/);assert.match(app,/Pongy Inter/);assert.match(app,/Pongy Roboto Flex/);assert.match(css,/@font-face\{font-family:"Pongy Inter"/);for(const name of ['inter','roboto-flex','noto-sans','montserrat'])for(const subset of ['cyrillic','latin'])assert.ok(fs.existsSync(new URL('../public/fonts/'+name+'-'+subset+'.woff2',import.meta.url)));
   assert.doesNotMatch(app, /fonts\.googleapis\.com/);
   assert.match(app, /function extendedAppearanceEnabled\(\)\{return settings\.betaFunctions===true&&settings\.betaFeatures&&settings\.betaFeatures\.earlyAccess===true\}/);
   assert.match(app, /\$\('accentPreferenceSetting'\)\.hidden=!enabled/);
-  assert.match(app, /var enabled=extendedAppearanceEnabled\(\)/);
-  assert.match(app, /visible=enabled\?ACCENT_COLORS:ACCENT_COLORS\.filter\(function\(color\)\{return color\.id==='default'\|\|color\.id==='blue'\}\)/);
+  assert.match(app, /var enabled=extendedAppearanceEnabled\(\),holiday=settings\.theme==='holiday'/);
+  assert.match(app, /visible=extendedAppearanceEnabled\(\)\?ACCENT_COLORS:ACCENT_COLORS\.filter\(function\(color\)\{return color\.id==='default'\|\|color\.id==='blue'\}\)/);assert.match(app,/button\.disabled=holiday/);assert.match(app,/window\.PongyDisplay\?\.resetAccent/);
   assert.match(app, /fontPreferenceSetting'\)\.hidden=!enabled/);
-  assert.match(app, /availableFonts=extendedAppearanceEnabled\(\)\?FONT_CHOICES\.filter\(function\(font\)\{return font==='Default'\|\|fontAvailable\(font\)\}\):\['Default'\]/);
+  assert.match(app, /availableFonts=extendedAppearanceEnabled\(\)\?FONT_CHOICES\.slice\(\):\['Default'\]/);
   assert.match(app, /betaFeature:function\(key,value\)/);
   assert.match(startupGuard, /var accents=\['default','yellow','red','green','blue','gray','pink','orange','teal','cyan'\]/);
   assert.match(index, /startup-guard\.js\?v=0\.29\.4/);

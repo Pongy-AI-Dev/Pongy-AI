@@ -500,7 +500,7 @@ button,a,.chat-item,input,textarea{transition-duration:.3s}
 .checkout-security{font-size:calc(13px * var(--ui-scale,1));color:var(--fg2);line-height:1.7;margin:calc(12px * var(--ui-scale,1)) 0 calc(18px * var(--ui-scale,1))}.checkout-summary{font-size:calc(16px * var(--ui-scale,1));line-height:1.6}
 @media(hover:none),(pointer:coarse){#composerMode.skill-chip #clearComposerMode{opacity:1;flex-basis:calc(32px * var(--ui-scale,1));width:calc(32px * var(--ui-scale,1));height:calc(32px * var(--ui-scale,1));min-width:calc(32px * var(--ui-scale,1));min-height:calc(32px * var(--ui-scale,1))}}
 
-:root{--pongy-build:"0.29.4"}
+:root{--pongy-build:"0.29.5"}
 #chatViewport{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}
 #chatViewport>#messages{width:100%;min-height:0}
 #scrollToEnd{position:absolute;right:calc(22px * var(--ui-scale,1));bottom:calc(16px * var(--ui-scale,1));width:calc(42px * var(--ui-scale,1));height:calc(42px * var(--ui-scale,1));min-width:calc(42px * var(--ui-scale,1));min-height:calc(42px * var(--ui-scale,1));display:flex;align-items:center;justify-content:center;border:calc(1px * var(--ui-scale,1)) solid var(--border);border-radius:50%;background:var(--bg2);color:var(--fg);box-shadow:0 calc(4px * var(--ui-scale,1)) calc(18px * var(--ui-scale,1)) #0002;z-index:8;}
