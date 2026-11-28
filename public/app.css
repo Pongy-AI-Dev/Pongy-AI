@@ -2604,7 +2604,7 @@ html[data-layout="mobile"] #sidebar{position:fixed!important;top:0;left:0;}
 html[data-layout="mobile"] #sidebar{position:fixed!important;z-index:40;top:0;left:0;width:min(290px,88vw);height:var(--app-height,100vh);transform:translateX(-100%);}
 html[data-layout="mobile"] #sidebar.open{transform:translateX(0);}
 
-/* Holiday theme 0.30.5: illustrated confectionery details, readable surfaces and a physical snow layer. */
+/* Holiday theme 0.29.5: illustrated confectionery details, readable surfaces and a physical snow layer. */
 html[data-theme="holiday"]{--bg:#fff9f1;--bg2:#f8eadc;--bg3:#f0ddca;--fg:#3d2923;--fg2:#73584d;--border:#dfc5ae;--accent:#a72f43;--accent-h:#246b50;--holiday-cookie:#b66b3e;--holiday-icing:#fffaf0;--holiday-red:#b83250;--holiday-green:#26785a;--holiday-gold:#c09238;--holiday-ink:#3d2923;}
 html[data-theme="holiday"] body{background-color:var(--bg);background-image:radial-gradient(ellipse at 12% 9%,#fffdf7 0 1px,transparent 2px),radial-gradient(ellipse at 84% 17%,#fffdf7 0 1px,transparent 2px),linear-gradient(135deg,rgba(166,82,43,.07),transparent 36%,rgba(38,120,90,.06) 72%,rgba(184,50,80,.05));}
 html[data-theme="holiday"] #sidebar{background:linear-gradient(180deg,#f8eadc 0%,#f4e4d4 70%,#f1dfce 100%);border-right-color:#dfc5ae;}
