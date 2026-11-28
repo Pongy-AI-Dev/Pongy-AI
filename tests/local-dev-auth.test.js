@@ -13,7 +13,7 @@ test('local developer test login exposes a one-time code only when explicitly en
  const base='http://127.0.0.1:'+server.address().port;
  async function req(url,body){return fetch(base+url,{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify(body)});}
  try{
-  const config=await fetch(base+'/api/config');const configData=await config.json();assert(configData.developerLoginEmails.includes('notion.app.login@gmail.com'));assert.equal(configData.localDeveloperAuth,true);
+  const config=await fetch(base+'/api/config');const configData=await config.json();assert.equal(Object.hasOwn(configData,'developerLoginEmails'),false);assert.equal(configData.localDeveloperAuth,true);
   const local=await req('/api/local-developer/session',{});assert.equal(local.status,200);const localData=await local.json();assert.equal(localData.authenticated,true);assert.equal(localData.user.developer,true);assert.equal(localData.user.adminGuest,true);
   const start=await req('/api/admin-guest/start',{email:'notion.app.login@gmail.com'});assert.equal(start.status,200);const sent=await start.json();assert.equal(sent.localOnly,true);assert.match(sent.localCode,/^[0-9]{6}$/);
   const verify=await req('/api/admin-guest/verify',{email:'notion.app.login@gmail.com',code:sent.localCode});assert.equal(verify.status,200);const data=await verify.json();assert.equal(data.user.developer,true);assert.equal(data.user.adminGuest,true);

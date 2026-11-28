@@ -7,7 +7,7 @@ import readline from 'node:readline';
 import {Writable} from 'node:stream';
 import {spawnSync} from 'node:child_process';
 
-const VERSION='0.1.0';
+const VERSION='0.1.1';
 const ORIGIN=(process.env.PONGY_ORIGIN||'https://pongy-ai.devs.surf').replace(/\/+$/,'');
 const APP_DIR=path.join(process.env.APPDATA||path.join(os.homedir(),'AppData','Roaming'),'PongX');
 const AUTH_FILE=path.join(APP_DIR,'auth.dat');

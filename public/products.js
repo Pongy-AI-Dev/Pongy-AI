@@ -248,7 +248,7 @@
     email.required = true;
     email.autocomplete = "email";
     until.type = "datetime-local";
-    until.step = "1";
+    until.step = "60";
     until.hidden = true;
     for (const [value, text] of [
       ["plus", "Plus"],

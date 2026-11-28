@@ -11,10 +11,10 @@ test('mobile eye button opens and closes the sidebar and synchronizes overlay, i
  assert.match(app,/isHidden=mobile\?!\$\('sidebar'\)\.classList\.contains\('open'\)/);
  assert.match(app,/sidebar\.inert=!sessionValidated\|\|\(mobile&&!open\)/);
 });
-test('brand logo always provides click feedback and can restart an active animation',()=>{
+test('brand logo ignores repeat clicks while its animation is active',()=>{
  assert.match(html,/id="logoTop"/);
  assert.match(app,/\$\('logoTop'\)\.onclick=animateBrand/);
- assert.match(app,/if\(brandBusy\)stopBrandAnimation\(\)/);
+ assert.match(app,/if\(brandBusy\)return;/);assert.doesNotMatch(app,/if\(brandBusy\)stopBrandAnimation\(\)/);
  assert.match(app,/brand-logo-fallback/);
  assert.match(css,/@keyframes brand-logo-fallback/);
 });

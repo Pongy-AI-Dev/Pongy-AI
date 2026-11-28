@@ -9,6 +9,7 @@ function walk(dir){
   if(excluded.has(entry.name))return[];
   const absolute=path.join(dir,entry.name);
   const relative=path.relative(root,absolute).split(path.sep).join('/');
+  if(/^tests\/[^/]*-probe\.cjs$/.test(relative))return[];
   if(entry.isSymbolicLink()||entry.isDirectory()&&/^native\/[^/]+\/build$/.test(relative))return[];
   if(entry.isDirectory())return walk(absolute);
   return entry.isFile()&&!entry.name.endsWith('.encoding-backup')&&relative!=='MANIFEST.sha256'?[relative]:[];

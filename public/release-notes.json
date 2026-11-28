@@ -1,21 +1,21 @@
 {
-  "version": "0.29.4",
+  "version": "0.29.5",
   "ru": [
-    "Чат, выбор модели и поле ввода стали удобнее и аккуратнее",
-    "Добавлены шрифты Inter, Roboto Flex, Noto Sans и Montserrat с поддержкой кириллицы и латиницы",
-    "Разделы чатов, проектов, заметок и библиотеки стали компактнее; добавлена новогодняя тема",
-    "Дополнительные шрифты и цвета доступны только при включённых бета-настройках",
-    "Голосовой помощник озвучивает ответы независимо от общих звуков интерфейса; при сетевых сбоях доступно локальное распознавание",
-    "ГДЗ ищет по предмету, классу и номеру задания без обязательного уточнения автора",
-    "Статус подписки сохраняется после повторного входа и обновления страницы"
+    "В гостевом режиме доступно 10 сообщений, локальные чаты и заметки, экспорт и основные настройки.",
+    "Ограничения гостевого режима теперь описаны понятнее, а уведомления можно закрыть.",
+    "Новогодняя тема стала заметнее: снег оседает на панелях и смахивается движением курсора.",
+    "Цветовые настройки сбрасываются и отключаются в новогодней теме.",
+    "Предпросмотр шрифтов показывает образцы разными шрифтами.",
+    "Исправлены навигация, переход из заметок в чаты, верхние панели и значки под сообщениями.",
+    "Повторное нажатие на логотип не перезапускает текущую анимацию."
   ],
   "en": [
-    "The chat, model picker and message composer are easier to use",
-    "Inter, Roboto Flex, Noto Sans and Montserrat fonts include Cyrillic and Latin characters",
-    "Chats, projects, notes and Library are more compact; a holiday theme is available",
-    "Extra fonts and colours appear only when the required beta settings are enabled",
-    "Voice conversations speak independently of interface sounds; on-device recognition is available for network errors",
-    "Homework lookup starts from the subject, grade and exercise number without requiring the textbook author",
-    "Subscription status remains available after signing in again or refreshing the page"
+    "Guest mode now includes 10 messages, local chats and notes, export and basic settings.",
+    "Guest restrictions are explained more clearly, and notices can be dismissed.",
+    "The holiday theme has more detail: snow settles on panels and moves away from cursor motion.",
+    "Accent settings are reset and disabled while the holiday theme is active.",
+    "Font previews now display samples in distinct typefaces.",
+    "Navigation, switching from notes to chats, top bars and message action icons have been improved.",
+    "Clicking the logo again no longer restarts an animation that is already running."
   ]
 }
