@@ -1,4 +1,4 @@
-﻿/* Pongy AI вЂ” visual refresh only. Preserve existing controls, dimensions and behavior. */
+/* Pongy AI вЂ” visual refresh only. Preserve existing controls, dimensions and behavior. */
 :root { --chat-content-width: 900px; --chat-panel-radius: 20px; }
 #sidebar { background: var(--bg); border-right-color: color-mix(in srgb, var(--border) 78%, transparent); }
 .sb-head { min-height: 62px; }
@@ -266,3 +266,55 @@ body.guest-mode .tb-actions #changelogBtn { opacity:1!important; filter:none!imp
 body.guest-mode #notificationsBtn,
 body.guest-mode #sidebarPlus,
 body.guest-mode #smartPCButton { display:none!important; }
+
+/* One transparent brand mark everywhere: identical source artwork, no button tile. */
+#logoTop{width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;border:0!important;border-radius:0!important;overflow:visible!important;background:transparent!important;box-shadow:none!important;}
+#logoTop::before,#logoTop .brand-mark{mask-image:url('/app-logo-192.png')!important;-webkit-mask-image:url('/app-logo-192.png')!important;}
+#logoTop::before{display:none!important;}
+#logoTop .brand-mark{inset:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
+#authLogo{border:0!important;border-radius:0!important;overflow:visible!important;background:transparent!important;box-shadow:none!important;}
+#authLogo::before,.big-logo::before{display:none!important;}
+#authLogo img,.big-logo .welcome-icon{opacity:1!important;filter:none!important;border:0!important;border-radius:0!important;object-fit:contain;}
+html[data-theme=holiday] .logo{box-shadow:none!important;border:0!important;background:transparent!important;}
+/* Composer surface has a consistent, generous but compact radius across layouts. */
+.input-box{border-radius:22px;}
+#inputArea .input-box{border-radius:22px!important;}
+
+/* Keep the festive interface warm across every stylesheet: gingerbread, icing, cranberry and evergreen. */
+html[data-theme=holiday]{color-scheme:light;--bg:#fff9f1;--bg2:#f8eadc;--bg3:#f0ddca;--fg:#3d2923;--fg2:#73584d;--border:#dfc5ae;--accent:#a72f43;--accent-h:#246b50;--hover:rgba(166,82,43,.08);--hover2:rgba(166,82,43,.13);--holiday-red:#b83250;--holiday-green:#26785a;--holiday-gold:#c09238}
+html[data-theme=holiday] body{background-color:var(--bg);background-image:radial-gradient(ellipse at 12% 9%,#fffdf7 0 1px,transparent 2px),radial-gradient(ellipse at 84% 17%,#fffdf7 0 1px,transparent 2px),linear-gradient(135deg,rgba(166,82,43,.07),transparent 36%,rgba(38,120,90,.06) 72%,rgba(184,50,80,.05))}
+html[data-theme=holiday] .logo,html[data-theme=holiday] #logoTop{box-shadow:none!important;border:0!important;background:transparent!important}
+html[data-theme=holiday] .msg.user .bubble{background:#8e3b32!important;color:#fff!important}
+html[data-theme=holiday] .chat-model-bar{background:linear-gradient(90deg,rgba(255,250,240,.9),rgba(247,233,220,.72));border-bottom:1px solid rgba(185,122,78,.22)}
+html[data-theme=holiday] .chat-model-bar,#chatModelName{color:#57382d}
+html[data-theme=holiday] .site-proposal button:not(.site-proposal-dismiss){background:#a72f43;color:#fff;border-color:#8e2638}
+html[data-theme=holiday] .site-proposal-dismiss{background:#fffaf2;color:#563a2c;border-color:#dfc5ae}
+#settingsBtn{width:100%!important;min-height:42px;justify-content:flex-start;padding-inline:14px;text-align:left;}
+/* UI polish overrides */
+#sidebar .sb-row .sb-btn:not(#sidebarPlus),#sidebar .sb-workspace-nav .sb-btn:not(#sidebarPlus),#sidebar .sb-bottom .sb-btn:not(#sidebarPlus),#sidebar .archive-nav{display:flex!important;visibility:visible!important;opacity:1!important;width:100%;min-width:0;min-height:38px;flex:0 0 auto;justify-content:flex-start;align-items:center;gap:11px;padding:8px 11px!important;margin:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;border-radius:9px;color:var(--fg2);font-size:13.5px;font-weight:480;text-align:left;line-height:1.35}
+#sidebar .sb-row .sb-btn:not(#sidebarPlus):hover,#sidebar .sb-workspace-nav .sb-btn:not(#sidebarPlus):hover,#sidebar .sb-bottom .sb-btn:not(#sidebarPlus):hover,#sidebar .archive-nav:hover{color:var(--fg);background:var(--hover)!important}
+#sidebar .sb-btn svg,#sidebar .archive-nav svg{display:block;flex:0 0 19px;width:19px;height:19px}
+#sidebar .sb-btn span:last-child,#sidebar .archive-nav span:last-child{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sidebar .sb-workspace-nav{display:flex;flex-direction:column;gap:2px}
+#sidebar .sb-workspace-nav .sb-btn[aria-pressed=true],#sidebar .archive-nav[aria-pressed=true]{color:var(--accent);background:transparent!important;font-weight:620}
+#settingsModal .settings-tabs [role=tab][hidden],#settingsModal .settings-section[hidden],#settingsModal .settings-tabs-shell [hidden]{display:none!important}
+#settingsModal .settings-nav-search{padding-left:40px!important;background-repeat:no-repeat;background-position:13px center;background-size:17px}
+#sidebar .sb-search-inner:focus-within{outline:0!important;border-color:transparent!important;box-shadow:none!important}#sidebar .sb-search-inner input:focus{outline:0!important;box-shadow:none!important}
+.field-save-row{display:flex;align-items:stretch;gap:0;position:relative;min-width:0}.field-save-row #nickInput{min-width:0;width:100%;padding-right:46px}.field-save-row #nickSave{position:absolute;right:5px;top:50%;transform:translateY(-50%);z-index:2;width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:var(--accent);box-shadow:none}.field-save-row #nickSave[hidden]{display:none!important}.field-save-row #nickSave:hover{background:var(--hover)}
+body.guest-mode #nickInput,body.guest-mode #nickInput:disabled,body.guest-mode :is(input,textarea,select,button)[disabled],body.guest-mode :is(input,textarea,select,button)[aria-disabled=true]{opacity:.48!important;filter:saturate(.55);cursor:not-allowed!important}body.guest-mode #nickInput{background:var(--bg2)!important;color:var(--fg2)!important}#nickInput:disabled{background:var(--bg2);color:var(--fg2);opacity:.55;cursor:not-allowed}
+.chat-message.user-message .message-content,.message.user .message-content{overflow-wrap:anywhere;word-break:normal}
+html[data-theme=holiday] #sidebar .sb-btn:hover{background:rgba(120,54,34,.08)!important}html[data-theme=holiday] .input-box{border-color:color-mix(in srgb,var(--border) 80%,#a86d42);border-radius:18px 18px 20px 20px}
+@media(prefers-reduced-motion:no-preference){#sidebar .sb-btn svg,#sidebar .archive-nav svg{transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s ease}#sidebar .sb-btn:hover svg,#sidebar .archive-nav:hover svg{transform:translateY(-1px) scale(1.06)}.settings-section:not([hidden]){animation:settings-enter .24s ease both}}
+#settingsModal .settings-nav-search{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23838b9b' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:13px center!important;background-size:17px!important}
+
+/* Preserve native hidden states after sidebar visibility overrides. */
+#sidebar [hidden],#sidebar .sb-btn[hidden],#sidebar .archive-nav[hidden]{display:none!important;visibility:hidden!important;}
+
+/* Guest mode keeps account-only workspace sections unavailable. */
+body.guest-mode #newNoteBtn,body.guest-mode #sectionLibrary,body.guest-mode #archiveChatsBtn,body.guest-mode #guideBtn,body.guest-mode #sidebarNotesSection,body.guest-mode #sidebarProjectsSection{display:none!important;}
+
+/* Guest restrictions outrank the general navigation display rule. */
+body.guest-mode #sidebar #newNoteBtn,body.guest-mode #sidebar .sb-workspace-nav #sectionLibrary,body.guest-mode #sidebar .sb-workspace-nav #archiveChatsBtn,body.guest-mode #sidebar .sb-workspace-nav #guideBtn,body.guest-mode #sidebar #sidebarNotesSection,body.guest-mode #sidebar #sidebarProjectsSection{display:none!important;}
+
+/* Keep dismiss controls above transient service notices. */
+#backgroundAccessBanner{position:relative;z-index:20}#backgroundAccessBanner .device-access-close{z-index:21;pointer-events:auto}
