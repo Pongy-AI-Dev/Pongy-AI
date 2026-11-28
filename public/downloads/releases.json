@@ -18,8 +18,8 @@
   "pongx": {
    "name": "PongX-0.1.1-windows-x64.zip",
    "version": "0.1.1",
-   "sha256": "99ee81ae5c0d21c4ed80c6490dc2d8dab1c6a9c00dd05a22607b2c3687ecd862",
-   "bytes": 9275
+   "sha256": "1786b9dfc00f0104449064bff9fee7e232174504473fbb49ee4115381a731625",
+   "bytes": 9269
   }
  },
  "windowsEngine": "WebView2",
