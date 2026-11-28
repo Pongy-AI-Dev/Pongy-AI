@@ -688,7 +688,7 @@ if(!resumeTarget)c.messages=c.messages.concat([{role:'user',text:text,createdAt:
 c.updatedAt=Date.now();
 syncChat(c);state.streaming=true;state.streamingChatId=chatId;window.dispatchEvent(new CustomEvent('pongy-chat-generation',{detail:{chatId:chatId,active:true}}));window.PongyVoiceMode?.pending(chatId);
 state.excluded=[];
-renderChats();renderMessages();updateTitle();updateSend();$('messages').scrollTop=$('messages').scrollHeight;// Follow later layout changes only while the reader remains at the end.
+renderChats();renderMessages();updateTitle();updateSend();$('messages').scrollTop=$('messages').scrollHeight;requestAnimationFrame(function(){if(state.streaming&&state.streamingChatId===chatId)smoothFollowOutput()}); // Keep the new message anchored after layout settles.
 
 
 var system='You are Pongy, a kind personal assistant. '+(settings.nickname?'The user\'s name is '+settings.nickname+'. ':'')+(opts.smart?'Think step by step. ':'Answer briefly. ')+(opts.search?'Do not claim to have performed a web search.':'');
